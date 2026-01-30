@@ -1,0 +1,57 @@
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# Add an "alert" alias for long running commands.  Use like so:
+#     sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+alias ls="eza --color --icons --no-time --no-user --group-directories-first"
+alias ll="ls -l"
+alias la="ls -a"
+
+alias gs="git status"
+alias ga="git add"
+alias gc="git commit"
+alias gp="git pull"
+alias gP="git push"
+
+alias jn="jupyter notebook "
+alias jl="jupyter lab"
+
+#alias v="nvim"
+#alias vim="nvim"
+alias vimconfig="cd ~/.config/nvim/ && nvim"
+alias dotgit="$(which git) --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
+
+alias s="kitten ssh"
+alias fzfapt="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf --multi --cycle --reverse --preview 'apt-cache show {1} | bat --color=always -l md'"
+
+# fzf_args=(
+#     --multi
+#     --preview 'apt-cache show{1} | bat --color=always -l md'
+#     --preview-window 'down:65%:wrap'
+# )
+# alias fapt="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf $(fzf_args[@])"
+
+# alias hsc="headsetcontrol -l 0 && headsetcontrol -s 70"
+
+alias ppath="tr ':' '\n' <<< '$PATH'"
+
+alias a="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf --multi --cycle --reverse --height 80% --preview 'apt-cache show {1}'"
+# alias a="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf --multi --cycle --reverse --height 80% --preview 'dpkg -l {1}'"
+
+ff() {
+    find $1 -type f | fzf --preview "bat --color=always {}" --layout reverse --height 80% --border
+}
+
+
+

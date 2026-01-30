@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+
+
+root_marker=".$(basename "$0")"
+
+die() {
+    local errmsg="$1"
+    echo "$(basename "$0"): [ERROR]" $errmsg >&2
+    exit 1
+}
+
+_init() {
+    if [[ -f "$root_marker" ]]; then
+        die "'$root_marker' file already exists."
+    fi
+    touch "$root_marker" && exit 0
+}
+
+_create() {
+    local project_name=""
+    local dirs_to_mk=""
+
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --python)
+                dirs_to_mk="src/ tests/"
+                shift
+                ;;
+            --java)
+                dirs_to_mk="src/main/java"
+                shift
+                ;;
+            -n|--name)
+                project_name="$2"
+                shift
+                shift
+                ;;
+            *)
+                die "unknown argument: $1"
+                ;;
+        esac
+    done
+
+    if [[ -z "$dirs_to_mk" ]]; then
+        die "must specify project type."
+    fi
+    if [[ -z "$project_name" ]]; then
+        die "must specify project name with 'name' argument."
+    fi
+    if [[ -e "$project_name" ]]; then
+        die "project with name '$project_name' already exists."
+    fi
+
+    mkdir -p $project_name \
+    && cd $project_name \
+    && mkdir -p $dirs_to_mk \
+    && touch "$root_marker" \
+    && echo "$(basename "$0"): [SUCCESS] created project '$project_name' in '$(pwd)'" \
+    && exit 0
+}
+
+_help() {
+
+    [[ "$#" -eq 0 ]] && _main_help && exit 0
+    [[ "$1" == "init" ]] && _init_help && exit 0
+    [[ "$1" == "create" ]] && _create_help && exit 0
+
+    die "'$1' is not a recognized subcommand, must be either 'init' or 'create'"
+}
+
+_main_help() {
+    cat <<-EOF
+usage: $(basename "$0") <command> [<args>]
+
+commands:
+    init        initialize a project in current working directory
+    create      create a (java or python) project
+
+EOF
+}
+
+_init_help() {
+    cat <<-EOF
+usage: $(basename "$0") init
+
+Initialize the current working directory as a '$root_marker' project.
+
+EOF
+}
+
+_create_help() {
+    cat <<-EOF
+usage: $(basename "$0") create -n|--name <name> <lang>
+
+args:
+    -n, --name      name of the project
+    <lang>          whether to create a '--python' or '--java' project
+
+examples:
+    $(basename "$0") create -n py_project --python
+    $(basename "$0") create --java --name java_project
+
+EOF
+}
+
+main() {
+
+    if [[ "$#" -eq 0 ]]; then
+        _main_help && exit 1
+    fi
+
+    cmd=$1
+    shift
+
+    case "$cmd" in
+        init)
+            _init "$@"
+            ;;
+        create)
+            _create "$@"
+            ;;
+        help)
+            _help "$@"
+            ;;
+        *)
+            die "unknown subcommand: $cmd"
+            ;;
+    esac
+}
+
+main "$@"

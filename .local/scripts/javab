@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+
+shopt -s globstar
+
+_find_project_root="find-project-root"
+_marker="${PROJECT_ROOT_MARKER:-.edis}"
+
+die() {
+    local msg="$1"
+    echo "$(basename "$0"): [ERROR]" $msg >&2
+    exit 1
+}
+
+if ! command -v "$_find_project_root" &> /dev/null; then
+    die "could not find '$_find_project_root' command."
+fi
+if ! command -v javac &> /dev/null; then
+    die "could not find 'javac' command."
+fi
+
+_compile_source_files() {
+    # this breaks relative imports for the compiler for some reason
+    local source_files=$1
+    local build_dir=$2
+
+    for source_file in $source_files; do
+        echo "javac -d $build_dir $source_file"
+        javac -d $build_dir $source_file || die "javac failed"
+        echo "$(basename "$0"): [INFO] compiled $(basename $source_file)"
+    done
+
+    return 0
+}
+
+main() {
+    local project_root=$("$_find_project_root" "$_marker" 2>/dev/null)
+
+    if [[ -z "$project_root" ]]; then
+        die "root marker '$_marker' not found"
+    fi
+
+    local build_dir="$project_root/build"
+    local source_files=$project_root/src/**/*.java
+
+    # && _compile_source_files "$source_files" "$build_dir" \
+    mkdir -pv "$build_dir" \
+    && echo "$(basename "$0"): [INFO] building project into $build_dir..." \
+    && javac -d $build_dir $source_files \
+    && echo "$(basename "$0"): [SUCCESS] built project into $build_dir" \
+    && exit 0
+}
+
+main "$@"

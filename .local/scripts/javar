@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+
+_find_project_root="find-project-root"
+_marker="${PROJECT_ROOT_MARKER:-.edis}"
+
+die() {
+    local errmsg="$1"
+    echo "$(basename "$0"): [ERROR]" $errmsg >&2
+    exit 1
+}
+
+if ! command -v "$_find_project_root" &> /dev/null; then
+    die "could not find '$_find_project_root' command."
+fi
+
+if ! command -v java &> /dev/null; then
+    die "could not find 'java' command."
+fi
+
+main() {
+
+    local project_root=$("$_find_project_root" "$_marker" 2>/dev/null)
+
+    if [[ -z "$project_root" ]]; then
+        die "root marker '$_marker' not found."
+    fi
+
+    local build_dir="$project_root/build"
+    local src_dir="$project_root/src/main/java"
+    local grep_result="$(grep -rE '^\s*public static void main' $src_dir)"
+
+    if [[ $(wc -l <<< "$grep_result") -gt 1 ]]; then
+        die "multiple main methods detected."
+    fi
+
+    if [[ $(wc -l <<< "$grep_result") -eq 0 ]]; then
+        die "no main method detected."
+    fi
+
+    local main_file=$(cut -d ':' -f 1 <<< "$grep_result")
+    local main_name=$(basename "$main_file" ".java")
+    local main_class=$(find "$build_dir" -name "$main_name.class")
+    local rel_path_to_main="${main_class#$build_dir/}"
+    rel_path_to_main="${rel_path_to_main%.*}"
+
+    java -cp "$build_dir" "$rel_path_to_main" && return 0
+}
+
+main "$@"

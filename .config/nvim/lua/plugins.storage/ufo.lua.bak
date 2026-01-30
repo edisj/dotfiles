@@ -1,0 +1,99 @@
+return {
+    "kevinhwang91/nvim-ufo",
+    event = "VeryLazy",
+    dependencies = { "kevinhwang91/promise-async" },
+    -- keys = {
+    --     {
+    --         "oz",
+    --         "<cmd>lua require('ufo').foldScope('outer')<CR>",
+    --         mode = { "o", "x" },
+    --         desc = "text-obj: o-fold",
+    --     },
+    --     {
+    --         "iz",
+    --         "<cmd>lua require('ufo').foldScope('inner')<CR>",
+    --         mode = { "o", "x" },
+    --         desc = "text-obj: i-fold",
+    --     },
+    -- },
+    init = function()
+        vim.o.foldenable = true
+        vim.o.foldcolumn = "0"
+        vim.o.foldlevel = 99
+        vim.o.foldlevelstart = 99
+        vim.o.fillchars = [[eob:~,fold: ,foldopen:▼,foldsep: ,foldclose:⏵]]
+    end,
+    opts = function()
+        local function handler(virtText, lnum, endLnum, width, truncate)
+            local newVirtText = {}
+            local suffix = (" 󰁂 %d "):format(endLnum - lnum)
+            -- local suffix = "..."
+            local sufWidth = vim.fn.strdisplaywidth(suffix)
+            local targetWidth = width - sufWidth
+            local curWidth = 0
+            for _, chunk in ipairs(virtText) do
+                local chunkText = chunk[1]
+                local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                if targetWidth > curWidth + chunkWidth then
+                    table.insert(newVirtText, chunk)
+                else
+                    chunkText = truncate(chunkText, targetWidth - curWidth)
+                    local hlGroup = chunk[2]
+                    table.insert(newVirtText, { chunkText, hlGroup })
+                    chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                    -- str width returned from truncate() may less than 2nd argument, need padding
+                    if curWidth + chunkWidth < targetWidth then
+                        suffix = suffix .. (" "):rep(targetWidth - curWidth - chunkWidth)
+                    end
+                    break
+                end
+                curWidth = curWidth + chunkWidth
+            end
+            table.insert(newVirtText, { suffix, "MoreMsg" })
+            return newVirtText
+        end
+
+        local opts = {
+            open_fold_hl_timeout = 0,
+            provider_selector = function(bufnr, filetype, buftype)
+                return { "treesitter", "indent" }
+            end,
+            -- close_fold_kinds_for_ft = {
+            --     python = { "comment", "imports" },
+            --     lua = { "indent" },
+            -- },
+            fold_virt_text_handler = handler,
+            preview = {
+                win_config = {
+                    border = "rounded",
+                    -- border  = { "", "", "", "│", "╯", "─", "╰", "│" },
+                    winblend = 15,
+                    winhighlight = "Normal:Normal",
+                    maxheight = 30,
+                },
+                mappings = {
+                    scrollU = "<C-M-k>",
+                    scrollD = "<C-M-j>",
+                    scrollE = "<M-j>",
+                    scrollY = "<M-k>",
+                    close = "<M-z>",
+                },
+            },
+        }
+        return opts
+    end,
+    config = function(_, opts)
+        local ufo = require("ufo")
+        ufo.setup(opts)
+        vim.keymap.set("n", "J", "za", { silent = true, desc = "Toggle Fold" })
+        vim.keymap.set("n", "zR", ufo.openAllFolds)
+        vim.keymap.set("n", "zM", ufo.closeAllFolds)
+        vim.keymap.set("n", "zr", ufo.openFoldsExceptKinds)
+        vim.keymap.set("n", "zm", ufo.closeFoldsWith)
+        vim.keymap.set("n", "<M-z>", function()
+            ufo.peekFoldedLinesUnderCursor()
+        end, { desc = "Peek Fold" })
+        vim.api.nvim_set_hl(0, "Folded", { link = "CursorLine" })
+        vim.api.nvim_set_hl(0, "CursorLineFold", { link = "CursorLine" })
+    end,
+}

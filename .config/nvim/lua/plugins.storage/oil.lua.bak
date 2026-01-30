@@ -1,0 +1,73 @@
+return {
+    "stevearc/oil.nvim",
+    -- dependencies = {
+    --     "nvim-mini/mini.icons",
+    -- },
+    enabled = false,
+    opts = {
+        delete_to_trash = true,
+        columns = { "icon" },
+        skip_confirm_for_simple_edits = true,
+        view_options = {
+            show_hidden = true,
+            is_always_hidden = function(name, bufnr) return name == ".." end,
+        },
+        float = {
+            -- Padding around the floating window
+            padding = 7.5,
+            max_width = 0.7,
+            max_height = 0.9,
+            -- border = "rounded",
+            win_options = {
+                winblend = 0,
+            },
+            -- preview_split: Split direction: "auto", "left", "right", "above", "below".
+            preview_split = "auto",
+            -- This is the config that will be passed to nvim_open_win.
+            -- Change values here to customize the layout
+            override = function(conf)
+                return conf
+            end,
+        },
+        use_default_keymaps = false,
+        keymaps = {
+            ["<C-f>"] = "<Nop>",
+            ["g?"]    = "actions.show_help",
+            ["<C-y>"] = "actions.select",
+            ["L"]     = "actions.select",
+            ["H"]     = "actions.parent",
+            ["<CR>"]  = "actions.select",
+            ["<M-p>"] = "actions.preview",
+            ["<C-c>"] = "actions.close",
+            ["<C-r>"] = "actions.refresh",
+            [".."]    = "actions.parent",
+            ["_"]     = "actions.open_cwd",
+            ["`"]     = "actions.cd",
+            ["gs"]    = "actions.change_sort",
+            ["gx"]    = "actions.open_external",
+            ["g."]    = "actions.toggle_hidden",
+            ["g\\"]   = "actions.toggle_trash",
+            ["~"] = {
+                "actions.cd",
+                opts = { scope = "tab" },
+                desc = ":tcd to the current oil directory",
+            },
+            ["<C-v>"] = {
+                "actions.select",
+                opts = { vertical = true },
+                desc = "Open the entry in a vertical split",
+            },
+            ["<C-t>"] = {
+                "actions.select",
+                opts = { tab = true },
+                desc = "Open the entry in new tab",
+            },
+        },
+    },
+    config = function(_, opts)
+        local oil = require("oil")
+        oil.setup(opts)
+
+        vim.keymap.set("n", "<C-e>", oil.toggle_float, { desc = "Open oil", })
+    end,
+}

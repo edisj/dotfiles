@@ -1,0 +1,10 @@
+return {
+    -- Automatically convert from ipynb files to plaintext (markdown) files, and then back again when you save.
+    -- Because Jupytext generates markdown files, we get the full benefits of quarto-nvim.
+    "GCBallesteros/jupytext.nvim",
+    opts = {
+        style = "markdown",
+        output_extension = "md",
+        force_ft = "markdown",
+    },
+}

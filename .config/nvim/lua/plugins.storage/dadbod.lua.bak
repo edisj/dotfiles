@@ -1,0 +1,21 @@
+return {
+    "kristijanhusak/vim-dadbod-ui",
+    enabled = false,
+    cmd = {
+        "DBUI",
+        "DBUIToggle",
+        "DBUIAddConnection",
+        "DBUIFindBuffer"
+    },
+    dependencies = {
+        { "tpope/vim-dadbod", cmd = "DB", },
+        { "kristijanhusak/vim-dadbod-completion", ft = { "sql", "masql", "plsql", "sqlite", } }
+    },
+    init = function()
+        vim.g.db_ui_use_nerd_fonts = 1
+        vim.g.db_ui_auto_execute_table_helpers = 1
+    end,
+    keys = {
+        {"<leader>DB", "<cmd>tabnew<cr><cmd>DBUI<CR>", desc = "Dadbod UI" }
+    },
+}

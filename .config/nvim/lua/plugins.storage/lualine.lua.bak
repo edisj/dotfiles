@@ -1,0 +1,160 @@
+local lsp_clients = function()
+
+    local buf_clients = vim.lsp.get_clients({ bufnr = 0 })
+    local client_names = {}
+
+    local has_null_ls, null_ls = pcall(require, "null-ls")
+    for _, client in pairs(buf_clients) do
+        if client.name ~= "null-ls" then
+            table.insert(client_names, client.name)
+        else
+            if has_null_ls then
+                for _, source in ipairs(null_ls.get_source({ filetype = vim.bo.filetype })) do
+                    table.insert(client_names, source.name)
+                end
+            end
+        end
+    end
+
+    return "  " .. table.concat(client_names, " | ")
+end
+
+local components = {
+    mode = {
+        "mode",
+        fmt = function(s)
+            local icon = "  "
+            return icon .. s
+        end,
+        color = { gui = "bold" },
+    },
+
+    filename = {
+        "filename",
+        file_status = true,
+        newfile_status = false,
+        color = { fg = "white", style = "bold" },
+        path = 1, -- 0 | 1 | 2 | 3 | 4
+        symbols = {
+            modified = "[ ]",
+            readonly = " ",
+            unnamed = " [No Name]",
+            newfile = " [New File]",
+        },
+    },
+
+    filetype = {
+        "filetype",
+        color = { fg = "white", style = "bold" },
+        icon_only = false,
+        icon = { align = "right" },
+        -- icon =    {'X', align='right'}
+        -- Icon string ^ in table is ignored in filetype component
+    },
+
+    buffers = {
+        "buffers",
+        hide_filename_extension = true,
+        use_mode_colors = true,
+        color = { fg = "#808080", bg = "#303030", gui = "bold" },
+    },
+
+    branch = {
+        "branch",
+        icon = {"", align='right', color = { fg = 'red' } },
+        -- icon = { "", align = "right", color = { fg = "red" } },
+        color = { fg = "#808080", gui = "bold" },
+    },
+
+    diff = {
+        "diff",
+        colored = true,
+        symbols = { added = " ", modified = " ", removed = " " },
+        source = nil, -- A function that works as a data source for diff.
+    },
+
+    diagnostics = {
+        "diagnostics",
+        colored = true,
+        symbols = { error = " ", warn = " ", info = " ", hint = "󰌵 " },
+        update_in_insert = false,
+        always_visible = false,
+    },
+}
+
+local extensions = {
+    help = {
+        sections = {
+            lualine_x = { "progress" },
+            lualine_y = { components.filetype },
+        },
+        filetypes = { "help" },
+    },
+
+    telescope = {
+        sections = {
+            lualine_a = { components.mode },
+            lualine_x = { components.filetype },
+        },
+        filetypes = { "TelescopePrompt" },
+    },
+
+    dashboard = {
+        sections = {
+            lualine_a = { components.mode },
+            lualine_b = { "branch" },
+            lualine_c = { components.filetype },
+        },
+        filetypes = { "dashboard" },
+    },
+}
+
+return {
+    "nvim-lualine/lualine.nvim",
+    enabled = false,
+    event = "VeryLazy",
+    config = function()
+        require("lualine").setup({
+            options = {
+                -- theme = require("kanagawa").lualine,
+                theme = "auto",
+                icons_enabled = true,
+                component_separators = { left = " ", right = " " },
+                section_separators = { left = "", right = "" },
+                -- section_separators = { left = '', right = '' },
+                -- section_separators = { left = "", right = "" },
+                -- globalstatus = vim.o.laststatus == 3,
+                globalstatus = true,
+                disabled_filetypes = {
+                    statusline = { "snacks_dashboard", "dashboard", "alpha", "starter" }
+                },
+                --always_divide_middle = true,
+            },
+            sections = {
+                lualine_a = { components.mode },
+                lualine_b = { components.branch, components.diagnostics },
+                lualine_c = { components.filename, "harpoon2" },
+                lualine_x = { "selectioncount", "progress" },
+                lualine_y = { components.filetype },
+                lualine_z = { { lsp_clients, color = { gui = "bold" } } },
+            },
+            inactive_sections = {
+                lualine_c = { components.filename },
+            },
+            _tabline = {
+                lualine_a = { components.buffers },
+                lualine_z = { components.diff, components.branch },
+            },
+            extensions = {
+                "toggleterm",
+                "trouble",
+                "lazy",
+                "neo-tree",
+                "quickfix",
+                -- extensions.help,
+                extensions.dashboard,
+                extensions.telescope,
+            },
+        })
+    end,
+}

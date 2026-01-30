@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+
+die() {
+    local errmsg="$1"
+    echo "$(basename "$0"): [ERROR]" $errmsg >&2
+    exit 1
+}
+
+_help() {
+    cat <<-EOF
+usage: $(basename "$0") [marker]
+
+examples:
+    $(basename "$0")
+    $(basename "$0") .git
+    $(basename "$0") .venv
+
+EOF
+}
+
+_find_project_root() {
+
+    local marker="${1:-$PROJECT_ROOT_MARKER}"
+
+    if [[ -z "$marker" ]]; then
+        die "PROJECT_ROOT_MARKER is not set, must pass root marker as argument."
+    fi
+
+    local current_dir=$(pwd -P) || die "pwd failed?"
+    while [[ "$current_dir" != "/" ]]; do
+
+        if [[ -e "$current_dir/$marker" ]]; then
+            echo "$current_dir" && return 0
+        fi
+
+        current_dir=$(dirname "$current_dir")
+    done
+
+    die "could not locate '$marker' root marker."
+}
+
+main() {
+    [[ "$1" == "help" ]] && _help && exit 0
+    _find_project_root "$@"
+}
+
+main "$@"
