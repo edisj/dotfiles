@@ -7,7 +7,7 @@ require "config.usercmds"
 
 require("floaterminal").setup()
 -- require("helpout").setup()
-require("argpoon")
+require("arglist")
 require("Maria_winbar")
 require("inspector").setup()
 require("session").setup()

@@ -14,6 +14,9 @@ M.from_colors = function(c, _)
 
     for key, fallback in pairs {
         ["@lsp.typemod.function.defaultLibrary"] = "@function.builtin",
+        ["@lsp.type.modifier.java"] = "",
+        ["@lsp.type.namespace.java"] = "",
+
         -- ["@lsp.type"] = "",
         -- ["@lsp.type.function"] = "",
         -- ["@lsp.mod.documentation"] = "@comment.documention",
@@ -48,7 +51,7 @@ M.from_colors = function(c, _)
         -- ["@lsp.type.type"]          = "@type",               -- Identifiers that declare or reference a type that is not covered above
         -- ["@lsp.type.typeParameter"] = "@type.definition",    -- Identifiers that declare or reference a type parameter
         -- ["@lsp.type.variable"]      = "@variable",          -- Identifiers that declare or reference a local or global variable
-        -- ["@lsp.type.variable"]      = {},                    -- Identifiers that declare or reference a local or global variable
+        ["@lsp.type.variable"]      = "",                    -- Identifiers that declare or reference a local or global variable
 
         -- ["@lsp.mod.abstract"]      = "",    -- Types and member functions that are abstract
         -- ["@lsp.mod.async"]         = "@keyword.coroutine",    -- Functions that are marked async

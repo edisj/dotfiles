@@ -1,11 +1,11 @@
-local function argpoon_add(i)
-    local ok, argpoon = pcall(require, "argpoon")
+local function arglist_add(i)
+    local ok, arglist = pcall(require, "arglist")
     if not ok then return end
 
     local current = MiniPick.get_picker_matches().current
     if current == nil or vim.uv.fs_stat(current).type ~= "file" then return end
 
-    argpoon.arglist[i] = vim.fn.fnamemodify(current, ":p")
+    arglist.arglist[i] = vim.fn.fnamemodify(current, ":p")
 
     MiniPick.default_choose(current)
     MiniPick.stop()
@@ -27,12 +27,12 @@ require("mini.pick").setup({
         scroll_right = "<C-M-l>",
         scroll_up    = "<C-M-k>",
 
-        argpoon_add_1 = { char = "<M-S-q>", func = function() argpoon_add(1) end },
-        argpoon_add_2 = { char = "<M-S-w>", func = function() argpoon_add(2) end },
-        argpoon_add_3 = { char = "<M-S-e>", func = function() argpoon_add(3) end },
-        argpoon_add_4 = { char = "<M-S-u>", func = function() argpoon_add(4) end },
-        argpoon_add_5 = { char = "<M-S-i>", func = function() argpoon_add(5) end },
-        argpoon_add_6 = { char = "<M-S-o>", func = function() argpoon_add(6) end },
+        argpoon_add_1 = { char = "<M-S-q>", func = function() arglist_add(1) end },
+        argpoon_add_2 = { char = "<M-S-w>", func = function() arglist_add(2) end },
+        argpoon_add_3 = { char = "<M-S-e>", func = function() arglist_add(3) end },
+        argpoon_add_4 = { char = "<M-S-u>", func = function() arglist_add(4) end },
+        argpoon_add_5 = { char = "<M-S-i>", func = function() arglist_add(5) end },
+        argpoon_add_6 = { char = "<M-S-o>", func = function() arglist_add(6) end },
     },
     options = {
         content_from_bottom = true,

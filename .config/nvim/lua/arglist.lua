@@ -8,7 +8,7 @@ for i = 1, MAX_ENTRIES do
 end
 
 local _scratch_buf = vim.api.nvim_create_buf(false, true)
-local _scratch_name = string.format("argpoon://%s/null-buf", _scratch_buf)
+local _scratch_name = string.format("arglist://%s/null-buf", _scratch_buf)
 api.nvim_buf_set_name(_scratch_buf, _scratch_name)
 
 local M = {}
@@ -18,7 +18,7 @@ M.arglist = setmetatable({}, {
 
         if not vim.tbl_contains(_valid_indices, k) then
             local err_msg = k.." is out of bounds for [[1.."..MAX_ENTRIES.."]]"
-            vim.notify(err_msg, vim.log.levels.ERROR, { title = "argpoon" })
+            vim.notify(err_msg, vim.log.levels.ERROR, { title = "arglist" })
             return
         end
 
@@ -48,17 +48,17 @@ local function _create_arglist_win()
         auto_position = "center",
         bufnr = function(_)
             local bufnr = api.nvim_create_buf(false, true)
-            api.nvim_buf_set_name(bufnr, "argpoon")
+            api.nvim_buf_set_name(bufnr, "arglist")
             return bufnr
         end,
         stickybuf = true,
         width = 0.30,
         height = MAX_ENTRIES,
         style = "minimal",
-        footer = { {"argpoon", "NormalFloat"} },
+        footer = { {"arglist", "NormalFloat"} },
         footer_pos = "center",
         bo = {
-            filetype = "argpoon",
+            filetype = "arglist",
             bufhidden = "hide",
             buflisted = false,
         },
@@ -95,7 +95,7 @@ M.arg_add = function(new)
 
     local i = find_first_empty()
     if not i then
-        return vim.notify("`argpoon.arglist` is full", vim.log.levels.ERROR, { title = "argpoon" })
+        return vim.notify("`arglist` is full", vim.log.levels.ERROR, { title = "arglist" })
     end
 
     M.arglist[i] = new
@@ -142,8 +142,8 @@ end
 
 vim.api.nvim_create_autocmd("WinClosed", {
     buffer = M.win.bufnr,
-    group = vim.api.nvim_create_augroup("argpoon", { clear = true }),
-    desc = "sync arglist with argpoon window when exiting buffer",
+    group = vim.api.nvim_create_augroup("arglist", { clear = true }),
+    desc = "sync arglist with arglist window when exiting buffer",
     callback = function()
 
         local lines = {}
@@ -193,7 +193,7 @@ end
 local ok, mini_files = pcall(require, "mini.files")
 if not ok then return M end
 
-local function go_in_and_argpoon(i)
+local function go_in_and_arglist(i)
     local path = (mini_files.get_fs_entry() or {}).path
     if path == nil then return vim.notify('Cursor is not on valid entry') end
     if vim.uv.fs_stat(path).type ~= "file" then return end
@@ -206,7 +206,7 @@ vim.api.nvim_create_autocmd("User", {
     callback = function(ev)
         local buf_id = ev.data.buf_id
         for i, key in ipairs({ "q", "w", "e", "u", "i", "o" }) do
-            vim.keymap.set("n", "<M-S-" .. key .. ">", function() go_in_and_argpoon(i) end, { buffer = buf_id })
+            vim.keymap.set("n", "<M-S-" .. key .. ">", function() go_in_and_arglist(i) end, { buffer = buf_id })
         end
     end,
 })

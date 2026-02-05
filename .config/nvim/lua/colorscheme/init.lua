@@ -52,7 +52,9 @@ local defaults = {
             ["@variable.parameter.vimdoc"] = "green",
         },
         -- `:h lsp-semantic-highlight`
-        semantic = {},
+        semantic = {
+            ["@lsp.type.modifier.java"] = "",
+        },
         -- `:h diagnostic-highlights`
         diagnostic = {
             error = "red",

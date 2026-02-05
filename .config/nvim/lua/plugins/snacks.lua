@@ -55,6 +55,13 @@ return {
         { "<leader>S",  function() Snacks.scratch.select() end, desc = "Select Scratch Buffer" },
     },
     opts = {
+        styles = {
+            dashboard = {
+                wo = {
+                    fillchars = "eob: ",
+                },
+            },
+        },
         dashboard = {
             header = "",
             preset = {

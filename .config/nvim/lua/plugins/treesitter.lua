@@ -1,13 +1,14 @@
 local languages = {
     "lua",
     "python",
+    "java",
     "vimdoc",
     "bash",
 }
 
 return {
     {
-        "nvim-treesitter",
+        "nvim-treesitter/nvim-treesitter",
         branch = "main",
         version = false,
         build = ":TSUpdate",
