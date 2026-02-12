@@ -8,7 +8,9 @@ return {
                 require("mini.files").open(vim.api.nvim_buf_get_name(0), false)
             end
         end, "MiniFiles toggle"},
-        { "<C-f>", "<Cmd>Pick files<CR>"}
+        { "<C-f>", function()
+            require("mini.pick").builtin.files({ hidden = true })
+        end, "MiniPick files"},
     },
     config = function()
         require("mini.icons").setup({
@@ -32,7 +34,7 @@ return {
         require("plugins.mini.surround")
         require("plugins.mini.cmdline")
         require("plugins.mini.completion")
-        require("plugins.mini.operators")
+        -- require("plugins.mini.operators")
         require("plugins.mini.files")
         require("plugins.mini.pick")
         require("plugins.mini.snippets")

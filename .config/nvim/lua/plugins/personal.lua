@@ -16,11 +16,13 @@ end
 
 return {
     {
+        enabled = false,
         dir = "~/projects/window.nvim",
         lazy = true,
     },
     {
         dir = "~/projects/helpout.nvim",
+        enabled = false,
         lazy = true,
         dependencies = "window.nvim",
         cmd = "Helpout",

@@ -20,6 +20,7 @@ return {
     },
     {
         "neovim/nvim-lspconfig",
+        enabled = true,
         event = { "BufReadPost", "BufNewFile", "BufWritePre" },
         dependencies = {
             { "j-hui/fidget.nvim", opts = {} },
@@ -58,7 +59,7 @@ return {
 
     {
         "mfussenegger/nvim-jdtls",
-        enabled = false,
+        enabled = true,
         dependencies = { "mfussenegger/nvim-dap" },
     },
 }

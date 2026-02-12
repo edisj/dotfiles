@@ -4,6 +4,12 @@ local languages = {
     "java",
     "vimdoc",
     "bash",
+    "json",
+    "css",
+    "html",
+    "javascript",
+    "asm",
+    "toml",
 }
 
 return {
@@ -17,7 +23,7 @@ return {
         config = function()
             require("nvim-treesitter").install(languages)
 
-            vim.api.nvim_create_autocmd("Filetype", {
+            vim.api.nvim_create_autocmd({"FileType", "BufEnter"}, {
                 group = vim.api.nvim_create_augroup("treesitter.setup", {}),
                 callback = function(ev)
                     local buf = ev.buf
@@ -36,7 +42,8 @@ return {
                     vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 
                     -- replicate `highlight = { enable = true }`
-                    vim.treesitter.start(buf, language)
+                    -- vim.treesitter.start(buf, language)
+                    vim.treesitter.start()
 
                     -- replicate `indent = { enable = true }`
                     vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"

@@ -51,7 +51,7 @@ vim.api.nvim_create_autocmd('User', {
 -- Window width based on the offset from the center, i.e. center window
 -- is 60, then next over is 20, then the rest are 10.
 -- Can use more resolution if you want like { 60, 20, 20, 10, 5 }
-local widths = { 60, 20, 10 }
+local widths = { 55, 20, 10 }
 
 local ensure_center_layout = function(ev)
     local state = MiniFiles.get_explorer_state()
@@ -86,7 +86,7 @@ local ensure_center_layout = function(ev)
         win_config.col = new_col
     end
 
-    win_config.height = depth_offset == 0 and 24 or 20
+    win_config.height = depth_offset == 0 and 20 or 16
     win_config.row = math.floor(0.5 * (vim.o.lines - win_config.height))
     -- win_config.border = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▏" }
     -- win_config.footer = { { tostring(depth_offset), "Normal" } }

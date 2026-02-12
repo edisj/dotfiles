@@ -42,8 +42,12 @@ map("i", "<M-l>", "<Right>")
 map("i", "<M-k>", function() vim.cmd("normal! gkzz") end )
 map("i", "<M-j>", function() vim.cmd("normal! gjzz") end )
 
-map("n", "<C-_>", ":nohlsearch<cr>")
+map("n", "<C-/>", ":nohlsearch<cr>")
+
 map("o", "o", "a", { desc = "outside" })
+map("o", "ow", "aw", { desc = "outside word" })
+map("o", "oW", "aW", { desc = "outside WORD" })
+
 map("c", "<M-q>", "<C-c>")
 map("xoc", "<M-a>", "<esc>")
 map("xoc", "<M-s>", "<esc>")

@@ -37,6 +37,7 @@ require("mini.pick").setup({
     options = {
         content_from_bottom = true,
         use_cache = true,
+        hidden = true,
     },
     window = {
         config = function()
@@ -45,23 +46,17 @@ require("mini.pick").setup({
             local is_info = state ~= nil and state.buffers.info == vim.api.nvim_win_get_buf(state.windows.main)
             local preview_width = math.floor(0.45 * vim.o.columns)
             local preview_height = math.floor(0.75 * vim.o.lines)
-            -- local info_width  = math.floor(0.5 * vim.o.columns)
-            local info_height = math.floor(0.75 * vim.o.lines)
 
-            -- local width = (is_preview and preview_width) or (is_info and info_width) or math.floor(0.50 * vim.o.columns)
-            local main_height = math.floor(0.20 * vim.o.lines)
+            local main_height = math.floor(0.40 * vim.o.lines)
             local main_width = math.floor(0.35 * vim.o.columns)
 
-            local width = (is_preview or is_info) and preview_width or main_width
+            local width = is_preview and preview_width or main_width
             local height = (is_preview or is_info) and preview_height or main_height
 
-            local col = math.floor(0.50 * (vim.o.columns - width))
-            local row = math.floor(0.20 * (vim.o.lines - main_height))
-
-
-            return { anchor = "NW", row = row, col = col, width = width, height = height }
+            return { anchor = "NW", row = 0, col = 0, width = width, height = height }
         end,
-        prompt_caret = "▏",
+        -- prompt_caret = "▏",
+        prompt_caret = "▎",
         prompt_prefix = "▶ ",
     },
 })

@@ -4,6 +4,7 @@ require "config.autocmds"
 require "config.keymaps"
 require "config.usercmds"
 
+require "wildermenu"
 
 require("floaterminal").setup()
 -- require("helpout").setup()

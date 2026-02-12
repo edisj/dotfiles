@@ -51,8 +51,8 @@ end
 --         ▊
 M.border = function(left_or_right)
     local hl = modes[fn.mode()].hl
-    local left = with_hl(" ", "Normal") .. with_hl("", hl)
-    local right =  with_hl("", hl) .. with_hl(" ", "Normal")
+    local left = with_hl("▊", hl)
+    local right =  with_hl("▊", hl)
     local out = left_or_right == "left" and left or right
     return out
 end
@@ -116,7 +116,7 @@ M.file = function()
     out = not vim.bo.modifiable and out .. " " or out
     -- out = vim.bo.modified and out .. " [•]" or out
     out = vim.bo.modified and out .. " [+]" or out
-    return wrap(out, 0)
+    return wrap(out, 1)
 end
  -- { Error = "󰅙", Info = "󰋼", Hint = "󰌵", Warn = "" }
  --  ❌
@@ -145,10 +145,10 @@ M.render = function()
     local components = {
         M.border("left"),
         M.mode(),
-        M.sep(),
+        -- M.sep(),
         M.buf(),
         M.file(),
-        M.sep(),
+        -- M.sep(),
         M.diagnostics(),
         "%=",
         M.lsp(),

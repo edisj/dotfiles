@@ -1,4 +1,5 @@
 local utils = require("colorscheme.utils")
+local matugen = require("matugen")
 
 local M = {}
 
@@ -10,22 +11,21 @@ local _did_setup = false
 ---@field palette table<string, HexColor|nil>
 local defaults = {
     palette = {
-        bg = "#1c1e22",
+        bg = matugen.background,
         fg = nil,
         accent = nil,
 
-        black = "#414868",
-        blue = "#5B95DE",
-        cyan = "#7dcfff",
-        green = "#55ca88",
-        magenta = "#bb9af7",
-        red = "#b92a28",
-        white = "#c0caf5",
-        yellow = "#F4D35E",
+        black = matugen.outline_variant,
+        blue = matugen.blue,
+        cyan = matugen.cyan,
+        green = matugen.green,
+        magenta = matugen.magenta,
+        red = matugen.red,
+        white = matugen.inverse_surface,
+        yellow = matugen.yellow,
 
-        orange = "#db9c6a",
-        pink = "#d88ec9",
-        gold = "#c6bd81",
+        orange = matugen.orange,
+        pink = matugen.magenta,
     },
     colors = {
         -- `:h highlight-groups`
@@ -39,15 +39,15 @@ local defaults = {
         -- `:h group-name`
         syntax = {
             Constant = "orange",
-            Operator = "gold",
-            Special = "magenta",
-            String = "#72b88a",
+            Special = "cyan",
+            Keyword = matugen.primary,
+            String = "green",
             Type = "yellow",
         },
         -- `:h treesitter-highlight-groups`
         treesitter = {
-            ["@constant.builtin"] = "pink",
-            ["@keyword.return"] = "red",
+            ["@constant.builtin"] = "magenta",
+            ["@keyword.return"] = matugen.red,
             ["@comment.documentation"] = "#59786b",
             ["@variable.parameter.vimdoc"] = "green",
         },
@@ -76,21 +76,22 @@ local defaults = {
     },
     styles = {
         WinSeparator = { bold = true },
-        Boolean = { bold = true },
+        -- Boolean = { bold = true },
         CursorLineNr = { bold = true },
+        WildMenu = { bold = true },
         FloatTitle = { reverse = true },
         FloatFooter = { reverse = true },
         PmenuSel = { bold = true },
         MatchParen = { bold = true },
         Title = { bold = true },
-        ["Keyword"] = { bold = true, italic = true },
-        ["@keyword.return"] = { bold = true },
-        ["@keyword"] = { bold = true, italic = true },
-        ["@keyword.conditional"] = { bold = true, italic = true },
-        ["@constant.builtin"] = { bold = true },
+        -- ["Keyword"] = { bold = true, italic = true },
+        ["@keyword.return"] = { bold = true, italic = true },
+        -- ["@keyword"] = { bold = true, italic = true },
+        -- ["@keyword.conditional"] = { bold = true, italic = true },
+        -- ["@constant.builtin"] = { bold = true },
 
     },
-    transparent = false,
+    transparent = true,
     terminal_colors = true,
     dim_inactive = false,
 }

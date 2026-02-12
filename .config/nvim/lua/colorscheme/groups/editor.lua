@@ -51,7 +51,7 @@ M.from_colors = function(c, opts)
 
         Title        = { fg = ed.Title,        bg = nil },                -- Titles for output from ":set all", ":autocmd" etc.
         Visual       = { fg = nil,             bg = ed.Visual },          -- Visual mode selection.
-        WildMenu     = { fg = nil,             bg = ed.WildMenu },        -- Current match in 'wildmenu' completion.
+        WildMenu     = { fg = c.bg,             bg = ed.WildMenu },        -- Current match in 'wildmenu' completion.
         WinSeparator = { fg = ed.WinSeparator, bg = c.none },             -- Separators between window splits.
         WinSeparatorNC = { fg = ed.WinSeparator, bg = c.none },
         WinSeparatorFocused = {fg = ed.WinSeparator, bg = c.none},

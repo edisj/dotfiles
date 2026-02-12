@@ -120,8 +120,6 @@ local M = {}
 ---@field syntax SyntaxColors
 ---@field terminal TerminalColors
 
-
-
 ---@param s string
 ---@return boolean
 local is_hex_color = function(s)
@@ -186,7 +184,7 @@ M.setup = function(opts)
     -- syn.Keyword     = syn.Keyword     or utils.blend(c.bg, 0.65, syn.Identifier)
     syn.Keyword     = syn.Keyword     or utils.blend(c.bg, 0.55, syn.Identifier)
     syn.Function    = syn.Function    or utils.blend(c.fg, 0.65, c.accent)
-    syn.Special     = syn.Special     or utils.lighten(syn.Function, 0.30)
+    syn.Special     = syn.Special     or utils.brighten(syn.Function, 0.5, 0.1)
     syn.PreProc     = syn.PreProc     or syn.Special
 
     local ed = c.editor
@@ -221,7 +219,9 @@ M.setup = function(opts)
     ed.MatchParen   = ed.MatchParen   or c.accent
     ed.WinSeparator = ed.WinSeparator or utils.brighten(ed.FloatBorder, 0.05, 0.10)
     ed.VertSplit    = ed.VertSplit    or ed.WinSeparator
-    ed.WhiteSpace   = ed.WhiteSpace    or utils.blend(c.bg, 0.15, syn.Comment)
+    ed.WhiteSpace   = ed.WhiteSpace   or utils.blend(c.bg, 0.15, syn.Comment)
+    ed.WildMenu     = ed.WildMenu     or c.accent
+
 
     local ts = c.treesitter
     ts["@variable"]                  = ts["@variable"]                  or c.fg
