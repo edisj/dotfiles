@@ -1,0 +1,41 @@
+# [config.wallpaper]
+# command = "notify-send"
+# arguments = ['",{{image}}"']
+# set = true
+
+[config.custom_colors]
+red     = { color = "#ff0000", blend = false }
+blue    = { color = "#0000ff", blend = false }
+magenta = { color = "#ff00ff", blend = true }
+green   = { color = "#00ff00", blend = false }
+cyan    = { color = "#00ffff", blend = true }
+yellow  = { color = "#ffff00", blend = false }
+orange  = { color = "#ff6e00", blend = false }
+
+[templates.hyprland]
+input_path  = "~/.config/matugen/templates/hyprland-colors.conf"
+output_path = "~/.config/hypr/matugen.conf"
+post_hook   = "hyprctl reload"
+
+[templates.waybar]
+input_path  = "~/.config/matugen/templates/colors.css"
+output_path = "~/.config/waybar/matugen.css"
+post_hook   = "pkill waybar; nohup waybar &> /dev/null & disown"
+
+[templates.wofi]
+input_path  = "~/.config/matugen/templates/colors.css"
+output_path = "~/.config/wofi/matugen.css"
+
+[templates.kitty]
+input_path  = "~/.config/matugen/templates/kitty-colors.conf"
+output_path = "~/.config/kitty/themes/matugen.conf"
+post_hook   = "kitty +kitten themes --reload-in=all matugen"
+
+[templates.nvim]
+input_path  = "~/.config/matugen/templates/nvim-colors.conf"
+output_path = "~/.config/nvim/lua/matugen.lua"
+
+[templates.mako]
+input_path  = "~/.config/matugen/templates/mako-colors.conf"
+output_path = "~/.config/mako/matugen.conf"
+post_hook   = "makoctl reload"
