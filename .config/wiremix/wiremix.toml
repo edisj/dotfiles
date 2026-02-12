@@ -1,0 +1,40 @@
+# https://github.com/tsowell/wiremix/blob/main/wiremix.toml
+
+tab = "output"
+
+keybindings = [
+ { key = { Char = "q" }, action = "Exit" },
+ { key = { Char = "m" }, action = "ToggleMute" },
+ { key = { Char = "d" }, action = "SetDefault" },
+ { key = { Char = "l" }, action = { SetRelativeVolume = 0.01 } },
+ { key = "Right", action = { SetRelativeVolume = 0.01 } },
+ { key = { Char = "h" }, action = { SetRelativeVolume = -0.01 } },
+ { key = "Left", action = { SetRelativeVolume = -0.01 } },
+ { key = { Char = "c" }, action = "ActivateDropdown" },
+ { key = "Enter", action = "ActivateDropdown" },
+ { key = "Esc", action = "CloseDropdown" },
+ { key = { Char = "j" }, action = "MoveDown" },
+ { key = "Down", action = "MoveDown" },
+ { key = { Char = "k" }, action = "MoveUp" },
+ { key = "Up", action = "MoveUp" },
+ { key = { Char = "L" }, action = "TabRight" },
+ { key = "Tab", action = "TabRight" },
+ { key = { Char = "H" }, action = "TabLeft" },
+ { key = "BackTab", modifiers = "SHIFT", action = "TabLeft" },
+ { key = { Char = "`" }, action = { SetAbsoluteVolume = 0.00 } },
+ { key = { Char = "1" }, action = { SetAbsoluteVolume = 0.10 } },
+ { key = { Char = "2" }, action = { SetAbsoluteVolume = 0.20 } },
+ { key = { Char = "3" }, action = { SetAbsoluteVolume = 0.30 } },
+ { key = { Char = "4" }, action = { SetAbsoluteVolume = 0.40 } },
+ { key = { Char = "5" }, action = { SetAbsoluteVolume = 0.50 } },
+ { key = { Char = "6" }, action = { SetAbsoluteVolume = 0.60 } },
+ { key = { Char = "7" }, action = { SetAbsoluteVolume = 0.70 } },
+ { key = { Char = "8" }, action = { SetAbsoluteVolume = 0.80 } },
+ { key = { Char = "9" }, action = { SetAbsoluteVolume = 0.90 } },
+ { key = { Char = "0" }, action = { SetAbsoluteVolume = 1.00 } },
+ { key = { Char = "?" }, action = "Help" },
+
+ # There are two actions which don't have default bindings:
+ # 1. "Nothing": Do nothing - can effectively delete a default keybinding
+ # 2. { SelectTab = N }: Open the Nth tab
+]
