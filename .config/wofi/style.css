@@ -1,0 +1,47 @@
+@import "/home/edis/.config/wofi/matugen.css";
+/* @import "matugenwofi.css"; */
+
+* {
+    /* border-radius: 3px; */
+    border: none;
+    font-weight: 500;
+    font-size: 24px;
+    font-family: "JetBrainsMono Nerd Font", sans-serif;
+}
+
+window {
+    padding: 3px;
+    /* border: 2.0px solid @primary; */
+    background-color: #181818;
+    color: @on_primary_container;
+}
+
+#outer-box {
+    border: 3.0px solid @primary;
+    border-radius: 4px
+}
+
+#entry {
+    padding: 0.1em;
+}
+
+#entry:selected {
+    background-color: @primary;
+}
+
+#text:selected {
+    color: @on_primary;
+}
+
+#input {
+    /* border: 2.0px solid @primary; */
+    border-radius: 0px;
+    background-color: @tertiary_container;
+    color: @on_tertiary_container;
+    padding: 0.5em;
+}
+
+image {
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+}

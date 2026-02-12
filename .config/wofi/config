@@ -1,0 +1,15 @@
+width=30%
+height=20%
+location=center
+mode=drun
+prompt=Search...
+insensitive=true
+dynamic_lines=true
+
+allow_images=true
+image_size=24
+
+key_expand=Tab
+key_up=Ctrl-k
+key_down=Ctrl-j
+key_exit=Ctrl-c
