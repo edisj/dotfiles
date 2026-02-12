@@ -1,8 +1,22 @@
 scan_timeout = 10
 add_newline = false
 
-format = '$character'
+format = """$fill
+$directory $character
+"""
 
 [character]
+format = '$symbol '
 success_symbol = '[❯](bold white)'
 error_symbol = '[✗](bold red)'
+
+[directory]
+format = '[$read_only]($read_only_style)[$path]($style)'
+home_symbol = '~'
+style = 'bold blue'
+truncation_length = 2
+truncation_symbol = '…/'
+
+[fill]
+symbol = "─"
+style = "dimmed bold black"
