@@ -1,0 +1,77 @@
+// https://github.com/Alexays/Waybar/wiki/Configuration
+{
+    "layer": "top",
+    "position": "top",
+    "margin-top": 9,
+    "margin-left": 18,
+    "margin-right": 18,
+
+    "modules-left": [
+        "hyprland/workspaces"
+        // "wlr/taskbar"
+        // "hyprland/window"
+    ],
+    "modules-center": [
+        "clock"
+    ],
+
+    "modules-right": [
+        "bluetooth",
+        "pulseaudio",
+        "battery",
+        "network"
+    ],
+
+    "hyprland/workspaces": {
+        "all-outputs": false,
+        "active-only": false,
+        "on-click": "activate",
+        "format": "{name}"
+    },
+
+    "clock": {
+        "format": "{:%A %I:%M}",
+        "format-alt": "{:%a, %d. %b  %H:%M}"
+    },
+
+    "battery": {
+        "format": "{capacity}% {icon}",
+        "format-icons": ["", "", "", "", ""]
+    },
+
+    "bluetooth": {
+        "format": "",
+        "format-off": "󰂲",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱",
+        "format-no-controller": "",
+        "on-click": "launch-or-focus-tui bluetui",
+        "tooltip-format": "Devices connected: {num_connections}"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}",
+        "format-muted": "",
+        "format-icons": {
+            "default": ["", "", ""]
+        },
+        "scroll-step": 1,
+        "on-click": "launch-or-focus-tui wiremix --tab output",
+        "ignored-sinks": ["Easy Effects Sink"]
+    },
+
+    "network": {
+        // "interface": "enp9s0",
+        "format": "{ifname}",
+        "format-wifi": "{essid} ",
+        // "format-ethernet": "󰈀",
+        "format-ethernet": "",
+        "format-disconnected": "", //An empty format will hide the module.
+        "tooltip-format": "{ifname} via {gwaddr} 󰊗",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
+        "tooltip-format-ethernet": "{ifname} ",
+        "tooltip-format-disconnected": "󰈂",
+        "max-length": 50
+    }
+
+}
