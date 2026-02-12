@@ -7,13 +7,12 @@
 #
 # zenv is sourced universally in all shells
 
-# echo "entering .zshenv"
-
 export EDITOR="nvim"
 # export HISTFILE="$ZDOTDIR/.zhistory"
 export HISTFILE="$HOME/.cache/.zhistory"
-export HISTSIZE=10000
+export HISTSIZE=1000
 export MANPAGER='nvim +Man!'
+export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 export SAVEHIST="$HISTSIZE"
 export VISUAL="nvim"
 export XDG_CONFIG_HOME="$HOME/.config"

@@ -24,16 +24,9 @@ alias gc="git commit"
 alias gp="git pull"
 alias gP="git push"
 
-alias jn="jupyter notebook "
-alias jl="jupyter lab"
-
 #alias v="nvim"
-#alias vim="nvim"
+alias vim="nvim"
 alias vimconfig="cd ~/.config/nvim/ && nvim"
-alias dotgit="$(which git) --git-dir=$HOME/.dotfiles/ --work-tree=$HOME"
-
-alias s="kitten ssh"
-alias fzfapt="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf --multi --cycle --reverse --preview 'apt-cache show {1} | bat --color=always -l md'"
 
 # fzf_args=(
 #     --multi
@@ -45,13 +38,3 @@ alias fzfapt="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf 
 # alias hsc="headsetcontrol -l 0 && headsetcontrol -s 70"
 
 alias ppath="tr ':' '\n' <<< '$PATH'"
-
-alias a="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf --multi --cycle --reverse --height 80% --preview 'apt-cache show {1}'"
-# alias a="apt-cache search '' | sort | cut --delimiter ' ' --fields 1 | fzf --multi --cycle --reverse --height 80% --preview 'dpkg -l {1}'"
-
-ff() {
-    find $1 -type f | fzf --preview "bat --color=always {}" --layout reverse --height 80% --border
-}
-
-
-

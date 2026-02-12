@@ -11,8 +11,7 @@
 
 # echo "entering .zprofile"
 
+export PATH=~/.cargo/bin:$PATH
+export PATH=~/opt/bin/:$PATH
 export PATH=~/.local/bin:$PATH
 export PATH=~/.local/scripts:$PATH
-export PATH=/opt/nvim:$PATH
-# this adds $HOME/.cargo/bin to PATH
-source "$HOME/.cargo/env"
