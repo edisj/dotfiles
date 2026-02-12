@@ -1,0 +1,15 @@
+# set previewer ~/.config/lf/previewer
+# set cleaner ~/.config/lf/cleaner
+
+set hidden
+set info size
+set dircounts
+set tabstop 4
+set icons
+set drawbox
+set promptfmt "\033[34;1m%d\033[0m\033[1m%f\033[0m"
+set cursorpreviewfmt ""
+set cursorparentfmt "\033[4m"
+
+set previewer ~/.config/lf/preview.sh
+set cleaner ~/.config/lf/preview-clean.sh
