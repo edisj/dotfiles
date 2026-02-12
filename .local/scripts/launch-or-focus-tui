@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+readonly basename="$(basename $0)"
+if (("$#" == 0)); then
+    echo "Usage: $basename [command]"
+    exit 1
+fi
+
+die()
+{
+    local ERR_CODE=${2:-1}
+    printf "%s: [ERROR] %s \n" "${basename}" "$1" >&2
+    exit $ERR_CODE
+}
+
+if ! hash xdg-terminal-exec &> /dev/null; then
+    die "missing dependency 'xdg-terminal-exec'" 64
+fi
+if ! hash jq &> /dev/null; then
+    die "missing dependency 'jq'" 64
+fi
+
+readonly APP_CMD="$1"
+readonly APP_NAME=$(basename "$APP_CMD")
+readonly APP_ID="edis.tui.$APP_NAME"
+
+# https://github.com/basecamp/omarchy/blob/dev/bin/omarchy-launch-or-focus
+readonly WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$APP_ID" '.[]|select((.class|test("\\b" + $p + "\\b";"i")) or (.title|test("\\b" + $p + "\\b";"i")))|.address' | head -n1)
+
+if [[ -n "$WINDOW_ADDRESS" ]]; then
+    hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS" &> /dev/null
+else
+    # not sure if eval is needed here
+    eval exec setsid launch-tui "$@"
+fi
+

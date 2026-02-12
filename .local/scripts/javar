@@ -4,38 +4,40 @@
 _find_project_root="find-project-root"
 _marker="${PROJECT_ROOT_MARKER:-.edis}"
 
-die() {
+error()
+{
     local errmsg="$1"
-    echo "$(basename "$0"): [ERROR]" $errmsg >&2
+    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
     exit 1
 }
 
 if ! command -v "$_find_project_root" &> /dev/null; then
-    die "could not find '$_find_project_root' command."
+    error "could not find '$_find_project_root' command"
 fi
 
 if ! command -v java &> /dev/null; then
-    die "could not find 'java' command."
+    error "could not find 'java' command"
 fi
 
-main() {
-
+main()
+{
     local project_root=$("$_find_project_root" "$_marker" 2>/dev/null)
 
     if [[ -z "$project_root" ]]; then
-        die "root marker '$_marker' not found."
+        error "root marker '$_marker' not found"
     fi
 
     local build_dir="$project_root/build"
-    local src_dir="$project_root/src/main/java"
+    # local src_dir="$project_root/src/main/java"
+    local src_dir="$project_root/src"
     local grep_result="$(grep -rE '^\s*public static void main' $src_dir)"
 
     if [[ $(wc -l <<< "$grep_result") -gt 1 ]]; then
-        die "multiple main methods detected."
+        error "multiple main methods detected"
     fi
 
     if [[ $(wc -l <<< "$grep_result") -eq 0 ]]; then
-        die "no main method detected."
+        error "no main method detected"
     fi
 
     local main_file=$(cut -d ':' -f 1 <<< "$grep_result")

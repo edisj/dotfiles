@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+readonly basename="$(basename $0)"
+
+die()
+{
+    local ERR_CODE=${2:-1}
+    printf "%s: [ERROR] %s \n" "${basename}" "$1" >&2
+    exit $ERR_CODE
+}
+
+if ! hash fzf &> /dev/null; then
+    die "missing dependency 'fzf'" 64
+fi
+
+readonly QUERY='dnf --cacheonly --quiet repoquery --qf %{name}\n'
+readonly PREVIEW="dnf --cacheonly --quiet info"
+
+readonly fzf_args=(
+    --height=50%
+    --style="minimal"
+    --padding=1,3
+    --layout=reverse
+    --preview "$PREVIEW {1}"
+    --color "pointer:green,marker:green"
+    --bind="enter:become(sudo dnf --quiet -y install {})"
+)
+
+$QUERY | fzf "${fzf_args[@]}"

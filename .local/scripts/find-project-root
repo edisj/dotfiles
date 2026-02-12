@@ -3,7 +3,7 @@
 
 die() {
     local errmsg="$1"
-    echo "$(basename "$0"): [ERROR]" $errmsg >&2
+    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
     exit 1
 }
 

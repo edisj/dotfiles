@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+error()
+{
+    local msg=$1
+    local error_code=${2:-1}
+    printf "[\e[1;31mERROR\e[0m] \e[36m$(basename $0)\e[0m: %s \n" "$1" >&2
+    exit $error_code
+}
+
+if ! hash nvim &> /dev/null; then
+    error "missing dependency 'nvim'" 64
+fi
+
+if ! hash fd &> /dev/null; then
+    error "missing dependency 'fd'" 64
+fi
+
+
+dir="$XDG_CONFIG_HOME/wallpapers"
+[ ! -d $dir ] && error "$dir does not exist"
+
+readonly fzf_args=(
+    --height=50%
+    --layout=reverse
+    --style=minimal
+    --border=none
+    --padding=1,1
+    --preview-border=none
+    --preview "fzf-preview {}"
+    --preview-window "right:70%"
+    --color "pointer:green,marker:green"
+    --bind="enter:become(wallpaper {})"
+)
+
+fd . -e "jpg" -e "png" -e "gif" "$dir" | fzf "${fzf_args[@]}"

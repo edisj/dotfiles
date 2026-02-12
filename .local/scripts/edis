@@ -3,15 +3,23 @@
 
 root_marker=".$(basename "$0")"
 
-die() {
+error() {
     local errmsg="$1"
-    echo "$(basename "$0"): [ERROR]" $errmsg >&2
+    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
     exit 1
 }
 
-_init() {
+success()
+{
+    local msg="$1"
+    echo -e "[\e[1;32mSUCCESS\e[0m] \e[36m$(basename "$0")\e[0m: $msg"
+    return 0
+}
+
+_init()
+{
     if [[ -f "$root_marker" ]]; then
-        die "'$root_marker' file already exists."
+        error "'$root_marker' file already exists."
     fi
     touch "$root_marker" && exit 0
 }
@@ -27,7 +35,8 @@ _create() {
                 shift
                 ;;
             --java)
-                dirs_to_mk="src/main/java"
+                # dirs_to_mk="src/main/java"
+                dirs_to_mk="src/ build/"
                 shift
                 ;;
             -n|--name)
@@ -36,26 +45,26 @@ _create() {
                 shift
                 ;;
             *)
-                die "unknown argument: $1"
+                error "unknown argument: $1"
                 ;;
         esac
     done
 
     if [[ -z "$dirs_to_mk" ]]; then
-        die "must specify project type."
+        error "must specify project type."
     fi
     if [[ -z "$project_name" ]]; then
-        die "must specify project name with 'name' argument."
+        error "must specify project name with 'name' argument."
     fi
     if [[ -e "$project_name" ]]; then
-        die "project with name '$project_name' already exists."
+        error "project with name '$project_name' already exists."
     fi
 
     mkdir -p $project_name \
     && cd $project_name \
     && mkdir -p $dirs_to_mk \
     && touch "$root_marker" \
-    && echo "$(basename "$0"): [SUCCESS] created project '$project_name' in '$(pwd)'" \
+    && success "created project '$project_name' in '$(pwd)'" \
     && exit 0
 }
 
@@ -65,7 +74,7 @@ _help() {
     [[ "$1" == "init" ]] && _init_help && exit 0
     [[ "$1" == "create" ]] && _create_help && exit 0
 
-    die "'$1' is not a recognized subcommand, must be either 'init' or 'create'"
+    error "'$1' is not a recognized subcommand, must be either 'init' or 'create'"
 }
 
 _main_help() {
@@ -123,7 +132,7 @@ main() {
             _help "$@"
             ;;
         *)
-            die "unknown subcommand: $cmd"
+            error "unknown subcommand: $cmd"
             ;;
     esac
 }

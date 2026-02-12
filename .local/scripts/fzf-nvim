@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+error()
+{
+    local msg=$1
+    local error_code=${2:-1}
+    printf "[\e[1;31mERROR\e[0m] \e[36m$(basename $0)\e[0m: %s \n" "$1" >&2
+    exit $error_code
+}
+
+if ! hash nvim &> /dev/null; then
+    error "missing dependency 'nvim'" 64
+fi
+
+if ! hash fd &> /dev/null; then
+    error "missing dependency 'fd'" 64
+fi
+
+dir="${1:-$(pwd)}"
+dir=$(readlink -f $dir)
+
+height="${2:-50%}"
+
+[ ! -d $dir ] && error "$dir does not exist"
+
+readonly fzf_args=(
+    --height="$height"
+    --layout=reverse
+    --padding=1,3
+    # --preview="bat --color=always --style=numbers $dir/{1} 2>/dev/null || eza -lF --color=always $dir/{}"
+    --preview "bat --color=always --style=numbers $dir/{} 2>/dev/null || eza --tree --color=always --level 3 $dir/{}"
+    --preview-window="right:60%:wrap"
+    --preview-border='thinblock'
+    --bind="enter:become(nvim $dir/{})"
+)
+
+fd . --hidden --base-directory "$dir" | fzf "${fzf_args[@]}"

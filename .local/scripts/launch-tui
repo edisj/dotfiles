@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+readonly basename="$(basename $0)"
+if (("$#" == 0)); then
+    echo "Usage: $basename [command]"
+    exit 1
+fi
+
+die()
+{
+    local ERR_CODE=${2:-1}
+    printf "%s: [ERROR] %s \n" "${basename}" "$1" >&2
+    exit $ERR_CODE
+}
+
+if ! hash xdg-terminal-exec &> /dev/null; then
+    die "missing dependency 'xdg-terminal-exec'" 64
+fi
+
+readonly APP_CMD="$1"
+readonly APP_NAME=$(basename "$APP_CMD")
+readonly APP_ID="edis.tui.$APP_NAME"
+
+# adding the -e flag so that you can launch cmd with args from this context
+# e.g. launch-tui wiremix --tab output
+# so that the arguments will propagate to the terminal process
+exec setsid uwsm-app -- xdg-terminal-exec --app-id="$APP_ID" -e "$APP_CMD" "${@:2}"
