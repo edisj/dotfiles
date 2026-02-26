@@ -3,16 +3,25 @@
 
 root_marker=".$(basename "$0")"
 
-error() {
+error()
+{
     local errmsg="$1"
-    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
+    if [[ -t 1 ]]; then
+        echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
+    else
+        echo -e "[ERROR] $(basename $0): $msg"
+    fi
     exit 1
 }
 
 success()
 {
     local msg="$1"
-    echo -e "[\e[1;32mSUCCESS\e[0m] \e[36m$(basename "$0")\e[0m: $msg"
+    if [[ -t 1 ]]; then
+        echo -e "[\e[1;32mSUCCESS\e[0m] \e[36m$(basename "$0")\e[0m: $msg"
+    else
+        echo -e "[SUCCESS] $(basename "$0"): $msg"
+    fi
     return 0
 }
 
@@ -24,7 +33,8 @@ _init()
     touch "$root_marker" && exit 0
 }
 
-_create() {
+_create()
+{
     local project_name=""
     local dirs_to_mk=""
 

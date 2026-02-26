@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
-
-die() {
-    local errmsg="$1"
-    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
-    exit 1
-}
+source "$HOME/.local/scripts/lib/logging.sh"
 
 _help() {
     cat <<-EOF
@@ -24,10 +19,10 @@ _find_project_root() {
     local marker="${1:-$PROJECT_ROOT_MARKER}"
 
     if [[ -z "$marker" ]]; then
-        die "PROJECT_ROOT_MARKER is not set, must pass root marker as argument."
+        error "PROJECT_ROOT_MARKER is not set, must pass root marker as argument."
     fi
 
-    local current_dir=$(pwd -P) || die "pwd failed?"
+    local current_dir=$(pwd -P) || error "pwd failed?"
     while [[ "$current_dir" != "/" ]]; do
 
         if [[ -e "$current_dir/$marker" ]]; then
@@ -37,7 +32,7 @@ _find_project_root() {
         current_dir=$(dirname "$current_dir")
     done
 
-    die "could not locate '$marker' root marker."
+    error "could not locate '$marker' root marker."
 }
 
 main() {

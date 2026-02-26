@@ -4,19 +4,14 @@
 _find_project_root="find-project-root"
 _marker="${PROJECT_ROOT_MARKER:-.edis}"
 
-error()
-{
-    local errmsg="$1"
-    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename "$0")\e[0m:" $errmsg >&2
-    exit 1
-}
+source "$HOME/.local/scripts/lib/logging.sh"
 
 if ! command -v "$_find_project_root" &> /dev/null; then
-    error "could not find '$_find_project_root' command"
+    error "could not find '$_find_project_root' command" && exit 1
 fi
 
 if ! command -v java &> /dev/null; then
-    error "could not find 'java' command"
+    error "could not find 'java' command" && exit 1
 fi
 
 main()
@@ -28,16 +23,15 @@ main()
     fi
 
     local build_dir="$project_root/build"
-    # local src_dir="$project_root/src/main/java"
     local src_dir="$project_root/src"
     local grep_result="$(grep -rE '^\s*public static void main' $src_dir)"
 
     if [[ $(wc -l <<< "$grep_result") -gt 1 ]]; then
-        error "multiple main methods detected"
+        error "multiple main methods detected" && return 1
     fi
 
     if [[ $(wc -l <<< "$grep_result") -eq 0 ]]; then
-        error "no main method detected"
+        error "no main method detected" && return 1
     fi
 
     local main_file=$(cut -d ':' -f 1 <<< "$grep_result")
@@ -46,7 +40,10 @@ main()
     local rel_path_to_main="${main_class#$build_dir/}"
     rel_path_to_main="${rel_path_to_main%.*}"
 
-    java -cp "$build_dir" "$rel_path_to_main" && return 0
+    info "class path: $build_dir" \
+    && info "executing main() in: $rel_path_to_main" \
+    && java -cp "$build_dir" "$rel_path_to_main" \
+    && return 0
 }
 
 main "$@"

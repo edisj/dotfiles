@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+
+_find_project_root="find-project-root"
+_marker="${PROJECT_ROOT_MARKER:-.edis}"
+
+source "$HOME/.local/scripts/lib/logging.sh"
+
+if ! command -v "$_find_project_root" &> /dev/null; then
+    error "could not find '$_find_project_root' command" && exit 1
+fi
+
+main()
+{
+    local project_root=$("$_find_project_root" "$_marker" 2>/dev/null)
+    if [[ -z "$project_root" ]]; then
+        error "root marker '$_marker' not found" && exit 1
+    fi
+
+    local build_dir="$project_root/build"
+    local project_name="$(basename $project_root)"
+    local program_name="${1:-$project_name}"
+    local program="$build_dir/$program_name"
+
+    [[ -x "$program" ]] \
+    && info "detected program $program" \
+    && info "executing program: $program_name" \
+    && $program \
+    && exit 0
+}
+
+main "$@"

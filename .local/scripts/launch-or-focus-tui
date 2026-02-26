@@ -1,23 +1,17 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
-readonly basename="$(basename $0)"
-if (("$#" == 0)); then
-    echo "Usage: $basename [command]"
+if (( $# == 0 )); then
+    echo "Usage: $(basename $0) [command]"
     exit 1
 fi
 
-die()
-{
-    local ERR_CODE=${2:-1}
-    printf "%s: [ERROR] %s \n" "${basename}" "$1" >&2
-    exit $ERR_CODE
-}
+source "$HOME/.local/scripts/lib/logging.sh"
 
 if ! hash xdg-terminal-exec &> /dev/null; then
-    die "missing dependency 'xdg-terminal-exec'" 64
+    error "missing dependency 'xdg-terminal-exec'" 64
 fi
 if ! hash jq &> /dev/null; then
-    die "missing dependency 'jq'" 64
+    error "missing dependency 'jq'" 64
 fi
 
 readonly APP_CMD="$1"
