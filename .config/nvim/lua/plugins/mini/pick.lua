@@ -12,6 +12,21 @@ local function arglist_add(i)
 end
 
 local ui_select_orig = vim.ui.select
+local _win_config = function()
+    local state = MiniPick.get_picker_state()
+    local is_preview = state ~= nil and state.buffers.preview == vim.api.nvim_win_get_buf(state.windows.main)
+    local is_info = state ~= nil and state.buffers.info == vim.api.nvim_win_get_buf(state.windows.main)
+    local preview_width = math.floor(0.45 * vim.o.columns)
+    local preview_height = math.floor(0.75 * vim.o.lines)
+
+    local main_height = math.floor(0.40 * vim.o.lines)
+    local main_width = math.floor(0.35 * vim.o.columns)
+
+    local width = is_preview and preview_width or main_width
+    local height = (is_preview or is_info) and preview_height or main_height
+
+    return { anchor = "NW", row = 0, col = 0, width = width, height = height }
+end
 require("mini.pick").setup({
     -- See `:h MiniPick-actions`.
     mappings = {
@@ -35,26 +50,16 @@ require("mini.pick").setup({
         argpoon_add_6 = { char = "<M-S-o>", func = function() arglist_add(6) end },
     },
     options = {
-        content_from_bottom = true,
+        content_from_bottom = false,
         use_cache = true,
         hidden = true,
     },
     window = {
-        config = function()
-            local state = MiniPick.get_picker_state()
-            local is_preview = state ~= nil and state.buffers.preview == vim.api.nvim_win_get_buf(state.windows.main)
-            local is_info = state ~= nil and state.buffers.info == vim.api.nvim_win_get_buf(state.windows.main)
-            local preview_width = math.floor(0.45 * vim.o.columns)
-            local preview_height = math.floor(0.75 * vim.o.lines)
-
-            local main_height = math.floor(0.40 * vim.o.lines)
-            local main_width = math.floor(0.35 * vim.o.columns)
-
-            local width = is_preview and preview_width or main_width
-            local height = (is_preview or is_info) and preview_height or main_height
-
-            return { anchor = "NW", row = 0, col = 0, width = width, height = height }
-        end,
+        config = {
+            width = 50,
+            height = 20,
+            border = "solid",
+        },
         -- prompt_caret = "▏",
         prompt_caret = "▎",
         prompt_prefix = "▶ ",

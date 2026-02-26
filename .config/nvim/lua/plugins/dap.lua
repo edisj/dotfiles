@@ -101,6 +101,25 @@ return {
             })
         end
 
+        dap.adapters.codelldb = {
+            type = "executable",
+            command = "codelldb",
+        }
+        dap.configurations.c = {
+            name = "launch",
+            type = "lldb",
+            request = "launch",
+            program = function()
+                return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+            end,
+            cwd = "${workspaceFolder}",
+            stopOnEntery = false,
+            args = {},
+
+        }
+        dap.configurations.cpp = dap.configurations.c
+
+
         local dv = require("dap-view")
         dap.listeners.before.attach["dap-view-config"] = function() dv.open() end
         dap.listeners.before.launch["dap-view-config"] = function() dv.open() end

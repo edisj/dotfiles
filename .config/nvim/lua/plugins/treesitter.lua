@@ -10,6 +10,9 @@ local languages = {
     "javascript",
     "asm",
     "toml",
+    "zsh",
+    "cpp",
+    "c",
 }
 
 return {

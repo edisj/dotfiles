@@ -9,6 +9,7 @@
 return {
     "mason-org/mason.nvim",
     enabled = true,
+    lazy = false,
     cmd = "Mason",
     build = ":MasonUpdate",
     event = "VeryLazy",
@@ -33,6 +34,8 @@ return {
             "jdtls",
             "bash-language-server",
             "hyprls",
+            "codelldb",
+            "clangd",
         }
 
         local already_installed = require("mason-registry").get_installed_package_names()
@@ -45,6 +48,7 @@ return {
 
         local auto_enable = {
             "lua_ls",
+            "bashls",
             "basedpyright",
             "hyprls",
         }

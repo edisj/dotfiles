@@ -55,9 +55,9 @@ local opts = {
 
 require("mini.completion").setup(opts)
 
-vim.api.nvim_create_autocmd("Filetype", {
+vim.api.nvim_create_autocmd("FileType", {
     pattern = { "snacks_picker_input", "minifiles" },
-    callback = function(ev)
+    callback = function(_)
         vim.b.minicompletion_disable = true
     end,
 })

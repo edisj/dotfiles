@@ -19,45 +19,6 @@ return {
         },
     },
     {
-        "neovim/nvim-lspconfig",
-        enabled = true,
-        event = { "BufReadPost", "BufNewFile", "BufWritePre" },
-        dependencies = {
-            { "j-hui/fidget.nvim", opts = {} },
-        },
-        config = function()
-            vim.diagnostic.config({
-                signs = true,
-                virtual_text = true,
-            })
-            vim.api.nvim_create_autocmd("LspAttach", {
-                group = vim.api.nvim_create_augroup("lsp_attach", { clear = true }),
-                callback = function(event)
-
-                    local map = function(mode, lhs, rhs, desc)
-                        vim.keymap.set(mode, lhs, rhs, {
-                            buffer = event.buf, silent = true, desc = desc,
-                        })
-                    end
-
-                    local client = vim.lsp.get_client_by_id(event.data.client_id)
-                    assert(client, "LSP client not found")
-
-                    ---@diagnostic disable-next-line: inject-field
-                    client.server_capabilities.document_formatting = true
-
-                    -- stylua: ignore
-                    map("n", "K",          vim.lsp.buf.hover, "LSP: Hover")
-                    -- map("i", "<C-h>",      vim.lsp.buf.signature_help, "LSP: Signature Help")
-                    map("n", "<leader>rn", vim.lsp.buf.rename, "LSP: Rename")
-                    map("n", "<leader>ca", vim.lsp.buf.code_action, "LSP: Code Action")
-                    map("n", "gD",         vim.lsp.buf.declaration, "LSP: goto Declaration" )
-                end,
-            })
-        end,
-    },
-
-    {
         "mfussenegger/nvim-jdtls",
         enabled = true,
         dependencies = { "mfussenegger/nvim-dap" },
