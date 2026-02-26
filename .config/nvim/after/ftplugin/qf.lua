@@ -1,0 +1,2 @@
+vim.opt_local.fillchars:append("eob: ")
+-- vim.wo.statusline = "TEST QUICKFIX"
