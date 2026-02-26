@@ -6,6 +6,7 @@
 # 5) .zlogout
 #
 # zenv is sourced universally in all shells
+#
 
 export EDITOR="nvim"
 # export HISTFILE="$ZDOTDIR/.zhistory"
@@ -17,3 +18,5 @@ export SAVEHIST="$HISTSIZE"
 export VISUAL="nvim"
 export XDG_CONFIG_HOME="$HOME/.config"
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+
+source "$ZDOTDIR/set-fzf-colors.zsh"
