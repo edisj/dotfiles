@@ -7,7 +7,8 @@ right_format = '$python$java'
 [character]
 success_symbol = ' [❯](bold white)'
 error_symbol = ' [✗](bold red)'
-vimcmd_symbol = ' [❮](bold green)'
+vicmd_symbol = ' [❯](bold white)'
+# vimcmd_symbol = ' [❮](bold green)'
 
 [directory]
 format = '[$read_only]($read_only_style)[$path]($style)'
@@ -22,7 +23,7 @@ format = ' git:\([$branch](red)\)'
 [java]
 format = '[${symbol}(${version} )]($style)'
 detect_extensions = ['java', 'class', 'gradle', 'jar', 'cljs', 'cljc']
-style = 'red dimmed'
+style = 'red bold'
 
 [profiles]
 transient = "$character"
