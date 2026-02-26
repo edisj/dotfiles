@@ -1,29 +1,10 @@
 #!/usr/bin/env bash
 
-error()
-{
-    local msg="$1"
-    echo -e "[\e[1;31mERROR\e[0m] \e[36m$(basename $0)\e[0m: $msg"
-    echo "exiting..."
-    exit 1
-}
-
-success()
-{
-    local msg="$1"
-    echo -e "[\e[1;32mSUCCESS\e[0m] \e[36m$(basename $0)\e[0m: $msg"
-}
-
-info()
-{
-    local msg="$1"
-    echo -e "[\e[1;34mINFO\e[0m] \e[36m$(basename $0)\e[0m: $msg"
-}
+source "$HOME/.local/scripts/lib/logging.sh"
 
 copr_enable()
 {
     local repo="$1"
-
     sudo dnf -y copr enable $repo &>/dev/null && success "enabled copr $1" || error "$repo is invalid"
 }
 
@@ -41,7 +22,8 @@ packages=(
     bat
     btop
     cargo
-    elephant
+    dbus-devel
+    # elephant
     eza
     fastfetch
     fd-find
@@ -54,8 +36,7 @@ packages=(
     hyprland
     hyprlock
     hyprpaper
-    # ImageMagick
-    java-latest-openjdk-devel
+    java-25-openjdk-devel
     kitty
     libjpeg-turbo-devel
     libpng-devel
@@ -64,6 +45,7 @@ packages=(
     magick
     mako
     neovim
+    pkgconf-pkg-config
     pavucontrol
     pipewire
     pipewire-pulse
@@ -77,7 +59,7 @@ packages=(
     tldr
     tree-sitter-cli
     uv
-    walker
+    # walker
     waybar
     wiremix
     which
@@ -96,3 +78,12 @@ echo ""
 info "installing snap packages..."
 sudo snap install zotero-snap
 
+
+readonly cargo_crates=(
+    bluetui
+    impala
+)
+
+echo ""
+info "installing cargo crates..."
+cargo install "${cargo_crates[@]}"
