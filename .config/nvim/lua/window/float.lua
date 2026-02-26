@@ -1,11 +1,35 @@
 local Base = require("window.base")
 
-local _borders = {
+local BORDERS = {
     single  = { "┌", "─", "┐", "│", "┘", "─", "└", "│" },
     double  = { "╔", "═", "╗", "║", "╝", "═", "╚", "║" },
     rounded = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
     curved  = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
     edged   = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▎" },
+}
+
+local VALID_WIN_OPTS = {
+    "anchor",
+    "border",
+    "bufpos",
+    "col",
+    "external",
+    "fixed",
+    "focusable",
+    "footer",
+    "footer_pos",
+    "height",
+    "hide",
+    "noautocmd",
+    "relative",
+    "row",
+    "style",
+    "title",
+    "title_pos",
+    "width",
+    "win",
+    "zindex",
+
 }
 
 ---@param win Window
@@ -38,14 +62,14 @@ local function _calculate_auto_position(win)
     }
     local auto_pos_map = {
         topleft  = { 0, 0 },
-        top      = { 0, 0.5*(W-w) },
-        topright = { 0, W-w },
-        left     = { 0.5*(H-h), 0 },
-        center   = { 0.5*(H-h), 0.5*(W-w) },
-        right    = { 0.5*(H-h), W-w },
-        botleft  = { H-h, 0 },
-        bot      = { H-h, 0.5*(W-w) },
-        botright = { H-h, W-w },
+        top      = { 0, 0.5 * (W - w) },
+        topright = { 0, W - w },
+        left     = { 0.5 * (H - h), 0 },
+        center   = { 0.5 * (H - h), 0.5 * (W - w) },
+        right    = { 0.5 * (H - h), W - w },
+        botleft  = { H - h, 0 },
+        bot      = { H - h, 0.5 * (W-w) },
+        botright = { H - h, W - w },
     }
 
     local Ay, Ax = unpack(anchor_map[anchor])
@@ -93,28 +117,7 @@ function M:resolve_win_opts()
     ---@type vim.api.keyset.win_config
     local win_opts = {}
     -- filtering self.opts for win_config opts
-    for _, opt in ipairs {
-        "anchor",
-        "border",
-        "bufpos",
-        "col",
-        "external",
-        "fixed",
-        "focusable",
-        "footer",
-        "footer_pos",
-        "height",
-        "hide",
-        "noautocmd",
-        "relative",
-        "row",
-        "style",
-        "title",
-        "title_pos",
-        "width",
-        "win",
-        "zindex",
-    } do
+    for _, opt in ipairs(VALID_WIN_OPTS) do
         win_opts[opt] = self.opts[opt]
     end
 

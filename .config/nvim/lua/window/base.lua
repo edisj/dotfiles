@@ -4,8 +4,8 @@ local api = vim.api
 local _id = 1
 
 ---@param win Window
-local function _win_set_keymaps(win)
-    for _, spec in ipairs(win.opts.keymaps) do
+local function _win_set_keymaps(win, keymaps)
+    for _, spec in ipairs(keymaps) do
         if spec then
             local mode, lhs, rhs, keymap_opts = unpack(spec)
             win:keymap(mode, lhs, rhs, keymap_opts)
@@ -25,7 +25,7 @@ local function _on_buf_win_enter(win, _)
 
     if stickybuf == false then
         win:set_buf(buf_entered)
-        _win_set_keymaps(win)
+        _win_set_keymaps(win, win.opts.keymaps)
         return
     end
 
@@ -39,7 +39,7 @@ local function _on_buf_win_enter(win, _)
             return
         end
         win:set_buf(buf_entered)
-        _win_set_keymaps(win)
+        _win_set_keymaps(win, win.opts.keymaps)
         return
     end
 
@@ -51,12 +51,12 @@ local function _on_buf_win_enter(win, _)
     end
 
     win:set_buf(buf_entered)
-    _win_set_keymaps(win)
+    _win_set_keymaps(win, win.opts.keymaps)
 end
 
 ---@param win Window
 ---@return integer
-local function _initialize_buf(win)
+local function _win_init_buf(win)
     if win:buf_is_valid() then
         -- should keymaps be set here??
         return win.bufnr
@@ -75,7 +75,7 @@ local function _initialize_buf(win)
     end
 
     win:set_bo(win.opts.bo)
-    _win_set_keymaps(win)
+    _win_set_keymaps(win, win.opts.keymaps)
 
     return win.bufnr
 end
@@ -85,7 +85,6 @@ end
 ---@field id integer
 ---@field bufnr integer
 ---@field winid? integer
----@field parent? Window
 ---@field augroup? integer
 ---@field win_config? vim.api.keyset.win_config
 local M = {}
@@ -96,11 +95,10 @@ M.__index = M
 M.new = function(opts)
     local self = setmetatable({}, M)
     self.opts = opts
-    self.parent = self.opts.parent
     self.id = _id
     _id = _id + 1
 
-    self.bufnr = _initialize_buf(self)
+    self.bufnr = _win_init_buf(self)
 
     self.augroup = api.nvim_create_augroup("custom-win-" .. self.id, { clear = true })
 
@@ -111,36 +109,8 @@ M.new = function(opts)
     end, { group = self.augroup })
 
     if self.opts.auto_resize then
-        self:create_autocmd("WinResized", function(win, ev)
-            if ev.buf ~= win.bufnr then return end
-
-            local w = api.nvim_win_get_width(self.winid)
-            -- if win.opts.width and win.opts.width > 0 and win.opts.width < 1 then
-            --     w = tonumber(string.format("%.3f", w / vim.o.columns))
-            -- end
-            local h = api.nvim_win_get_height(self.winid)
-            -- if win.opts.height and win.opts.height > 0 and win.opts.height < 1 then
-            --     h = tonumber(string.format("%.3f", h / vim.o.lines))
-            -- end
-
-            vim.schedule(function()
-                win:update({ width = w, height = h })
-            end)
-        end, { group = self.augroup })
-
         self:create_autocmd("VimResized", function(win, _) win:refresh() end, {
             desc = "Automatically resize window when vim is resized",
-            group = self.augroup,
-        })
-    end
-
-    if self.parent then
-        self:create_autocmd("WinClosed", function(_, ev)
-            if ev.buf == self.parent.bufnr then
-                self:close()
-            end
-        end, {
-            desc = "Close window when parent window closes",
             group = self.augroup,
         })
     end
@@ -217,32 +187,23 @@ function M:keymap(mode, lhs, rhs, opts)
 end
 
 ---@return self
-function M:open()
+function M:open(opts)
     if self:is_open() then return self end
-    if self.parent and not self.parent:is_open() then return self end
 
     if not self:buf_is_valid() then
-        self.bufnr = _initialize_buf(self)
+        self.bufnr = _win_init_buf(self)
     end
 
-    if self.win_config.relative == "win" then
-        local parent_id = (self.parent and self.parent.winid) or self.opts.win or api.nvim_get_current_win()
-        local parent_zindex = api.nvim_win_get_config(parent_id).zindex
-        self.win_config.win = parent_id
-        self.win_config.zindex = self.opts.zindex or (parent_zindex and parent_zindex + 1)
-    end
-
-    -- have to set enter like this because doing _ and _ or _ ternaries with boolean values doesn't work
     local enter = self.opts.enter == nil or self.opts.enter or false
     if self.win_config.focusable == false then
         enter = false
     end
+
     self.winid = api.nvim_open_win(self.bufnr, enter, self.win_config)
     if self.opts.stickybuf == true then
         vim.api.nvim_set_option_value("winfixbuf", true, { win = self.winid })
     end
 
-    -- need to set window options AFTER window has opened
     self:set_wo()
 
     self:create_autocmd("BufWinEnter", _on_buf_win_enter)
@@ -276,11 +237,8 @@ function M:close()
     if not self:is_open() then
         return self
     end
-
     api.nvim_win_close(self.winid, true)
     self.winid = nil
-    -- self.win_config.win = nil
-
     return self
 end
 
@@ -304,10 +262,6 @@ function M:get_parent_dimensions()
         return { width = vim.o.columns, height = vim.o.lines }
     end
 
-    if self.parent then
-        return { width = self.parent.win_config.width, height = self.parent.win_config.height }
-    end
-
     local parent_id = self.opts.win or 0
     local width = api.nvim_win_get_width(parent_id)
     local height = api.nvim_win_get_height(parent_id)
@@ -317,7 +271,6 @@ end
 
 ---@param bo? vim.bo | {}
 function M:set_bo(bo)
-    -- bo = bo or {}
     bo = vim.tbl_deep_extend("keep", bo or {}, self.opts.bo)
     for k, v in pairs(bo) do
         api.nvim_set_option_value(k, v, { buf = self.bufnr })
@@ -326,7 +279,6 @@ end
 
 ---@param wo? vim.wo | {}
 function M:set_wo(wo)
-    -- wo = wo or self.opts.wo or {}
     wo = vim.tbl_deep_extend("keep", wo or {}, self.opts.wo)
     for k, v in pairs(wo) do
         api.nvim_set_option_value(k, v, { scope = "local", win = self.winid })
@@ -385,7 +337,7 @@ function M:set_lines(lines, opts)
     local end_ = opts.end_ and opts.end_ or -1
 
     local is_modifiable = api.nvim_get_option_value("modifiable", { buf = self.bufnr })
-    if not is_modifiable then
+    if not is_modifiable and opts.force then
         api.nvim_set_option_value("modifiable", true, { buf = self.bufnr })
         api.nvim_buf_set_lines(self.bufnr, start, end_, false, lines)
         api.nvim_set_option_value("modifiable", false, { buf = self.bufnr })

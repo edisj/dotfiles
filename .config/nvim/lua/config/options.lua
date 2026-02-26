@@ -29,8 +29,6 @@ opt.hlsearch       = true
 opt.ignorecase     = true
 opt.inccommand     = "split"
 opt.incsearch      = true
-opt.iskeyword      = "@,48-57,_,192-255,-" -- Treat dash as `word` textobject part
--- opt.iskeyword      = "48-57,_,192-255,-" -- Treat dash as `word` textobject part
 opt.laststatus     = 3
 -- opt.listchars = 'extends:…,nbsp:␣,precedes:…,tab:> '
 -- opt.list           = true
@@ -40,6 +38,7 @@ opt.mouse          = "a"
 opt.mousescroll    = "ver:2"
 opt.number         = true
 opt.numberwidth    = 3
+opt.pumborder      = "single"
 opt.pumheight      = 10
 opt.relativenumber = false
 opt.scrolloff      = 10
@@ -60,17 +59,6 @@ opt.undofile       = true
 opt.virtualedit    = "block"
 opt.wildmode       = "noselect,full"
 opt.wildoptions    = "pum,fuzzy"
+-- opt.wildoptions    = "fuzzy"
 opt.winborder      = "bold"
 opt.wrap           = false
-
--- vim.highlight.priorities.semantic_tokens = 95
-
--- vim.diagnostic.config({
---     underline = {
---         severity = vim.diagnostic.severity.ERROR,
---     },
---     -- severity_sort = true,
---     virtual_text = true,
---     signs = true,
---     update_in_insert = false,
--- })

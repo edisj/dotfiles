@@ -61,7 +61,7 @@ local function _create_main_win()
 
     M.loclist = parser.get_loclist(_main_win.bufnr)
 
-    _main_win:create_autocmd("Filetype", function(win, _)
+    _main_win:create_autocmd("FileType", function(win, _)
         local toc = require("helpout.windows.table_of_contents")
 
         M.loclist = parser.get_loclist(win.bufnr)

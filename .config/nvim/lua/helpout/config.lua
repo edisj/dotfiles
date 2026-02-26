@@ -57,8 +57,8 @@ local _defaults = {
             bufhidden = "hide",
         },
         wo = {
-            number = true,
-            -- statuscolumn = " ",
+            -- number = true,
+            statuscolumn = " ",
             conceallevel = 1,
             colorcolumn = "",
             cursorline = true,
@@ -87,7 +87,7 @@ local _defaults = {
         auto_position = "topleft",
         anchor = "NW",
         auto_resize = true,
-        height = 0.5,
+        height = 0,
         width = 0.25,
         xoffset = function(win)
             return -(win.win_config.width + 3)

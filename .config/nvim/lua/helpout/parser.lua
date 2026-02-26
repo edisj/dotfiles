@@ -61,8 +61,8 @@ M.get_lines_from_loclist = function(list)
             text = string.gsub(text, "*", "")
         end
         text = string.gsub(text, "Lua module: ", "")
-        -- return string.format("/%s/%s/%s", data.idx, data.depth, text)
-        return string.format("/%s/%s/%s", data.idx, data.depth, data.type)
+        return string.format("/%s/%s/%s", data.idx, data.depth, text)
+        -- return string.format("/%s/%s/%s", data.idx, data.depth, data.type)
     end
 
     local lines = vim.iter(ipairs(list))

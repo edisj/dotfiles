@@ -44,7 +44,7 @@ M.setup = function(opts)
         end
     end)
 
-    vim.keymap.set({"n", "t"}, "<Leader><C-n>", M.help_cursor)
+    vim.keymap.set("n", "<Leader><C-n>", M.help_cursor)
     vim.keymap.set("x", "<C-n>", M.help_visual)
 
     _set_hls()

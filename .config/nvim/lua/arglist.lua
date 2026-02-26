@@ -45,13 +45,13 @@ M.arglist = setmetatable({}, {
 
 local function _create_arglist_win()
     local win_opts = {
-        auto_position = "center",
+        position = "center",
         bufnr = function(_)
             local bufnr = api.nvim_create_buf(false, true)
             api.nvim_buf_set_name(bufnr, "arglist")
             return bufnr
         end,
-        stickybuf = true,
+        -- stickybuf = true,
         width = 0.30,
         height = MAX_ENTRIES,
         style = "minimal",
@@ -65,11 +65,12 @@ local function _create_arglist_win()
         wo = {
             number = true,
             cursorline = true,
+            winfixbuf = true,
         },
     }
 
-    local win = require("window.float").new(win_opts)
-    win:set_lines(M.arglist())
+    local win = require("win").float(win_opts)
+    win:ensure_buf():set_lines(M.arglist())
 
     return win
 end

@@ -1,32 +1,27 @@
 local root_markers = { ".edis", ".git" }
--- See `:help vim.lsp.start` for an overview of the supported `config` options.
+local root_dir = vim.fs.root(0, root_markers)
+local project_name = root_dir and vim.fn.fnamemodify(root_dir, ":t") or vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
+local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/" .. project_name
+
 local config = {
     name = "jdtls",
-
-
-    -- `cmd` defines the executable to launch eclipse.jdt.ls.
-    -- `jdtls` must be available in $PATH and you must have Python3.9 for this to work.
-    --
-    -- As alternative you could also avoid the `jdtls` wrapper and launch
-    -- eclipse.jdt.ls via the `java` executable
-    -- See: https://github.com/eclipse/eclipse.jdt.ls#running-from-the-command-line
-    cmd = {"jdtls"},
-
+    root_dir = root_dir,
     root_markers = root_markers,
-
-    -- `root_dir` must point to the root of your project.
-    -- See `:help vim.fs.root`
-    root_dir = vim.fs.root(0, root_markers),
-
-
-    -- Here you can configure eclipse.jdt.ls specific settings
-    -- See https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
-    -- for a list of options
-    settings = {
-        java = {
-        }
+    cmd = {
+        "jdtls",
+        "-data", workspace_dir,
     },
 
+    -- eclipse.jdt.ls specific settings
+    -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
+    settings = {
+        java = {
+            signagureHelp = {
+                enabled = true,
+                description = { enabled = true },
+            },
+        },
+    },
 
     -- This sets the `initializationOptions` sent to the language server
     -- If you plan on using additional eclipse.jdt.ls plugins like java-debug
@@ -38,5 +33,15 @@ local config = {
     init_options = {
         bundles = {}
     },
+
+    -- handlers = {
+    --     ["language/status"] = function(err, result, ctx, config)
+    --         -- vim.print(result.message)
+    --         -- vim.v.jdtls_status = result.message or "test"
+    --         -- _G.jdtls_status = result.message or "test"
+    --         -- vim.cmd.redrawstatus()
+    --     end,
+    -- },
+
 }
 require('jdtls').start_or_attach(config)

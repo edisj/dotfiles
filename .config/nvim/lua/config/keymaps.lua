@@ -104,12 +104,5 @@ map("n", "<C-Down>",  "<Cmd>resize -2<CR>")
 map("t", "<M-a>", "<c-\\><c-n>", { desc = "Escape in terminal mode" })
 map("t", "<M-s>", "<c-\\><c-n>", { desc = "Escape in terminal mode" })
 
-map("n", "<leader>vd", function()
-    if vim.diagnostic.is_enabled() then
-        return vim.diagnostic.enable(false)
-    end
-    return vim.diagnostic.enable(true)
-end, { desc = "vim diagnostic toggle" })
-
 map("n", "<leader>L", "<cmd>Lazy<CR>", { desc = "Open Lazy" })
 

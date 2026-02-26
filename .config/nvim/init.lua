@@ -1,5 +1,3 @@
--- vim.print("init.lua")
-
 if vim.loader then
     vim.loader.enable()
 end
@@ -32,7 +30,13 @@ end
 -- end
 
 -- vim.highlight.priorities.semantic_tokens = 95
-require("colorscheme").setup()
-vim.cmd("colorscheme custom")
+vim.cmd("colorscheme matugen")
 
 require "config"
+
+vim.lsp.config("jdtls", {
+    root_markers = { ".edis", ".git", },
+})
+
+require("quickfix")
+require("vim._core.ui2").enable({})

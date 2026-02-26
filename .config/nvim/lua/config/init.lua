@@ -4,14 +4,14 @@ require "config.autocmds"
 require "config.keymaps"
 require "config.usercmds"
 
-require "wildermenu"
-
+require "arglist"
+require "ui.winbar"
+require "ui.statusline"
+require "ui.wildermenu"
 require("floaterminal").setup()
--- require("helpout").setup()
-require("arglist")
-require("Maria_winbar")
+require("helpout").setup()
 require("inspector").setup()
 require("session").setup()
 
-require("statusline")
--- require("statuscol")
+require("edis")
+require("quickfix")
