@@ -94,7 +94,8 @@ local highlights = {
     -- Italic     = { italic = true },
     -- Underlined = { underline = true },
 
-    Normal       = { fg = fg,  bg = bg},       -- Normal text.
+    Normal            = { fg = fg,  bg = bg },       -- Normal text.
+    NormalTransparent = { fg = fg,  bg = "none" },       -- Normal text.
     NormalNC     = { link = "Normal" },                               -- Normal text in non-current windows.
 
     NormalFloat  = { fg = fg,             bg = float_bg },        -- Normal text in floating windows.
@@ -132,7 +133,8 @@ local highlights = {
     PmenuSbar    = { link = "Pmenu" },                                             -- Popup menu: Scrollbar.
     WildMenu     = { fg = bg,     bg = float_bg },        -- Current match in 'wildmenu' completion.
 
-    WinSeparator        = { fg = c.primary_container,      bg = "none" },          -- Separators between window splits.
+    WinSeparator        = { fg = c.primary_container,      bg = bg },          -- Separators between window splits.
+    WinSeparator2       = { fg = c.primary_container,      bg = float_bg },          -- Separators between window splits.
     WinSeparatorNC      = { link = "WinSeparator" },
     WinSeparatorFocused = { link = "WinSeparator" },
 
@@ -193,6 +195,7 @@ local highlights = {
 
     ["@variable"]                  = { fg = fg, bg = nil },
     ["@punctuation.bracket"]       = { fg = utils.darken(fg, 0.30), bg = nil },
+    ["@punctuation.delimiter"]     = { link = "@punctuation.bracket" },
     ["@comment.documentation"]     = { fg = utils.darken(c.green, 0.20), bg = nil },
     ["@string.special.url.vimdoc"] = { fg = c.magenta, bg = nil },
     ["@constant.builtin"]          = { fg = c.magenta, bg = nil },
@@ -201,6 +204,7 @@ local highlights = {
     ["@constructor.lua"] = { link = "@punctuation.bracket" },
 
     ["@lsp.type.variable"]      = { },                    -- Identifiers that declare or reference a local or global variable
+    ["@lsp.type.modifier"]      = { link = "Keyword" },                    -- Identifiers that declare or reference a local or global variable
     -- ["@lsp.mod.global"] = { fg = c.cyan, bg = nil },
 
     MiniPickBorder        = { link = "MiniPickNormal" },

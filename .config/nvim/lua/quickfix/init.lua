@@ -87,9 +87,11 @@ M.toggle = function()
 end
 
 M.next = function()
+    vim.cmd "cnext"
 end
 
 M.prev= function()
+    vim.cmd "cprev"
 end
 
 ---@class QuickFixTextFuncInfo
@@ -108,7 +110,7 @@ M.quickfixtextfunc = function(_)
     return formatted_lines
 end
 
-vim.keymap.set("n", "<M-n>", "<CMD>cnext<CR>")
-vim.keymap.set("n", "<M-p>", "<CMD>cprev<CR>")
+vim.keymap.set("n", "<C-j>", M.next)
+vim.keymap.set("n", "<C-k>", M.prev)
 
 return M

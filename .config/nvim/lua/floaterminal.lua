@@ -11,10 +11,13 @@ local function floaterminal()
         position = "center",
         split = "right",
         style = "minimal",
-        win = function(self) return not self.is_float and -1 or nil end,
+        -- win = function(self) return not self.is_float and -1 or nil end,
         width = function(self, config) return self.is_float and 0.75 or 0.5 end,
         height = function(self, config) return self.is_float and 0.60 or 10 end,
         border = { "🭽", "▔", "🭾", "🮇", "🭿", "▁", "🭼", "▏" },
+        wo = {
+            winhl = "Normal:NormalFloat",
+        },
     }
 
     _floaterminal = require("win").split(win_opts)

@@ -14,7 +14,7 @@ function WinAPI:open(override_opts)
     if self:is_open() then return self end
 
     self.bufnr = internal.ensure_valid_buf(self)
-    self:set_bo()
+    self:set_bo(override_opts and override_opts.bo)
 
     local config_proxy = self:resolve_win_opts(override_opts)
     local enter = self.opts.enter
@@ -23,7 +23,7 @@ function WinAPI:open(override_opts)
     end
 
     self.winid = api.nvim_open_win(self.bufnr, enter, self._config)
-    self:set_wo()
+    self:set_wo(override_opts and override_opts.wo)
 
     return self
 end

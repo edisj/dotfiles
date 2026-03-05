@@ -201,12 +201,12 @@ ui.stdout = function()
         },
         wo = {
             -- number = true,
-            winbar = "STDOUT??",
+            -- winbar = "stdout",
             scrolloff = 0,
             statuscolumn = "  ",
             winhl = table.concat({
                 "Normal:NormalFloat",
-                "WinSeparator:NormalFloat",
+                "WinSeparator:WinSeparator2",
                 "WinBar:NormalFloat",
                 "StatusColumn:NormalFloat",
             }, ",")
@@ -227,7 +227,15 @@ ui.open = function()
         qf.open({
             split = "left",
             win = ui.stdout().winid,
-            width = 0.40,
+            width = 0.50,
+            wo = {
+                winhl = table.concat({
+                    "Normal:NormalFloat",
+                    "WinSeparator:WinSeparator2",
+                    "WinBar:NormalFloat",
+                    "StatusColumn:NormalFloat",
+                }, ",")
+            },
         })
     else
         qf.close()
@@ -264,8 +272,8 @@ vim.keymap.set({"n", "i"}, "<M-S-m>", function()
     build_and_run()
 end)
 
-vim.keymap.set("n", "<M-S-l>", ui.clear)
-vim.keymap.set("n", "<M-S-h>", ui.toggle)
+vim.keymap.set("n", "<C-l>", ui.clear)
+vim.keymap.set("n", "<C-h>", ui.toggle)
 
 vim.keymap.set({"n", "i"}, "<M-S-Enter>", function()
     vim.cmd.stopinsert()

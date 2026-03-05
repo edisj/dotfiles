@@ -66,7 +66,7 @@ return {
         fn.matchadd("DiagnosticError", [[error\ze:]])
         fn.matchadd("DiagnosticWarn", [[warning\ze:]])
         fn.matchadd("DiagnisticInfo", [[(info|note)\ze:]])
-        fn.matchadd("Normal", [[\v^[^:]+\s\d+\s+(error|warning|info|note):\s\zs.+$]])
+        fn.matchadd("NormalTransparent", [[\v^[^:]+\s\d+\s+(error|warning|info|note):\s\zs.+$]])
         fn.matchadd("@punctuation.bracket", [[\v:]])
     end,
 }

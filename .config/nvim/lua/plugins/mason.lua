@@ -51,6 +51,7 @@ return {
             "bashls",
             "basedpyright",
             "hyprls",
+            "clangd",
         }
         vim.lsp.enable(auto_enable)
     end,
