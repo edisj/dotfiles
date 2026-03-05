@@ -7,6 +7,7 @@ _create_edis_file()
     cat <<-EOF > .edis
 name = $1
 type = c
+compiler = gcc
 build = cb
 run = cr
 EOF

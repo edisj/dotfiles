@@ -19,10 +19,10 @@ _find_project_root() {
     local marker="${1:-$PROJECT_ROOT_MARKER}"
 
     if [[ -z "$marker" ]]; then
-        error "PROJECT_ROOT_MARKER is not set, must pass root marker as argument."
+        error "PROJECT_ROOT_MARKER is not set, must pass root marker as argument." && exit 1
     fi
 
-    local current_dir=$(pwd -P) || error "pwd failed?"
+    local current_dir=$(pwd -P) || (error "pwd failed?" && exit 1)
     while [[ "$current_dir" != "/" ]]; do
 
         if [[ -e "$current_dir/$marker" ]]; then
@@ -32,7 +32,7 @@ _find_project_root() {
         current_dir=$(dirname "$current_dir")
     done
 
-    error "could not locate '$marker' root marker."
+    error "could not locate '$marker' root marker." && exit 1
 }
 
 main() {

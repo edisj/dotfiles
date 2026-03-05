@@ -7,6 +7,7 @@ _create_edis_file()
     cat <<-EOF > .edis
 name = $1
 type = java
+compiler = javac
 build = javab
 run = javar
 EOF
@@ -32,12 +33,13 @@ main()
 
     [[ -d "$arg" ]] && error "project '$arg' already exists in this directory"
 
-    info "initializing project '$arg' in $(pwd)" \
+    info "creating project '$arg' in $(pwd)" \
     && mkdir -p $arg \
     && cd $arg \
     && mkdir -p src/ build/ \
     && _create_edis_file $arg \
     && success "created project '$arg' in '$(pwd)'" \
+    && cd src \
     && exit 0
 
 }
