@@ -16,6 +16,7 @@ copr_enable pennbauman/ports
 copr_enable atim/starship
 copr_enable sneexy/zen-browser
 copr_enable errornointernet/walker
+copr_enable foopsss/shell-color-scripts
 echo ""
 
 packages=(
@@ -52,6 +53,7 @@ packages=(
     python3-neovim
     ripgrep
     sddm
+    shell-color-scripts
     snapd
     starship
     stow
@@ -82,6 +84,7 @@ sudo snap install zotero-snap
 readonly cargo_crates=(
     bluetui
     impala
+    matugen
 )
 
 echo ""
