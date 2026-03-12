@@ -1,38 +1,29 @@
 #!/usr/bin/env bash
 
 source "$HOME/.local/scripts/lib/logging.sh"
-
-if ! hash nvim &> /dev/null; then
-    error "missing dependency 'nvim'" 64
-fi
-
-if ! hash fd &> /dev/null; then
-    error "missing dependency 'fd'" 64
-fi
+source "$HOME/.local/scripts/lib/require.sh"
+require nvim fd
 
 dir="$XDG_CONFIG_HOME/wallpapers"
-[ ! -d $dir ] && error "$dir does not exist"
+[ ! -d $dir ] && {
+    error "$dir does not exist"; exit $?
+}
 
-height="${1:-50%}"
-if [[ -z "$1" ]]; then
-    padding="0"
-else
-    padding="1,3"
-fi
-
-readonly fzf_args=(
-    --height=$height
-    --layout=reverse
+readonly FZF_ARGS=(
+    --height "${FZF_HEIGHT:-50%}"
+    --padding "${FZF_PADDING:-0}"
+    --border "${FZF_BORDER:-none}"
+    --margin "${FZF_MARGIN:-0}"
+    --layout reverse
+    --info hidden
     --delimiter /
     --with-nth=-1
     # --style=minimal
-    --border=none
-    --padding="$padding"
-    --preview-border=none
-    --color="preview-bg:-1"
+    --preview-border none
+    --color "preview-bg:-1"
     --preview "fzf-preview {}"
     --preview-window "right:70%"
-    --bind="enter:become(wallpaper {})"
+    --bind "enter:become(wallpaper {})"
 )
 
-fd . -e "jpg" -e "png" -e "gif" "$dir" | fzf "${fzf_args[@]}"
+fd . -e "jpg" -e "png" -e "gif" "$dir" | fzf "${FZF_ARGS[@]}"

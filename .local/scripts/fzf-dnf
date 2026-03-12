@@ -1,25 +1,15 @@
 #!/usr/bin/env bash
 
-source "$HOME/.local/scripts/lib/logging.sh"
-
-if ! hash fzf &> /dev/null; then
-    error "missing dependency 'fzf'" 64
-fi
-
-height="${1:-75%}"
-if [[ -z "$1" ]]; then
-    padding="1,0,1,0"
-else
-    padding="1,3"
-fi
-
+# source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+require fzf
 
 readonly QUERY='dnf --cacheonly --quiet repoquery --qf %{name}\n'
 readonly PREVIEW="dnf --cacheonly --quiet info"
 
-readonly fzf_args=(
-    --height="$height"
-    --padding="$padding"
+readonly FZF_ARGS=(
+    --height "${FZF_HEIGHT:-75%}"
+    --padding "${FZF_PADDING:-1,0,1,0}"
     --layout=reverse
     --preview "$PREVIEW {1}"
     --preview-window "down:65%"
@@ -29,4 +19,4 @@ readonly fzf_args=(
     --bind="enter:become(sudo dnf --quiet -y install {})"
 )
 
-$QUERY | fzf "${fzf_args[@]}"
+$QUERY | fzf "${FZF_ARGS[@]}"

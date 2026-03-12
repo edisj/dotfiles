@@ -1,34 +1,15 @@
 #!/usr/bin/env zsh
 
 source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+require nvim edis
 
-if ! hash nvim &> /dev/null; then
-    error "missing dependency 'nvim'" 64
-fi
+height="${FZF_HEIGHT:-50%}"
+padding="${FZF_PADDING:-0}"
 
-if ! hash fd &> /dev/null; then
-    error "missing dependency 'fd'" 64
-fi
+# dir="$(FZF_HEIGHT="$height" FZF_PADDING="$padding" edis)"
+dir="$(edis)"
+[[ -d "$dir/src" ]] && dir="$dir/src" || exit 1
 
-height="${1:-50%}"
-if [[ -z "$1" ]]; then
-    padding="0"
-else
-    padding="1,3"
-fi
+nvim -c "cd $dir"
 
-TAB=$'\t'
-readonly fzf_args=(
-    --height="$height"
-    --layout=reverse
-    --padding="$padding"
-    # --preview="bat --color=always --style=numbers $dir/{1} 2>/dev/null || eza -lF --color=always $dir/{}"
-    --preview "bat --color=always --style=numbers {} 2>/dev/null || eza --tree --color=always --level 3 $dir/{}"
-    --preview-window="right:60%:wrap"
-    --preview-border='thinblock'
-    --wrap-sign="$TAB "
-    --tabstop=4
-    --bind="enter:become(nvim {})"
-)
-
-fd -t f --hidden "^.edis$" "$HOME" | fzf "${fzf_args[@]}"
