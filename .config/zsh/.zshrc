@@ -86,6 +86,7 @@ _fzf-nvim()
 zle -N _fzf-nvim
 bindkey '^O' _fzf-nvim
 bindkey -s "^P" "fzf-dnf\n"
+bindkey -s "^E" "fzf-edis\n"
 
 eval "$(uv generate-shell-completion zsh)"
 
