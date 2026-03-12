@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+
+_marker="${PROJECT_ROOT_MARKER:-.edis}"
+
+source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+require find-project-root gcc
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -q | --quiet)
+            info() { :; }
+            warning() { :; }
+            success() { :; }
+            quiet="true"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            error "Unknown option: $1" && exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+main() {
+    [[ "$#" -gt 1 ]] && error "too many arguments (expected 1 or less)" && exit 1
+
+    local project_root=$(find-project-root "$_marker" 2>/dev/null)
+    if [[ -z "$project_root" ]]; then
+        error "root marker '$_marker' not found" && exit 1
+    fi
+
+    local build_dir="$project_root/build"
+    local project_name="$(basename $project_root)"
+    local program_name="${1:-$project_name}"
+    local program="$build_dir/$program_name"
+
+    [[ ! -f "$program" ]] && error "program not found: '$program_name'" && exit 1
+
+    [[ -x "$program" ]] \
+    && info "detected program $program" \
+    && info "executing program: $program_name" \
+    && $program \
+    && exit 0
+}
+
+main "$@"

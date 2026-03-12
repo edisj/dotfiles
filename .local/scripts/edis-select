@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+require fd fzf
+
+main() {
+    readonly FZF_ARGS=(
+        --height "${FZF_HEIGHT:-50%}"
+        --margin "${FZF_MARGIN:-0,40%,0,1}"
+        --padding "${FZF_PADDING:-0}"
+        --preview-border "${FZF_PREVIEW_BORDER:-bold}"
+        --border "${FZF_BORDER:-none}"
+        --input-border "${FZF_INPUT_BORDER:-bold}"
+        --layout reverse
+        --info hidden
+        # --ghost "Select a project... (ctrl-bspace to go back)"
+        --ghost "Select a project..."
+        --preview 'cd ~/{} && cd .. && eza -lah --tree --no-user --no-permissions --no-time --icons=auto --color=always $(basename {})'
+        --preview-window "right:60%"
+        --print-query
+        --pointer ">"
+        # --bind 'ctrl-bspace:become(edis)'
+    )
+
+    local dir=$(fd -t f --hidden "^.edis$" --base-directory "$HOME" \
+        | while read -r p; do dirname "$p"; done \
+        | fzf "${FZF_ARGS[@]}" \
+        | tail -1)
+
+    [[ -n "$dir" ]] && dir=$(realpath "$HOME/$dir") || exit 1
+    [[ ! -d "$dir" ]] && exit $(error "dir does not exist: $dir")
+
+    echo "$dir" && exit 0
+}
+
+main "$@"
