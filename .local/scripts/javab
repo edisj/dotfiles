@@ -2,22 +2,35 @@
 
 shopt -s globstar
 
-_find_project_root="find-project-root"
 _marker="${PROJECT_ROOT_MARKER:-.edis}"
 
 source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+require find-project-root javac
 
-if ! command -v "$_find_project_root" &> /dev/null; then
-    error "could not find '$_find_project_root' command." && exit 1
-fi
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -q | --quiet)
+            info() { return 0; }
+            warning() { return 0; }
+            success() { return 0; }
+            quiet="true"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            error "Unknown option: $1" && exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
-if ! command -v javac &> /dev/null; then
-    error "could not find 'javac' command." && exit 1
-fi
-
-_compile_source_files()
-{
-    # this breaks relative imports for the compiler for some reason
+_compile_source_files() {
     local source_files=$1
     local source_dir=$2
     local build_dir=$3
@@ -25,7 +38,7 @@ _compile_source_files()
     info "attempting to compile source files:"
     for source_file in $source_files; do
         local file_relative_to_src_dir=$(realpath --relative-to="$source_dir" "$source_file")
-        echo -e "\t$file_relative_to_src_dir -> ${file_relative_to_src_dir%.java}.class"
+        [[ -z "$quiet" ]] && echo -e "\t$file_relative_to_src_dir -> ${file_relative_to_src_dir%.java}.class"
     done
 
     local grep_result="$(grep -rE '^\s*public static void main' $source_dir)"
@@ -36,9 +49,8 @@ _compile_source_files()
     javac -d $build_dir $source_files && return 0 || error "failed to compile" && return 1
 }
 
-main()
-{
-    local project_root=$("$_find_project_root" "$_marker" 2>/dev/null)
+main() {
+    local project_root=$(find-project-root "$_marker" 2>/dev/null)
 
     if [[ -z "$project_root" ]]; then
         error "root marker '$_marker' not found" && exit 1
