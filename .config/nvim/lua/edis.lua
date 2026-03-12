@@ -22,6 +22,7 @@ local function build()
     if ctx == nil then return end
 
     local cmd = ctx.build
+    local silent = vim.tbl_contains(cmd, ">/dev/null")
     sys.schedule_cmd_with_context(ctx, cmd)
 end
 
@@ -92,7 +93,7 @@ internal.build_context_from_metadata = function(metadata)
     return ctx
 end
 
-internal.apply_stdout_highlights = function()
+internal.apply_highlights = function()
     vim.fn.matchadd("Comment", [[\v^\[\zs.+\ze\]+]])
     vim.fn.matchadd("DiagnosticInfo", [[\v^\[.+\]+\[\zsINFO\ze\] ]])
     vim.fn.matchadd("DiagnosticError", [[\v^\[.+\]+\[\zsERROR\ze\] ]])
@@ -116,47 +117,58 @@ sys.schedule_cmd_with_context = function(ctx, cmd, after_cmd)
 
     local on_exit = function(obj)
         local dont_scroll = obj.code == 0 and after_cmd ~= nil
+        dont_scroll = false
         sys.on_stdout(ctx, obj.stdout, dont_scroll)
-        sys.on_stderr(ctx, obj.stderr)
+        sys.on_stderr(ctx, obj.stderr, false)
 
         if after_cmd and obj.code == 0 then
             sys.schedule_cmd_with_context(ctx, after_cmd)
             return
         end
 
-        vim.schedule(ui.open)
+        if obj.code ~= 0 then
+            sys.on_qf(ctx, obj.stderr)
+        else
+            vim.schedule(internal.clear_quickfix)
+        end
+
+        vim.schedule(ui.refresh)
     end
 
     vim.system(cmd, { text = true }, on_exit)
 end
 
-sys.on_stdout = function(ctx, stdout, dont_scroll)
-    if stdout == "" then return end
+local function append_output(output, ui_win, dont_scroll)
+    local function inner()
+        local lines = vim.split(output, "\n")
 
-    local append_stdout = function()
-        local lines = vim.split(stdout, "\n")
-
-        ui.stdout()
+        ui_win()
             :ensure_buf()
             :append_lines(lines, { force = true })
 
-        if ui.stdout():is_open() and not dont_scroll then
-            ui.stdout()
+        if ui_win():is_open() and not dont_scroll then
+            vim.print("SCROLL DOWN")
+            ui_win()
                 :win_call(function() vim.cmd("normal! zt") end)
-                :set_cursor(#ui.stdout():get_lines(), 0)
+                :set_cursor(#ui_win():get_lines(), 0)
                 :scroll_down()
         end
     end
 
-    vim.schedule(append_stdout)
+    return inner
 end
 
-sys.on_stderr = function(ctx, stderr)
-    if stderr == "" then
-        vim.schedule(internal.clear_quickfix)
-        return
-    end
+sys.on_stdout = function(ctx, stdout, dont_scroll)
+    if stdout == "" then return end
+    vim.schedule(append_output(stdout, ui.stdout, dont_scroll))
+end
 
+sys.on_stderr = function(ctx, stderr, dont_scroll)
+    if stderr == "" then return end
+    vim.schedule(append_output(stderr, ui.stderr, dont_scroll))
+end
+
+sys.on_qf = function(ctx, stderr)
     local lines = vim.split(stderr, "\n")
     local qf_items = {}
     local source = sources[ctx.source]
@@ -176,7 +188,7 @@ sys.on_stderr = function(ctx, stderr)
             quickfixtextfunc = "v:lua.require'quickfix'.quickfixtextfunc",
             context = ctx,
         })
-        ui.open()
+        -- ui.refresh()
     end
 
     vim.schedule(set_qf_and_open_ui)
@@ -185,49 +197,65 @@ end
 -- ui table ====================================================================
 
 local _stdout = nil
+local _stderr = nil
+local win_opts = {
+    enter = false,
+    style = "minimal",
+    split = "below",
+    height = 12,
+    keymaps = {
+        { "n", "q", function(self) self:close() end },
+    },
+    bo = {
+        modifiable = false,
+    },
+    wo = {
+        -- number = true,
+        -- winbar = "stdout",
+        scrolloff = 0,
+        statuscolumn = "  ",
+        winhl = table.concat({
+            "Normal:NormalFloat",
+            "WinSeparator:WinSeparator2",
+            "WinBar:NormalFloat",
+            "StatusColumn:NormalFloat",
+        }, ",")
+    },
+}
+
 ui.stdout = function()
     if _stdout then return _stdout end
-
-    local win_opts = {
-        enter = false,
-        style = "minimal",
-        split = "below",
-        height = 12,
-        keymaps = {
-            { "n", "q", function(self) self:close() end },
-        },
-        bo = {
-            modifiable = false,
-        },
-        wo = {
-            -- number = true,
-            -- winbar = "stdout",
-            scrolloff = 0,
-            statuscolumn = "  ",
-            winhl = table.concat({
-                "Normal:NormalFloat",
-                "WinSeparator:WinSeparator2",
-                "WinBar:NormalFloat",
-                "StatusColumn:NormalFloat",
-            }, ",")
-        },
-    }
-
     _stdout = require("win").split(win_opts)
     return _stdout
 end
 
+ui.stderr = function()
+    if _stderr then return _stderr end
+    _stderr = require("win").split(win_opts)
+    return _stderr
+end
+
+
 ui.open = function()
     ui.stdout()
         :open()
-        :win_call(internal.apply_stdout_highlights)
+        :win_call(internal.apply_highlights)
         :set_cursor(#ui.stdout():get_lines(), 0)
+    ui.stderr()
+        :open {
+            split = function() return ui.stdout():is_open() and "right" or "below" end,
+            win = function() return ui.stdout():is_open() and ui.stdout().winid or -1 end,
+            width = 0.49,
+        }
+        :win_call(internal.apply_highlights)
+        :set_cursor(#ui.stderr():get_lines(), 0)
 
     if #fn.getqflist() ~= 0 then
+        ui.stdout():close()
         qf.open({
             split = "left",
-            win = ui.stdout().winid,
-            width = 0.50,
+            win = ui.stderr().winid,
+            width = 0.49,
             wo = {
                 winhl = table.concat({
                     "Normal:NormalFloat",
@@ -240,11 +268,16 @@ ui.open = function()
     else
         qf.close()
     end
+end
 
+ui.refresh = function()
+    ui.close()
+    ui.open()
 end
 
 ui.close = function()
     ui.stdout():close()
+    ui.stderr():close()
     qf.close()
 end
 
@@ -258,6 +291,7 @@ end
 
 ui.clear = function()
     ui.stdout():set_lines({}, { force = true })
+    ui.stderr():set_lines({}, { force = true })
 end
 
 vim.keymap.set({"n", "i"}, "<M-m>", function()

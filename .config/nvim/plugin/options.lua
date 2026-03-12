@@ -1,0 +1,66 @@
+vim.print "options"
+
+local o, opt = vim.o, vim.opt
+
+o.autoindent     = true
+o.autoread       = true
+o.clipboard      = "unnamedplus"
+-- o.colorcolumn    = "90"
+o.cmdheight      = 0
+o.cmdwinheight   = 10
+o.completeopt    = "menuone,noselect,fuzzy"
+o.confirm        = true
+o.cursorline     = true
+o.equalalways    = false
+o.expandtab      = true
+opt.fillchars = {
+    eob = "~",
+    fold = "╌",
+    vert = "┃",
+    horiz = "━",
+    horizup = "┻",
+    horizdown = "┳",
+    vertleft = "┫",
+    vertright = "┣",
+    verthoriz = "╋",
+}
+o.foldlevel      = 99
+o.foldlevelstart = 99
+o.guicursor      = "n-v-sm:block,i-c-ci-ve:ver20,r-cr-o:hor50,t:ver50-blinkon500-blinkoff500-TermCursor"
+o.hlsearch       = true
+o.ignorecase     = true
+o.inccommand     = "split"
+o.incsearch      = true
+o.laststatus     = 3
+-- o.listchars = 'extends:…,nbsp:␣,precedes:…,tab:> '
+-- o.list           = true
+-- opt.listchars      = { space = "⋅", nbsp = "⋅", trail = "⋅", tab = "  " }
+o.matchtime      = 1
+o.mouse          = "a"
+o.mousescroll    = "ver:2"
+o.number         = true
+o.numberwidth    = 3
+o.pumborder      = "single"
+o.pumheight      = 10
+o.relativenumber = false
+o.scrolloff      = 10
+o.shiftwidth     = 4
+o.showmatch      = true
+o.showmode       = false
+o.signcolumn     = "yes"
+o.sidescrolloff  = 8
+o.smartindent    = true
+o.softtabstop    = 4
+o.splitbelow     = true
+o.splitright     = true
+o.smartcase      = true
+o.swapfile       = false
+o.tabstop        = 4
+o.termguicolors  = true
+o.undofile       = true
+o.virtualedit    = "block"
+o.wildmode       = "noselect,full"
+o.wildoptions    = "pum,fuzzy"
+-- o.wildoptions    = "fuzzy"
+o.winborder      = "bold"
+o.wrap           = false

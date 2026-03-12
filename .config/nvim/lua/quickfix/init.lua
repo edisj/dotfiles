@@ -63,6 +63,10 @@ M.is_qf_open = function()
     return fn.getqflist({ winid = 0 }).winid ~= 0
 end
 
+M.length = function()
+    return #fn.getqflist()
+end
+
 M.open = function(override_opts)
     if M.is_qf_open() then return M.win() end
 
@@ -87,10 +91,24 @@ M.toggle = function()
 end
 
 M.next = function()
+    if M.length() == 0 then return end
+
+    local idx = fn.getqflist({ idx = 0 }).idx
+    if M.length() == idx then
+        return vim.cmd "clast"
+    end
+
     vim.cmd "cnext"
 end
 
-M.prev= function()
+M.prev = function()
+    if M.length() == 0 then return end
+
+    local idx = fn.getqflist({ idx = 0 }).idx
+    if M.length() == idx or idx == 1 then
+        return vim.cmd "cfirst"
+    end
+
     vim.cmd "cprev"
 end
 
