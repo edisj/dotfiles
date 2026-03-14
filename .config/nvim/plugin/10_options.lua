@@ -1,5 +1,3 @@
-vim.print "options"
-
 local o, opt = vim.o, vim.opt
 
 o.autoindent     = true

@@ -1,0 +1,61 @@
+{
+  "plugins": {
+    "flash.nvim": {
+      "rev": "fcea7ff883235d9024dc41e638f164a450c14ca2",
+      "src": "https://github.com/folke/flash.nvim"
+    },
+    "gitsigns.nvim": {
+      "rev": "7c4faa3540d0781a28588cafbd4dd187a28ac6e3",
+      "src": "https://github.com/lewis6991/gitsigns.nvim"
+    },
+    "lazydev.nvim": {
+      "rev": "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d",
+      "src": "https://github.com/folke/lazydev.nvim"
+    },
+    "luvit-meta": {
+      "rev": "cc9b2d412d2fbd30b94a70cfc214c2a3be27a0a2",
+      "src": "https://github.com/Bilal2453/luvit-meta"
+    },
+    "mason.nvim": {
+      "rev": "44d1e90e1f66e077268191e3ee9d2ac97cc18e65",
+      "src": "https://github.com/mason-org/mason.nvim"
+    },
+    "mini.nvim": {
+      "rev": "9990c41f10f54f29a888d13024c9f765037bde23",
+      "src": "https://github.com/nvim-mini/mini.nvim"
+    },
+    "nvim-autopairs": {
+      "rev": "59bce2eef357189c3305e25bc6dd2d138c1683f5",
+      "src": "https://github.com/windwp/nvim-autopairs"
+    },
+    "nvim-dap": {
+      "rev": "a9d8cb68ee7184111dc66156c4a2ebabfbe01bc5",
+      "src": "https://codeberg.org/mfussenegger/nvim-dap"
+    },
+    "nvim-dap-view": {
+      "rev": "cd14d34150b05d633610ff8d39d6934110696923",
+      "src": "https://github.com/igorlfs/nvim-dap-view"
+    },
+    "nvim-jdtls": {
+      "rev": "77ccaeb422f8c81b647605da5ddb4a7f725cda90",
+      "src": "https://codeberg.org/mfussenegger/nvim-jdtls"
+    },
+    "nvim-treesitter": {
+      "rev": "2f5d4c3f3c675962242096bcc8e586d76dd72eb2",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter",
+      "version": "'main'"
+    },
+    "snacks.nvim": {
+      "rev": "a049339328e2599ad6e85a69fa034ac501e921b2",
+      "src": "https://github.com/folke/snacks.nvim"
+    },
+    "vim-fugitive": {
+      "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
+      "src": "https://github.com/tpope/vim-fugitive"
+    },
+    "wezterm-types": {
+      "rev": "4cde2616fc0a7feac7bf4127503a3e52630f80d1",
+      "src": "https://github.com/DrKJeff16/wezterm-types"
+    }
+  }
+}

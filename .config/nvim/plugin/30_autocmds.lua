@@ -1,5 +1,3 @@
-vim.print "autocmds"
-
 local create_autocmd = vim.api.nvim_create_autocmd
 local function create_augroup(name)
     vim.api.nvim_create_augroup(name, { clear = true })
@@ -80,7 +78,7 @@ create_autocmd("FileType", {
 
 
 create_autocmd("FileType", {
-    group = create_augroup("detect-shebang-ft"),
+    group = create_augroup("detect-shbang-ft"),
     pattern = "sh",
     callback = function(args)
         local first_line = vim.api.nvim_buf_get_lines(args.buf, 0, 1, false)[1]

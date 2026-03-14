@@ -1,5 +1,3 @@
-vim.print "keymaps"
-
 local function map(modes, lhs, rhs, opts)
     modes = type(modes) == "string" and vim.split(modes, "") or modes
     opts = vim.tbl_deep_extend("force", { silent = true }, opts or {})
@@ -13,6 +11,7 @@ vim.api.nvim_create_autocmd("CmdwinEnter", {
         vim.wo.number = false
         vim.wo.relativenumber = false
         vim.wo.signcolumn = "no"
+        vim.wo.scrolloff = 0
         vim.opt_local.statuscolumn = " "
     end,
 })
@@ -62,9 +61,9 @@ map("nox", "G", "gg", { desc = "goto beginning of page" })
 map("nox", "<S-h>", "^", { desc = "goto beginning of line" })
 map("nox", "<S-l>", "g_", { desc = "goto end of line" })
 
-map("n", "<C-d>", function()
-    vim.diagnostic.jump{ count = 1, float = true }
-end, { desc = "next diagnostic" })
+-- map("n", "<C-d>", function()
+--     vim.diagnostic.jump{ count = 1, float = true }
+-- end, { desc = "next diagnostic" })
 
 map("n", "<C-o>", "<C-i>")
 map("n", "<C-i>", "<C-o>")
@@ -106,4 +105,22 @@ map("t", "<M-a>", "<c-\\><c-n>", { desc = "Escape in terminal mode" })
 map("t", "<M-s>", "<c-\\><c-n>", { desc = "Escape in terminal mode" })
 
 map("n", "<leader>L", "<cmd>Lazy<CR>", { desc = "Open Lazy" })
+
+map("n", "<C-space>", function() Arglist.arg_add() end)
+map("ni", "<M-`>", function() Arglist.toggle() end)
+for i, key in ipairs({ "q", "w", "e", "u", "i", "o" }) do
+    map("ni", "<M-"..key..">", function()
+        vim.cmd.stopinsert()
+        Arglist.jump_to(i)
+    end)
+    -- vim.keymap.set("n", ",<M-"..key..">", function() M.arglist[i] = vim.api.nvim_buf_get_name(0) end)
+    map("n", "<M-S-" .. key .. ">", function()
+        Arglist.arglist[i] = vim.fn.expand("%:p")
+    end)
+end
+
+map("ntix", "<c-t>", function() Terminal.smart_toggle() end)
+
+
+
 
