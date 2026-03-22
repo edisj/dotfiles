@@ -14,27 +14,23 @@ create_autocmd("ModeChanged", {
     desc = "turn cursorline on when entering normal mode"
 })
 
-local exclude = {
-    qf = true,
-    nofile = true,
-}
-create_autocmd("ModeChanged", {
-    pattern = "*:[vV\x16]*",
-    group = create_augroup("relnum on visual mode"),
-    callback = function(ev)
-        if exclude[vim.bo[ev.buf].filetype] then return end
-        vim.wo.relativenumber = true
-    end,
-    desc = "turn on relative numbers when entering visual mode",
-})
-create_autocmd("ModeChanged", {
-    pattern = "[vV\x16]*:*[^vV\x16]",
-    group = create_augroup("relnum on visual mode"),
-    callback = function(ev)
-        if exclude[vim.bo[ev.buf].filetype] then return end
-        vim.wo.relativenumber = false
-    end,
-    desc = "turn off relative numbers when leaving visual mode",
+create_autocmd({ "BufWinEnter", "FileType" }, {
+  pattern = {
+    -- "dap-view",
+    "fugitive",
+    "vim",
+    "git",
+    "quickfix",
+  },
+  callback = function(ev)
+    -- P(ev)
+    local winid = vim.api.nvim_get_current_win()
+    vim.wo.winhl = table.concat({
+      "Normal:NormalSplit",
+      "EndOfBuffer:EndOfBuffer2",
+    }, ",")
+    -- vim.api.nvim_set_option_value("winhl", "Normal:LineNr", { win = winid })
+  end,
 })
 
 create_autocmd("TextYankPost", {
@@ -76,6 +72,16 @@ create_autocmd("FileType", {
     end,
 })
 
+create_autocmd("CmdwinEnter", {
+    callback = function()
+        vim.keymap.set("n", "<C-q>", ":q<CR>", { buffer = true })
+        vim.wo.number = false
+        vim.wo.relativenumber = false
+        vim.wo.signcolumn = "no"
+        vim.wo.scrolloff = 1
+        vim.opt_local.statuscolumn = ""
+    end,
+})
 
 create_autocmd("FileType", {
     group = create_augroup("detect-shbang-ft"),

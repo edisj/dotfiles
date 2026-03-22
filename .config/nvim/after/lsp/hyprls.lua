@@ -1,4 +1,3 @@
-vim.print("hyprls")
 
 ---@type vim.lsp.Config
 return {

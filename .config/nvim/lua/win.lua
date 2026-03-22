@@ -126,7 +126,7 @@ function WinAPI:set_lines(lines, opts)
         return self
     end
     opts = opts or {}
-    local from = opts.from and opts.from - 1 or 0
+    local from = opts.from and (opts.from - 1) or 0
     local to = opts.to and opts.to or -1
 
     local is_modifiable = api.nvim_get_option_value("modifiable", { buf = self.bufnr })
@@ -244,6 +244,11 @@ end
 ---@return boolean
 function WinAPI:is_focused()
     return self:win_is_valid() and self.winid == api.nvim_get_current_win()
+end
+
+---@return boolean
+function WinAPI:floating()
+    return self._floating
 end
 
 ---@return boolean
@@ -501,6 +506,7 @@ local SPLIT_DEFAULTS = {
 local function to_float(win, override_opts)
     win.resolve_win_opts = internal.resolve_win_opts_as_float
     win.is_float = true
+    win._floating = true
     if win:is_open() then
         win:close():open(override_opts)
     end
@@ -510,6 +516,7 @@ end
 local function to_split(win, override_opts)
     win.resolve_win_opts = internal.resolve_win_opts_as_split
     win.is_float = false
+    win._floating = false
     if win:is_open() then
         win:close():open(override_opts)
     end

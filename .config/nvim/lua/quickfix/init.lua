@@ -20,96 +20,97 @@ local M = {}
 --- @return integer buf
 local function _find_or_create_qf_buffer()
 
-    for _, buf in ipairs(api.nvim_list_bufs()) do
-        if vim.bo[buf].filetype == "qf" and api.nvim_buf_get_name(buf):match("^[Quickfix List]$") then
-            return buf
-        end
+  for _, buf in ipairs(api.nvim_list_bufs()) do
+    if vim.bo[buf].filetype == "qf" and api.nvim_buf_get_name(buf):match("^[Quickfix List]$") then
+      return buf
     end
+  end
 
-    vim.cmd("copen")
-    local buf = api.nvim_get_current_buf()
-    vim.cmd("cclose")
+  vim.cmd("copen")
+  local buf = api.nvim_get_current_buf()
+  vim.cmd("cclose")
 
-    return buf
+  return buf
 end
 
 local _qf_win = nil
 M.win = function()
-    if _qf_win then return _qf_win end
+  if _qf_win then return _qf_win end
 
-    local win_opts = {
-        enter = false,
-        split = "below",
-        bufnr = _find_or_create_qf_buffer,
-        -- stickybuf = false,
-        style = "minimal",
-        height = 12,
-        yoffset = 3,
-        keymaps = {
-            { "n", "q", function(self) self:close() end },
-        },
-        title = " Quickfix ",
-        title_pos = "left",
-        wo = {
-            number = true,
-        },
-    }
+  local win_opts = {
+    enter = false,
+    split = "below",
+    bufnr = _find_or_create_qf_buffer,
+    -- stickybuf = false,
+    style = "minimal",
+    height = 12,
+    yoffset = 3,
+    keymaps = {
+      { "n", "q", function(self) self:close() end },
+    },
+    title = " Quickfix ",
+    title_pos = "left",
+    wo = {
+      number = true,
+    },
+  }
 
-    _qf_win = require("win").split(win_opts)
-    return _qf_win
+  _qf_win = require("win").split(win_opts)
+  return _qf_win
 end
 
 M.is_qf_open = function()
-    return fn.getqflist({ winid = 0 }).winid ~= 0
+  return fn.getqflist({ winid = 0 }).winid ~= 0
 end
 
 M.length = function()
-    return #fn.getqflist()
+  return #fn.getqflist()
 end
 
 M.open = function(override_opts)
-    if M.is_qf_open() then return M.win() end
+  if M.is_qf_open() then return M.win() end
 
-    local qf_list = vim.fn.getqflist { context = true }
-    local source = qf_list.context.source
-    local highlight_func = sources[source].highlight_func
+  local qf_list = vim.fn.getqflist { context = true }
+  local source = qf_list.context.source
+  local highlight_func = sources[source].highlight_func
 
-    return M.win()
-        :open(override_opts)
-        :win_call(highlight_func)
+  return M
+    .win()
+    :open(override_opts)
+    :win_call(highlight_func)
 end
 
 M.close = function()
-    return
-        (M.win():is_open() and M.win():close())
-        or (M.is_qf_open() and vim.cmd("cclose") and M.win())
-        or M.win()
+  return
+    (M.win():is_open() and M.win():close())
+    or (M.is_qf_open() and vim.cmd("cclose") and M.win())
+    or M.win()
 end
 
 M.toggle = function()
-    return M.is_qf_open() and M.close() or M.open()
+  return M.is_qf_open() and M.close() or M.open()
 end
 
 M.next = function()
-    if M.length() == 0 then return end
+  if M.length() == 0 then return end
 
-    local idx = fn.getqflist({ idx = 0 }).idx
-    if M.length() == idx then
-        return vim.cmd "clast"
-    end
+  local idx = fn.getqflist({ idx = 0 }).idx
+  if M.length() == idx then
+    return vim.cmd "clast"
+  end
 
-    vim.cmd "cnext"
+  vim.cmd "cnext"
 end
 
 M.prev = function()
-    if M.length() == 0 then return end
+  if M.length() == 0 then return end
 
-    local idx = fn.getqflist({ idx = 0 }).idx
-    if M.length() == idx or idx == 1 then
-        return vim.cmd "cfirst"
-    end
+  local idx = fn.getqflist({ idx = 0 }).idx
+  if M.length() == idx or idx == 1 then
+    return vim.cmd "cfirst"
+  end
 
-    vim.cmd "cprev"
+  vim.cmd "cprev"
 end
 
 ---@class QuickFixTextFuncInfo
@@ -121,14 +122,11 @@ end
 
 ---@param _ QuickFixTextFuncInfo
 M.quickfixtextfunc = function(_)
-    local qf_list = vim.fn.getqflist { items = true, context = true }
-    local items_to_qftf_func = sources[qf_list.context.source].items_to_qftf
-    local formatted_lines = items_to_qftf_func(qf_list.items)
+  local qf_list = vim.fn.getqflist { items = true, context = true }
+  local items_to_qftf_func = sources[qf_list.context.source].items_to_qftf
+  local formatted_lines = items_to_qftf_func(qf_list.items)
 
-    return formatted_lines
+  return formatted_lines
 end
-
-vim.keymap.set("n", "<C-j>", M.next)
-vim.keymap.set("n", "<C-k>", M.prev)
 
 return M

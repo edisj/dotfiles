@@ -1,4 +1,3 @@
-vim.print "clangd"
 ---@brief
 ---
 --- https://clangd.llvm.org/installation.html

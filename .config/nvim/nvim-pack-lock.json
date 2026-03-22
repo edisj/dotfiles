@@ -1,8 +1,20 @@
 {
   "plugins": {
+    "blink.cmp": {
+      "rev": "612f4bd2bc29d9e7dc7be1dde960908951bedad1",
+      "src": "https://github.com/saghen/blink.cmp"
+    },
+    "blink.pairs": {
+      "rev": "262b03d52d2763557a5261a421a639a7edba4bab",
+      "src": "https://github.com/saghen/blink.pairs"
+    },
     "flash.nvim": {
       "rev": "fcea7ff883235d9024dc41e638f164a450c14ca2",
       "src": "https://github.com/folke/flash.nvim"
+    },
+    "fzf-lua": {
+      "rev": "8a79ee54d6216d10b2f153921a12b152be0c1a20",
+      "src": "https://github.com/ibhagwan/fzf-lua"
     },
     "gitsigns.nvim": {
       "rev": "7c4faa3540d0781a28588cafbd4dd187a28ac6e3",
@@ -21,7 +33,7 @@
       "src": "https://github.com/mason-org/mason.nvim"
     },
     "mini.nvim": {
-      "rev": "9990c41f10f54f29a888d13024c9f765037bde23",
+      "rev": "59f09943573c5348ca6c88393fa09ce3b66a7818",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "nvim-autopairs": {
@@ -32,8 +44,12 @@
       "rev": "a9d8cb68ee7184111dc66156c4a2ebabfbe01bc5",
       "src": "https://codeberg.org/mfussenegger/nvim-dap"
     },
+    "nvim-dap-disasm": {
+      "rev": "1119f3f2b22e411adcd123cdcf6d0425b61a31a7",
+      "src": "https://codeberg.org/Jorenar/nvim-dap-disasm.git"
+    },
     "nvim-dap-view": {
-      "rev": "cd14d34150b05d633610ff8d39d6934110696923",
+      "rev": "af144cfbdeafd90dfdaa3d406e3f8e06ddc4f0e3",
       "src": "https://github.com/igorlfs/nvim-dap-view"
     },
     "nvim-jdtls": {
@@ -41,12 +57,12 @@
       "src": "https://codeberg.org/mfussenegger/nvim-jdtls"
     },
     "nvim-treesitter": {
-      "rev": "2f5d4c3f3c675962242096bcc8e586d76dd72eb2",
+      "rev": "877f724846f2202a16e311bd19efb954bd1c430e",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
     },
     "snacks.nvim": {
-      "rev": "a049339328e2599ad6e85a69fa034ac501e921b2",
+      "rev": "e6fd58c82f2f3fcddd3fe81703d47d6d48fc7b9f",
       "src": "https://github.com/folke/snacks.nvim"
     },
     "vim-fugitive": {

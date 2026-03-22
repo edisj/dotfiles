@@ -1,35 +1,50 @@
+local severity = vim.diagnostic.severity
 vim.diagnostic.config({
-    severity_sort = true,
-    virtual_text = {
-        severity = { min = vim.diagnostic.severity.ERROR },
-    },
-    -- virtual_lines = {
-    --     severity = { min = vim.diagnostic.severity.ERROR },
-    -- },
-    signs = {
-        text = {
-            [vim.diagnostic.severity.ERROR] = "●",
-            [vim.diagnostic.severity.WARN] = "●",
-            [vim.diagnostic.severity.HINT] = "●",
-            [vim.diagnostic.severity.INFO] = "●",
-        },
-    },
-    update_in_insert = false,
+  severity_sort = true,
+  update_in_insert = false,
+  virtual_text = false,
+  -- virtual_text = { severity = { min = severity.ERROR } },
+  signs = {
+    severity = { min = severity.WARN },
+    numhl = {
+      [severity.ERROR] = "DiagnosticSignError",
+      [severity.WARN] = "DiagnosticSignWarn",
+    }
+  },
+  float = {
+    source = false,
+    prefix = "",
+    header = "",
+    border = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▏" },
+  },
 })
 
-for level, icon in pairs{
-    Error = "●",
-    Warn = "●",
-    Hint = "●",
-    Info = "●"
-} do
-    local hl = "DiagnosticSign" .. level
-    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-end
+local nmap = function(...) Config.map("n", ...) end
 
-vim.keymap.set("n", "<leader>vd", function()
-    if vim.diagnostic.is_enabled() then
-        return vim.diagnostic.enable(false)
-    end
-    return vim.diagnostic.enable(true)
+nmap("<leader>vd", function()
+  if vim.diagnostic.is_enabled() then
+    return vim.diagnostic.enable(false)
+  end
+  return vim.diagnostic.enable(true)
 end, { desc = "vim diagnostic toggle" })
+
+local diag_float_winid
+nmap("<C-M-j>", function()
+  vim.diagnostic.jump({
+    count = vim.v.count == 0 and 1 or vim.v.count,
+    on_jump = function()
+      if diag_float_winid and vim.api.nvim_win_is_valid(diag_float_winid) then vim.api.nvim_win_close(diag_float_winid, true) end
+      _, diag_float_winid = vim.diagnostic.open_float()
+    end,
+  })
+end)
+nmap("<C-M-k>", function()
+  vim.diagnostic.jump({
+    count = vim.v.count == 0 and -1 or -vim.v.count,
+    on_jump = function()
+      if diag_float_winid and vim.api.nvim_win_is_valid(diag_float_winid) then vim.api.nvim_win_close(diag_float_winid, true) end
+      _, diag_float_winid = vim.diagnostic.open_float()
+    end,
+  })
+end)
+

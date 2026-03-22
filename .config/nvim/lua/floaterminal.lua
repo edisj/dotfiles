@@ -1,6 +1,6 @@
-local _floaterminal
-local function floaterminal()
-    if _floaterminal then return _floaterminal end
+local _terminal = nil
+local function terminal()
+    if _terminal then return _terminal end
 
     local win_opts = {
         bufnr = function()
@@ -12,45 +12,38 @@ local function floaterminal()
         split = "right",
         style = "minimal",
         -- win = function(self) return not self.is_float and -1 or nil end,
-        width = function(self, config) return self.is_float and 0.75 or 0.5 end,
-        height = function(self, config) return self.is_float and 0.60 or 10 end,
+        width = function(self, _) return self:floating() and 0.75 or 0.5 end,
+        height = function(self, _) return self:floating() and 0.60 or 10 end,
         border = { "🭽", "▔", "🭾", "🮇", "🭿", "▁", "🭼", "▏" },
         wo = {
             winhl = "Normal:NormalFloat",
+            winfixbuf = true,
         },
     }
 
-    _floaterminal = require("win").split(win_opts)
+    _terminal = require("win").split(win_opts)
 
-    _floaterminal:create_autocmd("BufEnter", function(win, ev)
+    _terminal:create_autocmd("BufEnter", function(win, ev)
         if win.bufnr == ev.buf then
             vim.cmd.startinsert()
         end
     end, { desc = "floaterminal start insert on bufenter" })
 
-    return _floaterminal
+    return _terminal
 end
 
-local M = {}
-M.open = function() floaterminal():open() end
-M.focus = function() floaterminal():focus() end
-M.close = function() floaterminal():close() end
-M.toggle = function() floaterminal():toggle() end
-M.to_split = function() floaterminal():to_split() end
-M.to_float = function() floaterminal():to_float() end
-
-M.setup = function()
-    vim.keymap.set({"n", "t", "i", "x"}, "<c-t>", function()
-        if _floaterminal and not _floaterminal:is_focused() then
-            M.focus()
+return {
+    open = function() terminal():open() end,
+    focus = function() terminal():focus() end,
+    close = function() terminal():close() end,
+    toggle = function() terminal():toggle() end,
+    smart_toggle = function()
+        if terminal() and not terminal():is_focused() then
+            terminal():focus()
         else
-            M.toggle()
+            terminal():toggle()
         end
-    end)
-
-    vim.keymap.set({"n", "t"}, "<M-S-t>", function()
-        return floaterminal().is_float and floaterminal():to_split():focus() or floaterminal():to_float():focus()
-    end)
-end
-
-return M
+    end,
+    to_split = function() terminal():to_split() end,
+    to_float = function() terminal():to_float() end,
+}

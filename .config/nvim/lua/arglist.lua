@@ -177,39 +177,4 @@ vim.api.nvim_create_autocmd("WinClosed", {
     end
 })
 
-vim.keymap.set("n", "<C-space>", M.arg_add)
-vim.keymap.set({"n", "i"}, "<M-`>", M.toggle)
--- vim.keymap.set({"n", "i"}, "<C-A-S-Find>q", M.toggle)
-
-for i, key in ipairs({ "q", "w", "e", "u", "i", "o" }) do
-    vim.keymap.set({ "n", "i" }, "<M-"..key..">", function()
-        vim.cmd.stopinsert()
-        M.jump_to(i)
-    end)
-    -- vim.keymap.set("n", ",<M-"..key..">", function() M.arglist[i] = vim.api.nvim_buf_get_name(0) end)
-    -- vim.keymap.set("n", "<leader><M-" .. key .. ">", function() M.arglist[i] = vim.fn.expand("%:p") end)
-    vim.keymap.set("n", "<M-S-" .. key .. ">", function() M.arglist[i] = vim.fn.expand("%:p") end)
-end
-
-local ok, mini_files = pcall(require, "mini.files")
-if not ok then return M end
-
-local function go_in_and_arglist(i)
-    local path = (mini_files.get_fs_entry() or {}).path
-    if path == nil then return vim.notify('Cursor is not on valid entry') end
-    if vim.uv.fs_stat(path).type ~= "file" then return end
-    M.arglist[i] = vim.fn.fnamemodify(path, ":p")
-    mini_files.go_in({ close_on_file = true })
-end
-
-vim.api.nvim_create_autocmd("User", {
-    pattern = "MiniFilesBufferCreate",
-    callback = function(ev)
-        local buf_id = ev.data.buf_id
-        for i, key in ipairs({ "q", "w", "e", "u", "i", "o" }) do
-            vim.keymap.set("n", "<M-S-" .. key .. ">", function() go_in_and_arglist(i) end, { buffer = buf_id })
-        end
-    end,
-})
-
 return M

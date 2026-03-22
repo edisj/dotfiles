@@ -1,4 +1,3 @@
-vim.print("lua_ls")
 ---@brief
 ---
 --- https://github.com/luals/lua-language-server
@@ -101,9 +100,9 @@ return {
             },
             codeLens = { enable = true },
             hint = { enable = true, semicolon = "Disable" },
-            workspace = {
-                library = vim.api.nvim_get_runtime_file("", true)
-            },
+            -- workspace = {
+            --     library = vim.api.nvim_get_runtime_file("", true)
+            -- },
         },
     },
 }

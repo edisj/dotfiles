@@ -34,8 +34,6 @@ M.setup = function()
             end
         end,
     })
-
-    _G.Session = M
 end
 
 M.this_session = function()
@@ -46,14 +44,14 @@ M.augroup = function()
     return _augroup or api.nvim_create_augroup("edis-sessioner", { clear = true })
 end
 
----@param comp? fun(a: any, b: any):boolean comparator for sorting
+---@param compator? fun(a: any, b: any):boolean
 ---@return string[]
-M.get_sessions = function(comp)
-    comp = comp or function(a, b)
+M.get_sessions = function(compator)
+    compator = compator or function(a, b)
         return uv.fs_stat(a).mtime.sec > uv.fs_stat(b).mtime.sec
     end
     local sessions = fn.glob(_dir .. "*.vim", true, true)
-    table.sort(sessions, comp)
+    table.sort(sessions, compator)
     return sessions
 end
 
@@ -76,7 +74,7 @@ end
 
 local function _success(...)
     local msg = table.concat({...}, " ")
-    vim.notify(msg, vim.log.levels.INFO, { title = "sessioner" })
+    vim.notify(msg, vim.log.levels.INFO, { title = "session" })
     return true
 end
 
@@ -89,29 +87,33 @@ M.load = function(name)
     local path = M.get_path_from_name(name)
     path = fn.fnameescape(path)
     if fn.filereadable(path) == 0 then
-        return vim.notify("session not found: " .. tostring(name), vim.log.levels.ERROR, {})
+        return vim.notify("session not found: " .. tostring(name), vim.log.levels.ERROR, { title = "session" })
     end
     local cmd = "silent! source " .. path
 
     return _try_cmd(cmd) and _success("session loaded:", name) and _set_this_session(name)
 end
 
----@param name? string session name
-M.save = function(name)
-    name = name == nil and _this_session or name
-    if name == nil or name == "" then
-        local opts = { prompt = "Enter session name: " }
-        local on_confirm = function(input)
-            vim.cmd.redraw()
-            M.save(input)
-        end
-        return vim.ui.input(opts, on_confirm)
-    end
-    assert(type(name) == "string", "name must exist at this point")
-    local path = M.get_path_from_name(name)
-    local cmd = "mksession! " .. fn.fnameescape(path)
+-- ---@param name? string session name
+-- M.save = function(name)
+--     vim.print(name)
+--     if name == "" then
+--         local opts = { prompt = "Enter session name: " }
+--         local on_confirm = function(input)
+--             vim.cmd.redraw()
+--             M.save(input)
+--         end
+--         return vim.ui.input(opts, on_confirm)
+--     end
+--     if name == nil then return end
+--     assert(type(name) == "string", "name must exist at this point")
+--     local path = M.get_path_from_name(name)
+--     local cmd = "mksession! " .. fn.fnameescape(path)
+--
+--     return _try_cmd(cmd) and _success("session saved:", name) and _set_this_session(name)
+-- end
 
-    return _try_cmd(cmd) and _success("session saved:", name) and _set_this_session(name)
+M.new = function()
 end
 
 M.last = function()

@@ -1,51 +1,62 @@
 local fn = vim.fn
 local api = vim.api
 
-local function with_hl(text, hl)
-    return "%#" .. hl .. "#" .. text
-end
-
 local M = {}
 
 M.render = function()
-    local components = {
-        with_hl(M.fname(), "WinBarFilename"),
-    }
-    return table.concat(components, " ")
+  return table.concat { M.fname(), M.diagnostics(), "%*" }
+end
+
+local function with_hl(text, hl)
+  return "%#" .. hl .. "#" .. text
 end
 
 M.fname = function()
-    local fname = fn.expand("%")
-    local ft = vim.bo.filetype
-    if fname == "" then return ft end
-    local icon, hl = require("mini.icons").get("filetype", ft)
-    fname = fn.fnamemodify(fname, ":t")
-    local out = with_hl(icon .. " " .. fname .. " ", "WinBarFilename") ..  with_hl(" ", "WinBar")
-    out = not vim.bo.modifiable and out .. " " or out
-    -- out = vim.bo.modified and out .. " [•]" or out
-    out = vim.bo.modified and out .. " [+]" or out
-    return " " .. out .. " "
+  local fname = fn.expand("%")
+  local ft = vim.bo.filetype
+  if fname == "" then return ft end
+  fname = fn.fnamemodify(fname, ":t")
+  local hl
+  if vim.bo.modified then
+    -- fname = fname .. " [+]"
+    hl = "WinBarModified"
+  elseif not vim.bo.modifiable then
+    -- fname = fname .. " "
+    hl = "WinBarModifiable"
+  else
+    hl = "WinBarNormal"
+  end
+  local has_mini, mini_icons = pcall(require, "mini.icons")
+  local icon = has_mini and mini_icons.get("filetype", ft) or " "
+  local out = with_hl(" " .. icon .. " " .. fname .. " ", hl)
+  return out
 end
 
--- M.restart = function()
---     package["ui.winbar"] = nil
---     vim.wo.winbar = "%{%v:lua.require('ui.winbar').render()%}"
--- end
--- M.restart()
+local diagnostics_before_entering_insert = ""
+M.diagnostics = function()
+  if fn.mode() == "i" then return diagnostics_before_entering_insert end
+  local count = vim.diagnostic.count(0)
+  local signs = {}
+  signs[#signs + 1] = count[1] and with_hl("", "DiagnosticError")
+  signs[#signs + 1] = count[2] and with_hl("", "DiagnosticWarn")
+  local out = with_hl("  ", "%*") .. table.concat(signs, "  ")
+  diagnostics_before_entering_insert = out
+  return out
+end
 
-vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = vim.api.nvim_create_augroup("winbar", { clear = true }),
-    desc = "Attach winbar",
-    callback = function(args)
-        if
-            not vim.api.nvim_win_get_config(0).zindex -- Not a floating window
-            and vim.bo[args.buf].buftype == '' -- Normal buffer
-            and vim.api.nvim_buf_get_name(args.buf) ~= '' -- Has a file name
-            and not vim.wo[0].diff -- Not in diff mode
-        then
-            vim.wo.winbar = "%{%v:lua.require'ui.winbar'.render()%}"
-        end
-    end,
+api.nvim_create_autocmd("BufWinEnter", {
+  group = api.nvim_create_augroup("winbar", { clear = true }),
+  desc = "Attach winbar",
+  callback = function(args)
+    if
+      not api.nvim_win_get_config(0).zindex
+      and vim.bo[args.buf].buftype == ""
+      and api.nvim_buf_get_name(args.buf) ~= ""
+      and not vim.wo[0].diff
+    then
+      vim.wo.winbar = "%{%v:lua.require'ui.winbar'.render()%}"
+    end
+  end,
 })
 
 return M

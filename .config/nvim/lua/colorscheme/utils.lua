@@ -1,7 +1,16 @@
+local hsluv = require "colorscheme.hsluv"
+
 local M = {}
 
 local _black = "#000000"
 local _white = "#FFFFFF"
+
+M.apply_highlights = function(c)
+
+end
+
+
+---@alias HexColor string a hex color in the format "#RRGGBB"
 
 ---@param c HexColor
 ---@return [integer, integer, integer]
@@ -21,13 +30,12 @@ end
 
 ---@param s string
 ---@return boolean
-local is_hex_color = function(s)
+M.is_hex_color = function(s)
     if type(s) ~= "string" then return false end
 
     local pattern = "^#%x%x%x%x%x%x$"
     return s:match(pattern) and true or false
 end
-
 
 ---@param c1 HexColor
 ---@param alpha number between 0 and 1
@@ -85,12 +93,11 @@ end
 M.brighten = function(c, alpha_s, alpha_l)
     alpha_s = alpha_s or 0.20
     alpha_l = alpha_l or 0.05
-    local hsluv = require("colorscheme.hsluv")
 
     local hsl = hsluv.hex_to_hsluv(c)
     -- max saturation/lightness value is 100
-    hsl[2] = math.min(hsl[2] + alpha_s * 100, 100)
-    hsl[3] = math.min(hsl[3] + alpha_l * 100, 100)
+    hsl[2] = math.min(math.max(hsl[2] + alpha_s * 100, 0), 100)
+    hsl[3] = math.min(math.max(hsl[3] + alpha_l * 100, 0), 100)
 
     return hsluv.hsluv_to_hex(hsl)
 end

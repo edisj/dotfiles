@@ -4,24 +4,25 @@ o.autoindent     = true
 o.autoread       = true
 o.clipboard      = "unnamedplus"
 -- o.colorcolumn    = "90"
-o.cmdheight      = 0
-o.cmdwinheight   = 10
+o.cmdheight      = 1
+o.cmdwinheight   = 15
 o.completeopt    = "menuone,noselect,fuzzy"
 o.confirm        = true
 o.cursorline     = true
 o.equalalways    = false
 o.expandtab      = true
-opt.fillchars = {
-    eob = "~",
-    fold = "╌",
-    vert = "┃",
-    horiz = "━",
-    horizup = "┻",
-    horizdown = "┳",
-    vertleft = "┫",
-    vertright = "┣",
-    verthoriz = "╋",
-}
+-- opt.fillchars = {
+--   eob = "~",
+--   fold = "╌",
+--   -- vert = "▏",
+--   vert = "▎",
+--   horiz = "━",
+--   horizup = "┻",
+--   horizdown = "┳",
+--   vertleft = "┫",
+--   vertright = "┣",
+--   verthoriz = "╋",
+-- }
 o.foldlevel      = 99
 o.foldlevelstart = 99
 o.guicursor      = "n-v-sm:block,i-c-ci-ve:ver20,r-cr-o:hor50,t:ver50-blinkon500-blinkoff500-TermCursor"
@@ -35,17 +36,17 @@ o.laststatus     = 3
 -- opt.listchars      = { space = "⋅", nbsp = "⋅", trail = "⋅", tab = "  " }
 o.matchtime      = 1
 o.mouse          = "a"
-o.mousescroll    = "ver:2"
+o.mousescroll    = "ver:3"
 o.number         = true
 o.numberwidth    = 3
 o.pumborder      = "single"
 o.pumheight      = 10
 o.relativenumber = false
-o.scrolloff      = 10
+o.scrolloff      = 5
 o.shiftwidth     = 4
 o.showmatch      = true
 o.showmode       = false
-o.signcolumn     = "yes"
+o.signcolumn     = "no"
 o.sidescrolloff  = 8
 o.smartindent    = true
 o.softtabstop    = 4
@@ -60,5 +61,42 @@ o.virtualedit    = "block"
 o.wildmode       = "noselect,full"
 o.wildoptions    = "pum,fuzzy"
 -- o.wildoptions    = "fuzzy"
-o.winborder      = "bold"
+o.winborder      =  "🭽,▔,🭾,▕,🭿,▁,🭼,▏"
+-- o.winborder      = "rounded"
 o.wrap           = false
+
+if vim.g.neovide then
+
+  vim.o.guifont = "JetBrainsMono NF:h14"
+  vim.o.linespace = 0
+  vim.g.neovide_scale_factor = 1
+  vim.g.neovide_text_gamma = 0.0
+  vim.g.neovide_text_contrast = 1.0
+
+  vim.g.neovide_padding_top = 10
+  vim.g.neovide_padding_bottom = 0
+  vim.g.neovide_padding_right = 10
+  vim.g.neovide_padding_left = 10
+
+  vim.g.neovide_scroll_animation_length = 0.15
+  vim.g.neovide_scroll_animation_far_lines = 0
+
+  vim.g.neovide_progress_bar_enabled = true
+  vim.g.neovide_progress_bar_height = 5.0
+  vim.g.neovide_progress_bar_animation_speed = 200.0
+  vim.g.neovide_progress_bar_hide_delay = 0.2
+
+  vim.g.neovide_floating_shadow = false
+  vim.g.neovide_show_border = false
+
+  vim.g.neovide_refresh_rate = 120
+  vim.g.neovide_confirm_quit = true
+
+  vim.g.neovide_position_animation_length = 0.20
+
+  vim.g.neovide_cursor_animation_length = 0.15
+  vim.g.neovide_cursor_short_animation_length = 0.04
+  vim.g.neovide_cursor_trail_size = 0.8
+  vim.g.neovide_cursor_antialiasing = true
+  vim.g.neovide_cursor_smooth_blink = false
+end
