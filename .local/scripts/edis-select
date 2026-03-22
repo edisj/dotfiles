@@ -9,7 +9,7 @@ main() {
         --height "${FZF_HEIGHT:-50%}"
         --margin "${FZF_MARGIN:-0,40%,0,1}"
         --padding "${FZF_PADDING:-0}"
-        --preview-border "${FZF_PREVIEW_BORDER:-bold}"
+        --preview-border "${FZF_PREVIEW_BORDER:-thinblock}"
         --border "${FZF_BORDER:-none}"
         --input-border "${FZF_INPUT_BORDER:-bold}"
         --layout reverse

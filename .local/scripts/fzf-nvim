@@ -7,21 +7,21 @@ require nvim fd
 dir="${1:-$(pwd)}"
 dir=$(readlink -f $dir)
 
-[ ! -d $dir ] && error "$dir does not exist"
+[ ! -d $dir ] && error "$dir does not exist" && exit 1
 
 TAB=$'\t'
-readonly fzf_args=(
+readonly FZF_ARGS=(
     --height "${FZF_HEIGHT:-50%}"
     --padding "${FZF_PADDING:-0}"
     --layout reverse
-    # --preview="bat --color=always --style=numbers $dir/{1} 2>/dev/null || eza -lF --color=always $dir/{}"
     --preview "bat --color=always --style=numbers $dir/{} 2>/dev/null || eza --tree --color=always --level 3 $dir/{}"
     --preview-window "right:60%:wrap"
     --preview-border 'thinblock'
     --wrap-sign "$TAB "
     --tabstop 4
     --with-nth -1
+    --scheme path
     --bind "enter:become(nvim $dir/{})"
 )
 
-fd . -t f --hidden --base-directory "$dir" | fzf "${fzf_args[@]}"
+fd . -t f --hidden --base-directory "$dir" | fzf "${FZF_ARGS[@]}" "${@:2}"

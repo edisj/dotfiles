@@ -12,13 +12,12 @@ timestamp() {
 
 error() {
     local msg="$1"
-    local error_code=${2:-1}
     if [[ -t 1 ]]; then
         echo -e "[${BLACK}$(timestamp)${EOC}][${RED}ERROR${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
     else
         echo -e "[$(timestamp)][ERROR] $(basename $0): $msg" >&2
     fi
-    return "$error_code"
+    return 0
 }
 
 warning() {
