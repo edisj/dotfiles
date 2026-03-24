@@ -1,0 +1,48 @@
+# set previewer ~/.config/lf/previewer
+# set cleaner ~/.config/lf/cleaner
+
+set hidden
+set info size
+set dircounts
+set tabstop 4
+set icons
+# set drawbox
+# set ratios 1:2:1
+
+set promptfmt "\033[34;1m%d\033[0m\033[1m%f\033[0m"
+set cursorpreviewfmt ""
+set cursorparentfmt "\033[4m"
+
+set previewer ~/.config/lf/preview.sh
+set cleaner ~/.config/lf/preview-clean.sh
+
+map d
+map <end>
+map <home>
+map <pgdn>
+map <pgup>
+
+cmd open ${{
+    case $(file --mime-type -Lb $f) in
+        text/*) nvim $fx;;
+        *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+    esac
+}}
+map <enter> open
+map <esc> clear
+map <space> toggle
+
+cmd trash %trash-put "$fx"
+map dd trash
+
+map x cut
+map gg bottom
+map G top
+
+map g~ cd ~
+map gc cd ~/.config
+map gD cd ~/Downloads
+
+cmd mkdir %mkdir -p "$@"
+map O push :mkdir<space>
+map o push %touch<space>

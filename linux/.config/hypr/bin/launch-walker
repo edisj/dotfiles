@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+if ! pgrep -x elephant > /dev/null; then
+    notify-send "activating elephant..."
+    setsid uwsm-app -- elephant &
+fi
+
+if ! pgrep -f "walker --gapplication-service" > /dev/null; then
+    notify-send "activating walker gapplication-service"
+    setsid uwsm-app -- walker --gapplication-service &
+fi
+
+# NOTE: i choose these width and height values because these
+# seem to be the exact values of the "No Results" window,
+# which seems to ignore width and height here, so these values
+# result in no "snapping" of dimensions
+exec walker --width 550 --height 600 "$@"

@@ -1,0 +1,51 @@
+force_keyboard_focus = true
+hide_action_hints = false
+theme = "test"
+
+[columns]
+"symbols" = 1
+
+[placeholders]
+"default" = { input = " Search...", list = "No Results" }
+
+[keybinds]
+close = ["Escape", "ctrl c"]
+next = ["Down", "ctrl j"]
+previous = ["Up", "ctrl k"]
+page_down = ["Page_Down", "ctrl d"]
+page_up = ["Page_Up", "ctrl u"]
+quick_activate = []
+
+[providers]
+max_results = 50
+default = [
+  "desktopapplications",
+]
+
+[[providers.prefixes]]
+prefix = "/"
+provider = "providerlist"
+
+[[providers.prefixes]]
+prefix = "."
+provider = "files"
+
+[[providers.prefixes]]
+prefix = ":"
+provider = "symbols"
+
+[[providers.prefixes]]
+prefix = "="
+provider = "calc"
+
+[[providers.prefixes]]
+prefix = "@"
+provider = "websearch"
+
+[[providers.prefixes]]
+prefix = "$"
+provider = "clipboard"
+
+providerlist = [
+  { action = "activate", default = true, bind = "Return", after = "ClearReload" },
+]

@@ -1,0 +1,1 @@
+/home/edis/dotfiles/linux/.zshenv

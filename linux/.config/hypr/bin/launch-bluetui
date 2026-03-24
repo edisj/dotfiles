@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+pkill bluetui || launch-or-focus-tui bluetui

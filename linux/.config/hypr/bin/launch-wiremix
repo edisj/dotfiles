@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+pkill wiremix || launch-or-focus-tui wiremix --tab "output"

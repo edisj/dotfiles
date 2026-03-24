@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+require nvim fd fzf
+
+dir="${1:-$(pwd)}"
+dir=$(readlink -f $dir)
+
+[ ! -d $dir ] && error "$dir does not exist" && exit 1
+
+TAB=$'\t'
+readonly FZF_ARGS=(
+    --height         "${FZF_HEIGHT:-50%}"
+    --padding        "${FZF_PADDING:-0}"
+    --layout         "${FZF_SCHEME:-reverse}"
+    --preview-window "${FZF_PREVIEW_WINDOW:-right:60%}"
+    --preview-border "${FZF_PREVIEW_BORDER:-thinblock}"
+    --wrap-sign      "${FZF_WRAP_SIGN:-$TAB }"
+    --tabstop        "${FZF_TABSTOP:-4}"
+    --with-nth       "${FZF_WITH_NTH:--1}"
+    --scheme         "${FZF_SCHEME:-path}"
+    --preview "bat --color=always --style=numbers $dir/{} 2>/dev/null || eza --tree --color=always --level 3 $dir/{}"
+    # --bind "enter:become(nvim $dir/{} -c 'cd %:h')"
+)
+
+fd . -t f --hidden --base-directory "$dir" | fzf "${FZF_ARGS[@]}" "${@:2}" --bind "enter:become(nvim $dir/{} -c 'cd %:h')"

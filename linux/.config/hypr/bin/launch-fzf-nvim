@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+FZF_HEIGHT="100%" \
+FZF_PADDING="1,3" \
+FZF_PREVIEW_WINDOW="bottom:60%" \
+exec launch-tui fzf-nvim "$HOME"

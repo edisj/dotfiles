@@ -1,0 +1,71 @@
+@import "kanagawa.css";
+
+* {
+    all: unset;
+    font-family: "JetBrainsMono Nerd Font Propo", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+}
+
+.module {
+    min-height: 0;
+    border-radius: 1;
+    padding: 0 4;
+    margin: 8 0;
+}
+.modules-left {
+    padding-left: 15;
+}
+.modules-right {
+    padding-right: 15;
+}
+
+tooltip {
+    background-color: @bg;
+    border: 100px solid @bg;
+    border-radius: 1;
+}
+
+#waybar {
+    background: @bg;
+    color: @fg;
+}
+
+#workspaces button {
+    /* background: @primary; */
+    font-weight: 900;
+    padding: 2 12;
+    margin: 0 0rem;
+    /* color: @fg; */
+}
+#workspaces button.active {
+    border-radius: 1;
+    background: @primary;
+    color: @on_primary;
+}
+
+#battery,
+#memory,
+#bluetooth,
+#pulseaudio,
+#network {
+    /* background-color: @primary; */
+    color: @fg;
+}
+
+#battery.charging {
+    color: white;
+    background-color: @green;
+}
+
+#battery.warning:not(.charging) {
+    background: @red;
+    color: white;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: steps(12);
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+

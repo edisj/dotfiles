@@ -5,7 +5,8 @@ source "$HOME/.local/scripts/lib/logging.sh"
 copr_enable()
 {
     local repo="$1"
-    sudo dnf -y copr enable $repo &>/dev/null && success "enabled copr $1" || error "$repo is invalid"
+    sudo dnf -y copr enable $repo &>/dev/null && success "enabled copr $1" \
+        || (error "$repo is invalid" && exit 1)
 }
 
 info "enabling coprs..."
@@ -16,6 +17,7 @@ copr_enable pennbauman/ports
 copr_enable atim/starship
 copr_enable sneexy/zen-browser
 copr_enable errornointernet/walker
+copr_enable bijumon/neovide-release
 copr_enable foopsss/shell-color-scripts
 echo ""
 
@@ -24,7 +26,7 @@ packages=(
     btop
     cargo
     dbus-devel
-    # elephant
+    elephant
     eza
     fastfetch
     fd-find
@@ -59,13 +61,12 @@ packages=(
     stow
     terminus-fonts-console
     tldr
-    tree-sitter-cli
+    # tree-sitter-cli
     uv
-    # walker
+    walker
     waybar
     wiremix
     which
-    wofi
     xdg-terminal-exec
     zen-browser
     zsh
@@ -84,7 +85,7 @@ sudo snap install zotero-snap
 readonly cargo_crates=(
     bluetui
     impala
-    matugen
+    # matugen
 )
 
 echo ""
