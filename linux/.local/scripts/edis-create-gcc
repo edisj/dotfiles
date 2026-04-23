@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-name="$1"
-edis-create --compiler=gcc --build=gccb --run=crun -- $name
