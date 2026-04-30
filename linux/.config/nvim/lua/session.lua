@@ -9,32 +9,32 @@ local _this_session
 local M = {}
 
 local _did_setup = false
-M.setup = function()
-    if _did_setup then return end
-    _did_setup = true
-
-    fn.mkdir(_dir, "p")
-    vim.opt.sessionoptions = {
-        "blank",
-        -- "buffers",
-        "curdir",
-        "folds",
-        "help",
-        "tabpages",
-        "winsize",
-        "terminal"
-    }
-
-    api.nvim_create_autocmd("VimLeavePre", {
-        desc = "save session on vim leave",
-        group = M.augroup(),
-        callback = function(_)
-            if M.this_session() ~= nil then
-                M.save()
-            end
-        end,
-    })
-end
+-- M.setup = function()
+--     if _did_setup then return end
+--     _did_setup = true
+--
+--     fn.mkdir(_dir, "p")
+--     vim.opt.sessionoptions = {
+--         -- "blank",
+--         -- "buffers",
+--         "curdir",
+--         "folds",
+--         "help",
+--         "tabpages",
+--         "winsize",
+--         "terminal"
+--     }
+--
+--     api.nvim_create_autocmd("VimLeavePre", {
+--         desc = "save session on vim leave",
+--         group = M.augroup(),
+--         callback = function(_)
+--             if M.this_session() ~= nil then
+--                 M.save()
+--             end
+--         end,
+--     })
+-- end
 
 M.this_session = function()
     return _this_session
@@ -128,6 +128,7 @@ M.select = function()
     local items = vim.tbl_map(function(session)
         return fn.fnamemodify(session, ":t:r")
     end, M.get_sessions())
+  items = { "OPT1", "opt2", "opt3",}
     local opts = {
         prompt = "PROMPT TEST",
         format_item = function(item) return "I'd like to choose " .. tostring(item) end,
@@ -136,5 +137,19 @@ M.select = function()
 
     vim.ui.select(items, opts, on_choice)
 end
+
+local function restart()
+  local session = vim.fn.stdpath("state") .. "/restart_session.vim"
+  vim.cmd("mksession! " .. vim.fn.fnameescape(session))
+  vim.cmd("restart source " .. vim.fn.fnameescape(session))
+end
+vim.api.nvim_create_user_command("Restart", restart, {
+  desc = "restart with temp session file"
+})
+
+vim.keymap.set("n", "<leader>sr", function() restart() end, { desc = "restart" })
+vim.keymap.set("n", "<leader>so", function() M.select() end, { desc = "select" })
+vim.keymap.set("n", "<leader>ss", function() M.select() end, { desc = "save" })
+vim.keymap.set("n", "<leader>sl", function() M.last() end, { desc = "last" })
 
 return M

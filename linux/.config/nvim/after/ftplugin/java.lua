@@ -1,47 +1,74 @@
-local root_markers = { ".edis", ".git" }
-local root_dir = vim.fs.root(0, root_markers)
-local project_name = root_dir and vim.fn.fnamemodify(root_dir, ":t") or vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
-local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/" .. project_name
+local fs = vim.fs
+local fn = vim.fn
+local uv = vim.uv
 
+local root_markers = { ".edis.toml", ".git" }
+local root_dir = fs.root(0, root_markers)
+local project_name = root_dir and fn.fnamemodify(root_dir, ":t") or fn.fnamemodify(fn.getcwd(), ":p:h:t")
+local workspace_dir = fs.joinpath(fn.stdpath("cache"), "jdtls", project_name)
+
+local mason_packs = fs.joinpath(fn.stdpath("data"), "mason", "packages")
+local osname = uv.os_uname().sysname
+local os_config = fs.joinpath(mason_packs, "jdtls", "config_linux")
+local bundles = {
+  fn.glob(mason_packs .. "/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar", true),
+}
+
+--- @type vim.lsp.Config
 local config = {
-    name = "jdtls",
-    root_dir = root_dir,
-    root_markers = root_markers,
-    cmd = {
-        "jdtls",
-        "-data", workspace_dir,
-    },
+  name = "jdtls",
+  root_dir = root_dir,
+  root_markers = root_markers,
+  cmd = {
+    "jdtls",
+    "-configuration", os_config,
+    "-data", workspace_dir,
+  },
 
-    -- eclipse.jdt.ls specific settings
-    -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
-    settings = {
-        java = {
-            signagureHelp = {
-                enabled = true,
-                description = { enabled = true },
-            },
-        },
+  -- eclipse.jdt.ls specific settings
+  -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
+  settings = {
+    java = {
+      signagureHelp = {
+        enabled = true,
+        description = { enabled = true },
+      },
     },
+  },
 
-    -- This sets the `initializationOptions` sent to the language server
-    -- If you plan on using additional eclipse.jdt.ls plugins like java-debug
-    -- you'll need to set the `bundles`
-    --
-    -- See https://codeberg.org/mfussenegger/nvim-jdtls#java-debug-installation
-    --
-    -- If you don't plan on any eclipse.jdt.ls plugins you can remove this
-    init_options = {
-        bundles = {}
-    },
+  -- This sets the `initializationOptions` sent to the language server
+  -- https://codeberg.org/mfussenegger/nvim-jdtls#java-debug-installation
+  init_options = { bundles = bundles },
 
-    -- handlers = {
-    --     ["language/status"] = function(err, result, ctx, config)
-    --         -- vim.print(result.message)
-    --         -- vim.v.jdtls_status = result.message or "test"
-    --         -- _G.jdtls_status = result.message or "test"
-    --         -- vim.cmd.redrawstatus()
-    --     end,
-    -- },
+  on_init = function(client)
+    client.server_capabilities.semanticTokensProvider = nil
+  end,
+
+  on_attach = function(client, bufnr)
+    require("jdtls.dap").setup_dap_main_class_configs()
+  end,
+
+  handlers = {
+    ["language/status"] = function(_, result)
+      if result and result.message == "" then return end
+      local chunks = { { result.message } }
+      vim.api.nvim_echo(chunks, false, {
+        kind = "progress",
+        status = result.type == "ServiceReady" and "success" or "running",
+        source = "jdtls",
+        title = "jdtls",
+      })
+    end,
+
+  },
 
 }
-require('jdtls').start_or_attach(config)
+
+---@type jdtls.start.opts
+local opts = {
+  dap = {
+    config_overrides = {},
+    hotcodereplace = "auto",
+  }
+}
+require('jdtls').start_or_attach(config, opts)

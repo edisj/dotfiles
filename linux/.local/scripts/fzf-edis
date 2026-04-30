@@ -4,10 +4,6 @@ source "$HOME/.local/scripts/lib/logging.sh"
 source "$HOME/.local/scripts/lib/require.sh"
 require nvim edis
 
-height="${FZF_HEIGHT:-50%}"
-padding="${FZF_PADDING:-0}"
-
-# dir="$(FZF_HEIGHT="$height" FZF_PADDING="$padding" edis)"
 dir="$(edis)"
 [[ -d "$dir/src" ]] && dir="$dir/src" || exit 1
 

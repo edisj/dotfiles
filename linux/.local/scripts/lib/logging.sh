@@ -10,7 +10,7 @@ timestamp() {
     date +"%H:%M"
 }
 
-error() {
+LOG_ERROR() {
     local msg="$1"
     if [[ -t 1 ]]; then
         echo -e "[${BLACK}$(timestamp)${EOC}][${RED}ERROR${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
@@ -20,17 +20,17 @@ error() {
     return 0
 }
 
-warning() {
+LOG_WARN() {
     local msg="$1"
     if [[ -t 1 ]]; then
-        echo -e "[${BLACK}$(timestamp)${EOC}][${YELLOW}WARNING${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
+        echo -e "[${BLACK}$(timestamp)${EOC}] [${YELLOW}WARNING${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
     else
-        echo -e "[$(timestamp)][WARNING] $(basename $0): $msg" >&2
+        echo -e "[$(timestamp)] [WARN] $(basename $0): $msg" >&2
     fi
     return 0
 }
 
-success() {
+LOG_SUCCESS() {
     local msg="$1"
     if [[ -t 1 ]]; then
         echo -e "[${BLACK}$(timestamp)${EOC}][${GREEN}SUCCESS${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
@@ -40,12 +40,22 @@ success() {
     return 0
 }
 
-info() {
+LOG_DONE() {
     local msg="$1"
     if [[ -t 1 ]]; then
-        echo -e "[${BLACK}$(timestamp)${EOC}][${BLUE}INFO${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
+        echo -e "[${BLACK}$(timestamp)${EOC}] [${GREEN}DONE${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
     else
-        echo -e "[$(timestamp)][INFO] $(basename $0): $msg" >&2
+        echo -e "[$(timestamp)] [DONE] $(basename $0): $msg" >&2
+    fi
+    return 0
+}
+
+LOG_INFO() {
+    local msg="$1"
+    if [[ -t 1 ]]; then
+        echo -e "[${BLACK}$(timestamp)${EOC}] [${BLUE}INFO${EOC}] ${CYAN}$(basename $0)${EOC}: $msg" >&2
+    else
+        echo -e "[$(timestamp)] [INFO] $(basename $0): $msg" >&2
     fi
     return 0
 }

@@ -5,10 +5,6 @@ local M = {}
 local _black = "#000000"
 local _white = "#FFFFFF"
 
-M.apply_highlights = function(c)
-
-end
-
 
 ---@alias HexColor string a hex color in the format "#RRGGBB"
 
@@ -28,13 +24,28 @@ M.rgb_to_hex = function(c)
     return type(c) == "number" and string.format("#%06x", c)
 end
 
+M.get_fg = function(hl_name)
+  local fg = vim.api.nvim_get_hl(0, { name = hl_name, link = false }).fg
+  return fg and M.rgb_to_hex(fg) or nil
+end
+
+M.get_bg = function(hl_name)
+  local bg = vim.api.nvim_get_hl(0, { name = hl_name, link = false }).bg
+  return bg and M.rgb_to_hex(bg) or nil
+end
+
 ---@param s string
 ---@return boolean
 M.is_hex_color = function(s)
     if type(s) ~= "string" then return false end
-
     local pattern = "^#%x%x%x%x%x%x$"
     return s:match(pattern) and true or false
+end
+
+local function clamp(val, min, max)
+  val = math.max(min, val)
+  val = math.min(max, val)
+  return val
 end
 
 ---@param c1 HexColor
@@ -50,12 +61,14 @@ M.blend = function(c1, alpha, c2)
         local fraction_x2 = alpha * x2
         local sum = fraction_x1 + fraction_x2
 
+        sum = clamp(sum, 0, 255)
+        sum = math.floor(sum + 0.5) -- round to nearest whole
         -- cannot be less than 0
-        sum = math.max(0, sum)
+        -- sum = math.max(0, sum)
         -- cannot be greater than 255
-        sum = math.min(sum, 255)
-        -- not sure ...
-        sum = math.floor(sum + 0.5)
+        -- sum = math.min(sum, 255)
+        -- round to nearest whole
+        -- sum = math.floor(sum + 0.5)
 
         return sum
     end
@@ -96,6 +109,8 @@ M.brighten = function(c, alpha_s, alpha_l)
 
     local hsl = hsluv.hex_to_hsluv(c)
     -- max saturation/lightness value is 100
+    -- hsl[2] = clamp(hsl[2], 0, 100)
+    -- hsl[3] = clamp(hsl[3], 0, 100)
     hsl[2] = math.min(math.max(hsl[2] + alpha_s * 100, 0), 100)
     hsl[3] = math.min(math.max(hsl[3] + alpha_l * 100, 0), 100)
 

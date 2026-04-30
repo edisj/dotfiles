@@ -23,7 +23,7 @@ readonly FZF_ARGS=(
     --color "preview-bg:-1"
     --preview "fzf-preview {}"
     --preview-window "right:70%"
-    --bind "enter:become(wallpaper {})"
+    --bind "enter:become(set-wallpaper.sh {})"
 )
 
 fd . -e "jpg" -e "png" -e "gif" "$dir" | fzf "${FZF_ARGS[@]}"

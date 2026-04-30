@@ -11,6 +11,9 @@
 
 # echo "entering .zprofile"
 
+if [[ "$(uname)" == "Darwin" ]]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+fi
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/opt/bin/:$PATH"
 export PATH="$HOME/.local/bin:$PATH"

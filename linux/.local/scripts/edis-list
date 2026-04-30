@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-#source "$HOME/.local/scripts/lib/logging.sh"
 source "$HOME/.local/scripts/lib/require.sh"
 require fd
 
-# out=$(fd -t f --hidden "^.edis$" --base-directory "$HOME")
+
+results=$(fd -t f --hidden "^.edis$|^.edis.toml$" "$HOME" "/tmp")
 close_msg=$'\n\n\e[1;36mPress any key to close...\e[0m'
-read -n 1 -s -p "$(fd -t f --hidden "^.edis$" --base-directory "$HOME")$close_msg"
+read -n 1 -s -p "$results$close_msg"
 

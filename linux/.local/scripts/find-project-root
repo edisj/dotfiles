@@ -16,28 +16,28 @@ EOF
 
 _find_project_root() {
 
-    local marker="${1:-$PROJECT_ROOT_MARKER}"
+  local marker="${1:-$PROJECT_ROOT_MARKER}"
 
-    if [[ -z "$marker" ]]; then
-        error "PROJECT_ROOT_MARKER is not set, must pass root marker as argument." && exit 1
+  if [[ -z "$marker" ]]; then
+    LOG_ERROR "PROJECT_ROOT_MARKER is not set, must pass root marker as argument." && exit 1
+  fi
+
+  local current_dir=$(pwd -P) || { LOG_ERROR "pwd failed?"; exit 1; }
+  while [[ "$current_dir" != "/" ]]; do
+
+    if [[ -e "$current_dir/$marker" ]]; then
+      echo "$current_dir" && return 0
     fi
 
-    local current_dir=$(pwd -P) || (error "pwd failed?" && exit 1)
-    while [[ "$current_dir" != "/" ]]; do
+    current_dir=$(dirname "$current_dir")
+  done
 
-        if [[ -e "$current_dir/$marker" ]]; then
-            echo "$current_dir" && return 0
-        fi
-
-        current_dir=$(dirname "$current_dir")
-    done
-
-    error "could not locate '$marker' root marker." && exit 1
+  LOG_ERROR "could not locate '$marker' root marker." && exit 1
 }
 
 main() {
-    [[ "$1" == "help" ]] && _help && exit 0
-    _find_project_root "$@"
+  [[ "$1" == "help" ]] && _help && exit 0
+  _find_project_root "$@"
 }
 
 main "$@"

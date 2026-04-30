@@ -20,7 +20,7 @@
         --walker-skip .git,node_modules,target,.npm,.cache,csc205,snap,.zen,.var,.cargo/registry \
         --color=fg+:$fg_selected \
         --color=bg+:$bg_selected \
-        --color=fg:bright-black \
+        --color=fg:white \
         --color=preview-bg:$preview_bg \
         --color=preview-fg:$preview_fg \
         --color=preview-border:$preview_border \

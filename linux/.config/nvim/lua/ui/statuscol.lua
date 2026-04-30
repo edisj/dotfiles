@@ -5,11 +5,13 @@ local api = vim.api
 -- but the timer wipes the cache every `DEBOUNCE` ms so its effectively a throttle
 local cache = {}
 local signs_cache = {}
-local DEBOUNCE = 25 -- ms
+local dapPC = {}
+local DEBOUNCE = 1 -- ms
 local timer = assert(vim.uv.new_timer(), "how did timer fail???")
 timer:start(DEBOUNCE, DEBOUNCE, function()
   cache = {}
   signs_cache = {}
+  dapPC = {}
 end)
 
 local M = {}
@@ -23,7 +25,7 @@ M.render = function()
   if cache[key] then return cache[key] end
 
   -- signs_cache[bufnr] = M.get_signs(bufnr)
-  local statuscolumn = table.concat { M.gitsigns(bufnr), M.lnum(bufnr), M.margin(1) }
+  local statuscolumn = table.concat { M.signs(bufnr), M.lnum(bufnr) }
   cache[key] = statuscolumn
   return statuscolumn
 end
@@ -38,9 +40,9 @@ local function with_hl(text, hl)
   return hl and "%#" .. hl .. "#" .. text or text
 end
 
-local function is_gitsign(extmark)
+local function is_sign(extmark, sign)
   local details = extmark[4]
-  return details.sign_hl_group:match("GitSigns")
+  return details.sign_name and details.sign_name:match(sign) or details.sign_hl_group:match(sign)
 end
 
 local function extmark_to_sign(extmark)
@@ -52,22 +54,30 @@ local function extmark_to_sign(extmark)
   }
 end
 
-M.gitsigns = function(bufnr)
-  local buf_signs = signs_cache[bufnr]
-  if not buf_signs then
-    buf_signs = {}
-    local extmarks = api.nvim_buf_get_extmarks(bufnr, -1, 0, -1, { details = true, type = "sign" })
-    for _, extmark in ipairs(extmarks) do
-      if is_gitsign(extmark) then
-        local lnum = extmark[2] + 1
-        buf_signs[lnum] = extmark_to_sign(extmark)
-      end
+local function fill_signs_cache(bufnr)
+  local buf_signs = {}
+  local extmarks = api.nvim_buf_get_extmarks(bufnr, -1, 0, -1, { details = true, type = "sign" })
+  for _, extmark in ipairs(extmarks) do
+    if is_sign(extmark, "DapStopped") then
+      local lnum = extmark[2] + 1
+      local sign = extmark_to_sign(extmark)
+      sign.bufnr = bufnr
+      dapPC = sign
+    elseif is_sign(extmark, "GitSigns") or is_sign(extmark, "Dap") then
+      local lnum = extmark[2] + 1
+      buf_signs[lnum] = extmark_to_sign(extmark)
     end
-    signs_cache[bufnr] = buf_signs
   end
+  signs_cache[bufnr] = buf_signs
+  return buf_signs
+end
 
+M.signs = function(bufnr)
+  if not signs_cache[bufnr] then
+    fill_signs_cache(bufnr)
+  end
   local line_sign = signs_cache[bufnr][vim.v.lnum]
-  return with_hl(line_sign and line_sign.text or "  ", line_sign and line_sign.hl) .. "%*"
+  return "" ..with_hl(line_sign and line_sign.text or "  ", line_sign and line_sign.hl) .. "%*"
 end
 
 M.lnum = function(bufnr)
@@ -76,10 +86,11 @@ M.lnum = function(bufnr)
   local relnum = vim.v.relnum
   local num = (vim.wo.relativenumber and relnum ~= 0 and relnum) or lnum
   local text = ("%" .. width .. "d"):format(num)
-  -- local border = "▕"
-  local border = "🮇"
-  -- local border = "🮈"
-  return text .. with_hl(border, "StatusColBorder")
+  -- local border = " " -- 1/8
+  -- local border = "▕" -- 1/8
+  local border = "🮇" -- 1/4
+  -- local border = "🮈" -- 3/8
+  return text .. " " .. with_hl(border, "StatusColBorder") .. with_hl("", "Normal")
 end
 
 -- FIXME: update margin outside of cache cycle so cursorline doesn't lag
@@ -88,6 +99,20 @@ M.margin = function(amount)
   -- local hl = fn.line(".") == vim.v.lnum and "CursorLine" or "Normal"
   local hl = vim.v.relnum == 0 and "CursorLine" or "Normal"
   return with_hl(text, hl)
+end
+
+M.dapPC = function(bufnr)
+  -- local pc = dapPC and dapPC[bufnr][vim.v.lnum]
+  local lnum = vim.v.lnum
+  local out = dapPC.text
+    and bufnr == dapPC.bufnr
+    and lnum == dapPC.lnum
+    and with_hl("", "Normal") ..with_hl(dapPC.text, dapPC.hl) or "  "
+  -- P(dapPC)
+  -- local text = pcand vim.trim(pc.text) or " "
+  -- local hl = pc and pc.hl or "%*"
+  -- P(text)
+  return out
 end
 
 return M

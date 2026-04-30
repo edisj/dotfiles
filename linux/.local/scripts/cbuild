@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+source "$HOME/.local/scripts/lib/logging.sh"
+source "$HOME/.local/scripts/lib/require.sh"
+
+compiler="$1"
+case "$1" in
+  gcc|clang)   ext="c";   shift; ;;
+  g++|clang++) ext="cpp"; shift; ;;
+  *)           LOG_ERROR "compiler must be gcc|g++|clang|clang++"; exit 1; ;;
+esac
+
+require find-project-root fd "$compiler"
+
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    -l | --link)
+      link="true"
+      shift
+      ;;
+    -q | --quiet)
+      LOG_INFO() { :; }
+      LOG_WARN() { :; }
+      LOG_DONE() { :; }
+      quiet="true"
+      shift
+      ;;
+    -qq | --qquiet)
+      LOG_INFO() { :; }
+      LOG_WARN() { :; }
+      LOG_DONE() { :; }
+      LOG_ERROR() { :; }
+      qquiet="true"
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      LOG_ERROR "Unknown option: $1" && exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+_compile_source_files() {
+  local project_root="$1"
+  local source_dir="$2"
+  local build_dir="$3"
+  shift 3
+  local has_errors=0
+
+  [[ $(fd . -e "$ext" "$source_dir" | wc -l) -eq 0 ]] \
+  && LOG_ERROR "no source files detected in '$source_dir'" \
+  && return 1
+
+  LOG_INFO "attempting to compile source files:"
+  while read -r file; do
+    local filename="$(basename $file)"
+    local obj_name="${filename%.$ext}.o"
+    local file_relative_to_src_dir="${file#$source_dir/}"
+
+    [[ -z "$quiet" && -z "$qquiet" ]] \
+    && echo -e "\t$file_relative_to_src_dir -> ${file_relative_to_src_dir%.$ext}.o" >&2
+
+    "$compiler" -c "$file" -o "$build_dir/$obj_name" "$@"
+
+    if [ $? -ne 0 ]; then
+      has_errors=1
+    fi
+  done < <(fd . -e "$ext" "$source_dir")
+
+  return $has_errors
+}
+
+_link_object_files() {
+  local project_root="$1"
+  local build_dir="$2"
+  local prog_name="$(basename $project_root)"
+  shift 2
+
+  "$compiler" "$build_dir"/*.o -o "$build_dir/$prog_name" "$@"
+  return $?
+}
+
+main() {
+  local project_root
+  local marker="${PROJECT_ROOT_MARKER:-.edis.toml}"
+  project_root=$(find-project-root "$marker" 2>/dev/null)
+  if [[ -z "$project_root" ]]; then
+    LOG_ERROR "root marker '$marker' not found" && exit 1
+  fi
+
+  local project_name="$(basename $project_root)"
+  local source_dir="$project_root/src"
+  local build_dir="$project_root/build"
+  mkdir -p "$build_dir"
+
+  LOG_INFO "building project into $project_name/build..." \
+  && _compile_source_files "$project_root" "$source_dir" "$build_dir" "$@" || { LOG_ERROR "compiling failed"; exit 1; } \
+  && LOG_INFO "linking object files in $project_name/build..." \
+  && _link_object_files "$project_root" "$build_dir" "$@" || { LOG_ERROR "linking failed"; exit 1; } \
+  && LOG_DONE "program is $project_name/build/$project_name" \
+  && echo "$build_dir/$project_name" \
+  && exit 0
+}
+
+main "$@"
+

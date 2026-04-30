@@ -7,7 +7,23 @@ padding=10,15
 border-size=2
 border-radius=2
 max-icon-size=44
-include=~/.config/mako/matugen.conf
+
+background-color=#294677
+text-color=#d7e2ff
+border-color=#acc7ff
+# Per-mode settings
+
+[mode=do-not-disturb]
+invisible=1
+on-notify=none
+
+[mode=silent]
+on-notify=none
+
+[urgency=high]
+background-color=#1e2025
+text-color=#ffb4ab
+border-color=#93000a
 
 [app-name=Spotify]
 invisible=1

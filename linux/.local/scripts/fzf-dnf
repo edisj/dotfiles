@@ -8,15 +8,15 @@ readonly QUERY='dnf --cacheonly --quiet repoquery --qf %{name}\n'
 readonly PREVIEW="dnf --cacheonly --quiet info"
 
 readonly FZF_ARGS=(
-    --height "${FZF_HEIGHT:-75%}"
-    --padding "${FZF_PADDING:-1,0,1,0}"
-    --layout=reverse
-    --preview "$PREVIEW {1}"
-    --preview-window "down:65%"
-    --preview-border="thinblock"
-    --input-border="bottom"
-    --input-label " Fedora DNF packages "
-    --bind="enter:become(sudo dnf --quiet -y install {})"
+--height "${FZF_HEIGHT:-75%}"
+--padding "${FZF_PADDING:-1,0,1,0}"
+--layout=reverse
+--preview "$PREVIEW {1}"
+--preview-window "down:65%"
+--preview-border="thinblock"
+--input-border="bottom"
+--input-label " Fedora DNF packages "
+--bind="enter:become(sudo dnf --quiet -y install {})"
 )
 
 $QUERY | fzf "${FZF_ARGS[@]}"

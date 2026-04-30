@@ -9,6 +9,7 @@ size = 14
 
 [box-drawing]
 # "font-glyph", "native" or "selected-native"
+# mode = "font-glyph"
 mode = "selected-native"
 
 # [box-drawing.sizes]

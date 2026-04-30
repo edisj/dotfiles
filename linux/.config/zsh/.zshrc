@@ -28,12 +28,15 @@ ZSH_HIGHLIGHT_STYLES[path]='fg=cyan'
 
 # use an anonymous function here to prevent polluting env namespace when sourcing this
 () {
+
+    local prefix
+    [[ "$(uname)" == "Darwin" ]] && prefix="/opt/homebrew/share/" || prefix="/usr/share/"
     local plugs=(
-        "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-        "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+        "zsh-autosuggestions/zsh-autosuggestions.zsh"
+        "zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
     )
     for plug in "${plugs[@]}"; do
-        [[ -f $plug ]] && source $plug
+        [[ -f "$prefix$plug" ]] && source "$prefix$plug"
     done
 
     # IMPORTANT: need to load complist BEFORE autoloading compinit
@@ -61,6 +64,10 @@ ZSH_HIGHLIGHT_STYLES[path]='fg=cyan'
     autoload -Uz edit-command-line
     zle -N edit-command-line
     bindkey -M vicmd v edit-command-line
+
+    stty -ixon
+    bindkey '^S' history-incremental-search-forward
+    bindkey '^R' history-incremental-search-backward
 }
 
 bindkey -v && export KEYTIMEOUT=1
@@ -78,6 +85,8 @@ bindkey '^H' backward-delete-char
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 
+bindkey '^R' history-incremental-search-backward
+
 _fzf-nvim()
 {
     BUFFER="fzf-nvim $BUFFER"
@@ -88,10 +97,9 @@ bindkey '^O' _fzf-nvim
 bindkey -s "^P" "fzf-dnf\n"
 bindkey -s "^E" "fzf-edis\n"
 
-eval "$(uv generate-shell-completion zsh)"
-
 source "$ZDOTDIR/aliases.zsh"
-source "$ZDOTDIR/transient-prompt.zsh"
+if command -v uv &> /dev/null; then eval "$(uv generate-shell-completion zsh)"; fi
+if command -v starship &> /dev/null; then source "$ZDOTDIR/transient-prompt.zsh"; fi
 
 ls-colors-show()
 {

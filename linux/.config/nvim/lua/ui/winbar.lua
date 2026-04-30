@@ -24,7 +24,7 @@ M.on_click_fname = function(minwid, _, _, _)
   })
 
   local TIMEOUT = 500
-  fname_win:create_autocmd("CursorMoved", function(win, _)
+  fname_win:on("CursorMoved", function(win, _)
     vim.defer_fn(function() win:close() end, TIMEOUT)
   end, { once = true })
 
@@ -58,10 +58,37 @@ end
 
 M.render = function()
   return table.concat({
+    -- M.pad(),
     with_click(M.fname(), "on_click_fname", api.nvim_get_current_win()),
     M.diagnostics(),
     "%*"
   })
+end
+
+local mini_icon_cache = {}
+local function get_ft_icon(bg_hl)
+  if not package.loaded["mini.icons"] then
+    return " ", bg_hl
+  end
+  local ft = vim.bo.filetype
+  local icon, mini_icon_hl = require("mini.icons").get("filetype", ft)
+  local hl_name = bg_hl .. "_" .. ft
+  if mini_icon_cache[hl_name] then
+    return unpack(mini_icon_cache[hl_name])
+  end
+
+  local fg = vim.api.nvim_get_hl(0, { name = mini_icon_hl, link = false }).fg
+  local bg = vim.api.nvim_get_hl(0, { name = bg_hl }).bg
+  vim.api.nvim_set_hl(0, hl_name, { fg = fg, bg = bg })
+  mini_icon_cache[hl_name] = { icon, hl_name }
+  return icon, hl_name
+end
+
+M.pad = function()
+  local winid = vim.api.nvim_get_current_win()
+  local textoff = vim.fn.getwininfo(winid)[1].textoff
+  local out = string.rep(" ", textoff)
+  return with_hl(out, "LineNr")
 end
 
 M.fname = function()
@@ -79,9 +106,14 @@ M.fname = function()
   else
     hl = "WinBarNormal"
   end
-  local has_mini, mini_icons = pcall(require, "mini.icons")
-  local icon = has_mini and mini_icons.get("filetype", ft) or " "
-  local out = with_hl(" " .. icon .. " " .. fname .. " ", hl)
+  local icon, icon_hl
+  if not package.loaded["mini.icons"] then
+    icon, icon_hl = " ", hl
+  else
+    icon, icon_hl = get_ft_icon("WinBarNormal")
+  end
+
+  local out = with_hl(" " .. icon .. " ", icon_hl) .. with_hl(fname .. " ", hl)
   return out
 end
 
@@ -90,9 +122,10 @@ M.diagnostics = function()
   if fn.mode() == "i" then return diagnostics_before_entering_insert end
   local count = vim.diagnostic.count(0)
   local signs = {}
-  signs[#signs + 1] = count[1] and with_hl("", "DiagnosticError")
-  signs[#signs + 1] = count[2] and with_hl("", "DiagnosticWarn")
-  local out = with_hl("  ", "%*") .. table.concat(signs, "  ")
+  signs[#signs + 1] = count[1] and with_hl("", "WinBarError")
+  signs[#signs + 1] = count[2] and with_hl("", "WinBarWarn")
+  local out = table.concat(signs, "  ")
+  out = out == "" and out or " " .. out .. " "
   diagnostics_before_entering_insert = out
   return out
 end
