@@ -9,7 +9,9 @@ copr_enable() {
 }
 
 LOG_INFO "enabling coprs..."
-copr_enable solopasha/hyprland
+# copr_enable solopasha/hyprland
+copr_enable sdegler/hyprland
+# copr_enable solopasha/hyprland
 copr_enable alternateved/eza
 copr_enable agriffis/neovim-nightly
 copr_enable pennbauman/ports

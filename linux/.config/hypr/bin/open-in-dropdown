@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+CLASS="$1"
+PROG="$2"
+
+
+gap="$(get-monitor-height 0.5)"
+hyprctl keyword windowrulev2 "tiling, class:^($CLASS)$" >/dev/null
+hyprctl keyword workspace "special:$CLASS, gapsout:-3 -3 $gap -3, gapsin:0" >/dev/null
+
+hyprctl keyword bezier "dropIn, 0.22, 1, 0.36, 1"
+hyprctl keyword animation "specialWorkspace, 1, 4, dropIn, slidefadevert -75%"
+# hyprctl keyword animation "specialWorkspace, 1, 5, dropIn, popin -50%"
+
+if ! hyprctl clients -j | jq -e --arg c "$CLASS" '.[] | select(.class==$c)' >/dev/null; then
+  hyprctl dispatch exec "[workspace special:$CLASS silent] $PROG"
+  for _ in {1..40}; do
+    hyprctl clients -j | jq -e --arg c "$CLASS" '.[] | select(.class==$c)' >/dev/null && break
+    sleep 0.025
+  done
+fi
+hyprctl dispatch togglespecialworkspace "$CLASS"

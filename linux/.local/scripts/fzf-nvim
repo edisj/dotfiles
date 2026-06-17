@@ -13,7 +13,7 @@ TAB=$'\t'
 readonly FZF_ARGS=(
     --height         "${FZF_HEIGHT:-50%}"
     --padding        "${FZF_PADDING:-0}"
-    --layout         "${FZF_SCHEME:-reverse}"
+    --layout         "${FZF_LAYOUT:-reverse}"
     --preview-window "${FZF_PREVIEW_WINDOW:-right:60%}"
     --preview-border "${FZF_PREVIEW_BORDER:-thinblock}"
     --wrap-sign      "${FZF_WRAP_SIGN:-$TAB }"

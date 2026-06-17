@@ -4,13 +4,20 @@ local fs = vim.fs
 local fn = vim.fn
 local api = vim.api
 
+local group = vim.api.nvim_create_augroup("ui-messages", { clear = true })
 Config.on("FileType", function()
   local ui2 = require("vim._core.ui2")
   local win = ui2.wins and ui2.wins.msg
   if win and vim.api.nvim_win_is_valid(win) then
-    api.nvim_win_set_config(win, { border = "none" })
+    api.nvim_win_set_config(win, {
+      border = { "", "", "", " ", "", "", "", " " },
+    })
   end
-end, { pattern = "msg" })
+end, { pattern = "msg", group = group })
+
+local a = true
+if a then return end
+
 
 local function append_item(items, filename, lnum, text, type)
   items[#items + 1] = {
@@ -97,8 +104,8 @@ local intercept_handlers = setmetatable({}, {
     return function() return true end
   end
 })
-intercept_handlers["lua_error"] = lua_error_handler
-intercept_handlers["emsg"] = lua_error_handler
+-- intercept_handlers["lua_error"] = lua_error_handler
+-- intercept_handlers["emsg"] = lua_error_handler
 
 local _msg_show = msg.msg_show
 msg.msg_show = function(kind, ...)

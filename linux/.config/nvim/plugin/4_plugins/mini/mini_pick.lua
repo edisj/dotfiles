@@ -1,56 +1,70 @@
 local nmap_leader = Config.nmap_leader
 local nmap = Config.nmap
-local _cmdheight_saved = vim.o.cmdheight
 
 -- local _win_config = function()
---   local state = MiniPick.get_picker_state()
+--   local state = require("mini.pick").get_picker_state()
 --   local is_preview = state ~= nil and state.buffers.preview == vim.api.nvim_win_get_buf(state.windows.main)
 --   local is_info = state ~= nil and state.buffers.info == vim.api.nvim_win_get_buf(state.windows.main)
---   local preview_width = math.floor(0.45 * vim.o.columns)
---   local preview_height = math.floor(0.75 * vim.o.lines)
---
---   local main_height = math.floor(0.40 * vim.o.lines)
---   local main_width = math.floor(0.35 * vim.o.columns)
---
+--   local preview_height = math.floor(0.80 * vim.o.lines)
+--   local preview_width = math.floor(0.50 * vim.o.columns)
+--   local main_height = math.floor(0.45 * vim.o.lines)
+--   local main_width = math.floor(0.40 * vim.o.columns)
+--   main_height = 20
+--   main_width = 50
 --   local width = is_preview and preview_width or main_width
 --   local height = (is_preview or is_info) and preview_height or main_height
---
---   return { anchor = "NW", row = 0, col = 0, width = width, height = height }
+--   return {
+--     relative = "laststatus",
+--     anchor = "SW",
+--     row = 0,
+--     col = 2,
+--     width = width,
+--     height = height,
+--     -- border = "bold",
+--   }
 -- end
---
--- -- Ensure that window is updated every time a new buffer is shown in it.
--- -- Schedule since state data is not yet updated when the buffer is shown.
 -- local refresh_picker = vim.schedule_wrap(function()
---   if not MiniPick.is_picker_active() then return end
---   MiniPick.refresh()
+--   if not require("mini.pick").is_picker_active() then return end
+--   require("mini.pick").refresh()
 -- end)
--- autocmd("BufWinEnter", { callback = refresh_picker })
+-- vim.api.nvim_create_autocmd("BufWinEnter", { callback = refresh_picker })
 
-local minibuffer_win_config = function()
-  local cmd_win = require("vim._core.ui2").wins.cmd
-  return {
-    width = vim.api.nvim_win_get_width(cmd_win),
-    -- height = vim.api.nvim_win_get_height(cmd_win) - 2,
-    height = vim.g.minibuffer_height - 2,
-    border = { "▔", "▔", "▔", " ", " ", " ", " ", " " },
-    zindex = vim.api.nvim_win_get_config(cmd_win).zindex + 1,
-    -- relative = "win",
-    relative = "minibuffer",
-    win = cmd_win,
-  }
+local ns_digit_prefix = vim.api.nvim_create_namespace("cur-buf-pick-show")
+local function show_buf_lines(buf_id, items, query, opts)
+  if items == nil or #items == 0 then return end
+
+  -- Show as usual
+  MiniPick.default_show(buf_id, items, query, opts)
+
+  -- Move prefix line numbers into inline extmarks
+  local lines = vim.api.nvim_buf_get_lines(buf_id, 0, -1, false)
+  local digit_prefixes = {}
+  for i, l in ipairs(lines) do
+    local _, prefix_end, prefix = l:find("^(%s*%d+│)")
+    if prefix_end ~= nil then
+      digit_prefixes[i], lines[i] = prefix, l:sub(prefix_end + 1)
+    end
+  end
+
+  vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
+  for i, pref in pairs(digit_prefixes) do
+    local opts = { virt_text = { { pref, "MiniPickNormal" } }, virt_text_pos = "inline" }
+    vim.api.nvim_buf_set_extmark(buf_id, ns_digit_prefix, i - 1, 0, opts)
+  end
+
+  -- Set highlighting based on the curent filetype
+  local ft = vim.bo[items[1].bufnr].filetype
+  local has_lang, lang = pcall(vim.treesitter.language.get_lang, ft)
+  local has_ts, _ = pcall(vim.treesitter.start, buf_id, has_lang and lang or ft)
+  if not has_ts and ft then vim.bo[buf_id].syntax = ft end
 end
 
----@diagnostic disable-next-line: unused-function, unused-local
 local function setup_mini_pick()
 
   local function arglist_add(k)
-    -- local ok, arglist = pcall(require, "arglist")
-    -- if not ok then return end
     local current = MiniPick.get_picker_matches().current
     if current == nil or vim.uv.fs_stat(current).type ~= "file" then return end
-
     MiniPick.default_choose(current)
-    -- local file = vim.fn.fnamemodify(current, ":p")
     Arglist.set_key(k, current)
     MiniPick.stop()
   end
@@ -94,18 +108,17 @@ local function setup_mini_pick()
       hidden = true,
     },
     window = {
-      -- config = minibuffer_win_config,
-      config = {
-        relative = "minibuffer",
-        border = { "▔", "▔", "▔", " ", " ", " ", " ", " " },
-      },
-      -- prompt_prefix = " >>> ",
-      -- prompt_prefix = " Pick >>> ",
-      prompt_prefix = " Pick: ",
-      prompt_caret = "▌",
+      config = function()
+        return {
+          relative = "msgarea",
+          border = { "▔", "▔", "▔", " ", " ", " ", " ", " " },
+          height = 20,
+        }
+    end,
+      prompt_prefix = ">>> ",
       -- prompt_caret = "▎",
-      -- prompt_caret = "🯏",
-      -- prompt_caret ="█ ",
+      prompt_caret = "🯏",
+      -- prompt_caret = "▌",
     },
   })
   require("mini.pick").registry.registry = function()
@@ -117,25 +130,25 @@ local function setup_mini_pick()
     return picker.registry[selected]()
   end
 
-  local function setup_minibuffer()
-    vim.cmd.mode()
-    local cmd_win = require("vim._core.ui2").wins.cmd
-    vim.o.cmdheight = vim.g.minibuffer_height
-    local win = MiniPick.get_picker_state().windows.main
-    Config.on("WinClosed", function()
-      vim.schedule(function()
-        vim.o.cmdheight = _cmdheight_saved
-        -- vim.cmd.redraw()
-      end)
-    end, { pattern = tostring(win), once = true })
+  MiniPick.registry.buffer_lines_current = function()
+    -- local local_opts = { scope = "current", preserve_order = true } -- use preserve_order
+    local local_opts = { scope = "current" }
+    MiniExtra.pickers.buf_lines(local_opts, { source = { show = show_buf_lines } })
   end
 
-  -- vim.api.nvim_create_autocmd("User", {
-  --   pattern = "MiniPickStart",
-  --   callback = vim.schedule_wrap(setup_minibuffer)
-  -- })
-
-  nmap("<C-f>", function() MiniPick.builtin.files() end, { desc = "Pick files" })
+  nmap("<C-f>", function()
+    local cwd = vim.fn.getcwd()
+    local path = vim.fn.fnamemodify(cwd, ":~")
+    MiniPick.builtin.files({}, {
+      source = {
+        show = function(buf_id, items_arr, query)
+          require("mini.pick").default_show(buf_id, items_arr, query, { show_icons = true } )
+          -- local lines = vim.tbl_map(function(x) return 'Item: ' .. x end, items_arr)
+          -- vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
+        end
+      },
+      window = { prompt_prefix = " Find: " .. path .. "/" }
+    }) end, { desc = "Pick files" })
   nmap_leader("ff", function() MiniPick.registry.registry() end,   { desc = "registry" })
   nmap_leader("fh", function() MiniPick.builtin.help() end,        { desc = "helptags" })
   nmap_leader("fb", function() MiniPick.builtin.buffers() end,     { desc = "buffers" })
@@ -145,6 +158,21 @@ local function setup_mini_pick()
   nmap_leader("fD", function() MiniExtra.pickers.diagnostic() end, { desc = "diagnostics" })
   nmap_leader("fk", function() MiniExtra.pickers.keymaps() end,    { desc = "keymaps" })
   nmap_leader("fH", function() MiniExtra.pickers.hl_groups() end,  { desc = "highlights" })
+
+  nmap("<M-/>", function() MiniExtra.pickers.buf_lines({ scope = "current" }, {
+    { source = { show = show_buf_lines }}
+  }) end)
+  nmap("<M-S-/>", function()
+    MiniExtra.pickers.buf_lines({}, {
+      source = {
+        show = function(buf_id, items_arr, query)
+          require("mini.pick").default_show(buf_id, items_arr, query, { show_icons = false } )
+        end,
+      },
+    })
+  end)
+
+  nmap("<leader><leader>", function() MiniPick.builtin.resume() end)
 
   nmap_leader("fc", function()
     local cwd = vim.fn.stdpath("config")
@@ -179,4 +207,4 @@ local function setup_mini_pick()
   nmap_leader("fP", function() pp("grep_live") end, { desc = "grep packs" })
 end
 
-Pack.load_on_loop(function() setup_mini_pick() end)("mini.pick")
+Pack.load_on_loop(setup_mini_pick)("mini.pick")

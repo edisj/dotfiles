@@ -2,6 +2,7 @@ local _terminal = nil
 local function terminal()
   if _terminal then return _terminal end
 
+  local mini = package.loaded["msgarea"]
   local win_opts = {
     bufnr = function()
       local bufnr = vim.api.nvim_create_buf(false, true)
@@ -9,21 +10,24 @@ local function terminal()
       return bufnr
     end,
     position = "center",
-    split = "right",
+    split = "below",
+    relative = mini and "msgarea" or "editor",
+    -- win = -1,
     style = "minimal",
     -- win = function(self) return not self.is_float and -1 or nil end,
     width = function(self, _) return self:is_floating() and 0.75 or 0.5 end,
     height = function(self, _) return self:is_floating() and 0.60 or 10 end,
-    border = { "🭽", "▔", "🭾", "🮇", "🭿", "▁", "🭼", "▏" },
+    border = mini and "none" or { "🭽", "▔", "🭾", "🮇", "🭿", "▁", "🭼", "▏" },
+    title = " TERMINAL ",
     wo = {
-      winhl = "Normal:NormalFloat",
+      -- winhl = "Normal:NormalFloat",
       winfixbuf = true,
-      winbar = "",
+      -- winbar = "",
       -- statusline = "%{%v:lua.require('ui.statusline').render()%}",
     },
   }
 
-  _terminal = Win.split(win_opts)
+  _terminal = Win.float(win_opts)
 
   _terminal:on("BufEnter", function(win, ev)
     vim.cmd.startinsert()

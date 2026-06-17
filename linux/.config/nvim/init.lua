@@ -3,7 +3,6 @@ vim.g._start_time = vim.uv.hrtime()
 vim.g.mapleader = " "
 
 vim.g.hl_suspended = true
-vim.g.minibuffer_height = 11
 
 _G.P = vim.print
 _G.Config = {}
@@ -19,7 +18,8 @@ Config.on = function(event, cb, opts)
   vim.api.nvim_create_autocmd(event, opts)
 end
 
-vim.cmd.colorscheme "kanordwa2"
+vim.cmd.colorscheme "kanordwa"
+-- vim.cmd.colorscheme "mac_clear"
 
 do
   local function lazy_require(modname)
@@ -31,21 +31,12 @@ do
       end,
     })
   end
-  _G.Win = lazy_require("ui.win")
-  _G.Edis = lazy_require("edis")
+  _G.Win = lazy_require("win")
   _G.Terminal = lazy_require("floaterminal")
   _G.Session = lazy_require("session")
+  _G.Edis = require "edis"
   _G.Arglist = require "arglist" -- no lazy
-
-  local quicksys = require("quicksys")
-  quicksys.setup()
-  local builtin = require("quicksys.builtin").sources
-  quicksys.sources.default = builtin.flat
-  quicksys.sources.Diagnostics = builtin.nested
-  quicksys.sources.References = builtin.nested
-  _G.Quickfix = require "quicksys.quickfix"
 end
-
 
 ---wraps vim.pack.add with a custom loader
 ---@param specs (string | vim.pack.Spec)[]
@@ -64,11 +55,11 @@ function Pack.add(specs)
   })
 end
 
----@alias loader fun(name: string, ev?: vim.api.keyset.create_autocmd.callback_args)
+---@alias Pack.loader fun(name: string, ev?: vim.api.keyset.create_autocmd.callback_args)
 ---
----@param event vim.api.keyset.events
----@param loader loader
----@return loader
+---@param event vim.api.keyset.events | vim.api.keyset.events[]
+---@param loader Pack.loader
+---@return Pack.loader
 function Pack.load_on_event(event, loader)
   return function(name)
     local event_str = type(event) == "table" and table.concat(event, ", ") or event
@@ -91,8 +82,8 @@ do
   -- https://fredrikaverpil.github.io/blog/2026/04/15/from-lazy.nvim-to-vim.pack/
   local queue = {}
 
-  ---@param loader loader
-  ---@return loader
+  ---@param loader Pack.loader
+  ---@return Pack.loader
   function Pack.load_on_loop(loader)
     return function(name)
       queue[#queue + 1] = {
@@ -145,29 +136,32 @@ require "vim._core.ui2".enable {
   enable = true,
   msg = {
     targets = {
-      confirm      = "cmd",
-      echo         = "cmd",
-      echomsg      = "cmd",
-      search_cmd   = "cmd",
-      search_count = "cmd",
-      lua_print    = "cmd",
-      wmsg         = "cmd",
-      list_cmd     = "cmd",
-      emsg         = "cmd",
-      lua_error    = "cmd",
+      default = "msg",
+      -- typed_cmd = "msg",
+      wmsg         = "msgarea",
+      emsg         = "msgarea",
 
       bufwrite = "msg",
       progress = "msg",
       undo     = "msg",
+      quickfix = "msg",
 
+      confirm = "pager",
       rpc_error = "pager",
 
-      -- shell_cmd = "cmd",
-      -- shell_err = "cmd",
+      lua_error = "msgarea",
+      list_cmd  = "msgarea",
+      lua_print = "msgarea",
+      echo      = "msg",
+      echomsg  = "msg",
+      echoerr  = "msgarea",
+      shell_out = "msgarea",
+      shell_cmd = "msgarea",
+      -- shell_err = "msgarea",
     },
     msg = { timeout = 4000 },
     pager = { height = 0.75 },
   }
 }
--- require "ui.messages"
-require "ui.minibuffer"
+require "ui.messages"
+-- require "ui.cmdline"

@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-pkill bluetui || launch-or-focus-tui bluetui
+APP_ID="${1:-edis.tui.bluetui}"
+
+rfkill unblock bluetooth
+exec focus-app --app-id $APP_ID -- xdg-terminal-exec --app-id=$APP_ID -e bluetui
+# pkill bluetui || launch-or-focus-tui bluetui

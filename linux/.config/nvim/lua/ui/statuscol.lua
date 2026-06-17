@@ -6,7 +6,7 @@ local api = vim.api
 local cache = {}
 local signs_cache = {}
 local dapPC = {}
-local DEBOUNCE = 1 -- ms
+local DEBOUNCE = 20 -- ms
 local timer = assert(vim.uv.new_timer(), "how did timer fail???")
 timer:start(DEBOUNCE, DEBOUNCE, function()
   cache = {}
@@ -86,9 +86,9 @@ M.lnum = function(bufnr)
   local relnum = vim.v.relnum
   local num = (vim.wo.relativenumber and relnum ~= 0 and relnum) or lnum
   local text = ("%" .. width .. "d"):format(num)
-  -- local border = " " -- 1/8
+  local border = ""
   -- local border = "▕" -- 1/8
-  local border = "🮇" -- 1/4
+  -- local border = "🮇" -- 1/4
   -- local border = "🮈" -- 3/8
   return text .. " " .. with_hl(border, "StatusColBorder") .. with_hl("", "Normal")
 end

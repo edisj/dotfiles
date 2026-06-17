@@ -16,13 +16,17 @@ fi
 
 readonly APP_CMD="$1"
 readonly APP_NAME=$(basename "$APP_CMD")
+# APP_ID="${2:-edis.tui.$APP_NAME}"
 readonly APP_ID="edis.tui.$APP_NAME"
 
 # https://github.com/basecamp/omarchy/blob/dev/bin/omarchy-launch-or-focus
 readonly WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$APP_ID" '.[]|select((.class|test("\\b" + $p + "\\b";"i")) or (.title|test("\\b" + $p + "\\b";"i")))|.address' | head -n1)
 
 if [[ -n "$WINDOW_ADDRESS" ]]; then
-    hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS" &> /dev/null
+    echo "YES!!!!!!!!!!"
+    # hyprctl dispatch focuswindow "address:$WINDOW_ADDRESS" &> /dev/null
+    # hyprctl dispatch "hl.dsp.focus({ address = $WINDOW_ADDRESS })" &> /dev/null
+    hyprctl dispatch "hl.dsp.focus({ window = 'class:$APP_ID' })"
 else
     # not sure if eval is needed here
     eval exec setsid launch-tui "$@"

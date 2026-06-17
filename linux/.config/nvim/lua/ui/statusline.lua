@@ -5,11 +5,11 @@ local M = {}
 
 M.render = function()
   return table.concat {
-    M.mode(), M.file(), M.searchcount(),
+    M.file(), M.loc4(), M.searchcount(),
     "%=",
     M.dap(),
     "%=",
-    M.diag2(), M.lsp(), M.git(), M.session(), " %P ",
+    M.diag2(), M.lsp(), M.git(), M.session(), M.mode(),
   }
 end
 
@@ -69,6 +69,7 @@ M.mode = function()
     text = "Cmdwin"
     hl = modes["c"].hl
   else
+    -- text = modes[fn.mode()].short
     text = modes[fn.mode()].long
     hl = modes[fn.mode()].hl
   end
@@ -93,20 +94,17 @@ M.file = function()
   local ft = vim.bo.filetype
   if fname == "" then return with_hl("[No Name]", "StatusLine") end
 
-  local has_mini, mini_icons = pcall(require, "mini.icons")
-  local icon, hl
-  if not has_mini then
-    icon, hl = " ", "Statusline"
-  else
-    icon, hl = mini_icons.get("filetype", ft)
-  end
+  -- local has_mini, mini_icons = pcall(require, "mini.icons")
+  -- local icon, hl
+  -- if not has_mini then
+  --   icon, hl = " ", "Statusline"
+  -- else
+  --   icon, hl = mini_icons.get("filetype", ft)
+  -- end
 
   fname = fname:match("^(%w+://).+") and fname or fn.fnamemodify(fname, ":~:.")
   fname = vim.bo.modified and fname .. " [+]" or not vim.bo.modifiable and fname .. " " or fname
-  -- local out = with_hl(icon, hl, 0) .. "" .. with_hl(fname, "StatusLine")
-  local loc = with_hl(":" .. M.loc1() .. ":", "Comment", 0)
-  local out = ("%s%s"):format(fname, loc)
-  return with_hl(out, "Statusline") .. "%*"
+  return with_hl(fname, "Statusline") .. "%*"
 
 end
 
@@ -235,11 +233,15 @@ M.loc1 = function()
 end
 
 M.loc2 = function()
-  return "%2l:%-2v %P"
+  return with_hl("%2l:%-2v %p%%", "Statusline")
 end
 
 M.loc3 = function()
   return ' %l|%L│%2v|%-2{virtcol("$") - 1} '
+end
+
+M.loc4 = function()
+  return with_hl("Ln %l, Col %-2v (%p%%)", "Statusline")
 end
 
 return M

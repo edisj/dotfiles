@@ -3,4 +3,4 @@
 # matugen image "$1"
 current_wallpaper="$XDG_CONFIG_HOME/wallpapers/current_wallpaper"
 ln --symbolic --force "$1" "$current_wallpaper"
-hyprctl hyprpaper reload ", $current_wallpaper"
+hyprctl hyprpaper wallpaper ", $current_wallpaper"

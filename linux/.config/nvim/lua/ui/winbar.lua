@@ -66,6 +66,7 @@ M.render = function()
 end
 
 local mini_icon_cache = {}
+Config.on("ColorScheme", function() mini_icon_cache = {} end)
 local function get_ft_icon(bg_hl)
   if not package.loaded["mini.icons"] then
     return " ", bg_hl

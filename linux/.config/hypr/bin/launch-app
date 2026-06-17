@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if (( $# == 0 )); then
+  echo "error: missing args"
+  exit 1
+fi
+
+exec setsid uwsm-app -- "$@"

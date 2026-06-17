@@ -1,4 +1,4 @@
-chdir = "~/.config"
+# chdir = "~/.config"
 fork = true
 vsync = false
 wayland-app-id = "neovide"
@@ -9,8 +9,8 @@ size = 14
 
 [box-drawing]
 # "font-glyph", "native" or "selected-native"
-# mode = "font-glyph"
-mode = "selected-native"
+mode = "font-glyph"
+# mode = "native"
 
 # [box-drawing.sizes]
 # default = [8, 8]  # Thin and thick value

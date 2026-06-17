@@ -17,25 +17,17 @@ local KEYS = { "q", "w", "e", "r", "s", "d", "f" }
 
 local arglist = setmetatable({}, {
   __index = function(t, k)
-    if type(k) == "number" then
-      return fn.argv()[k]
-    elseif vim.tbl_contains(KEYS, k) then
-      return vim.g["Arglist_" .. k]
-    elseif k == false then
-      return ""
-    else
-      return rawget(t, k)
+    if     type(k) == "number"       then return fn.argv()[k]
+    elseif vim.tbl_contains(KEYS, k) then return vim.g["Arglist_" .. k]
+    elseif k == false                then return ""
+    else                                  return rawget(t, k)
     end
   end,
   __newindex = function(t, k, v)
-    if type(k) == "number" then
-      e("cannot set array portion of Arglist")
-    elseif vim.tbl_contains(KEYS, k) then
-      vim.g["Arglist_" .. k] = v
-    elseif k == false then
-      e("false is reserved")
-    else
-      rawset(t, k, v)
+    if     type(k) == "number"       then e("cannot set array portion of Arglist")
+    elseif vim.tbl_contains(KEYS, k) then vim.g["Arglist_" .. k] = v
+    elseif k == false                then e("false is reserved")
+    else                                  rawset(t, k, v)
     end
   end,
   __call = function(_, i)
@@ -139,7 +131,7 @@ local _win
 function arglist.win()
   if _win then return _win end
   local winopts = {
-    relative = "minibuffer",
+    -- relative = "minibuffer",
     bufnr = function(_)
       local bufnr = api.nvim_create_buf(false, true)
       local name = ("arglist://%s//"):format(bufnr)
@@ -151,8 +143,8 @@ function arglist.win()
     width = 50,
     height = #KEYS,
     title = " arglist ",
-    -- footer = { { "arglist", "NormalFloat" } },
-    -- footer_pos = "center",
+    footer = { { "arglist", "NormalFloat" } },
+    footer_pos = "center",
     -- style = "minimal",
     bo = {
       bufhidden = "wipe",
@@ -182,8 +174,7 @@ function arglist.open(override_opts)
   arglist.sync()
   local lines = vim
     .iter(ipairs(KEYS))
-    :map(function(_, k) return arglist[arglist[k]]
-    end)
+    :map(function(_, k) return arglist[arglist[k]] end)
     :totable()
   return arglist.win():open(override_opts):set_lines(lines).winid
 end

@@ -62,18 +62,23 @@ Config.on("LspProgress", function(ev)
   })
 end)
 
---- @param client vim.lsp.Client
-local on_init = function(client)
-  client.server_capabilities.semanticTokensProvider = nil
-end
-lsp.config("*", {
-  on_init = on_init,
-})
-
+-- --- @param client vim.lsp.Client
+-- local on_init = function(client)
+--   client.server_capabilities.semanticTokensProvider = nil
+-- end
+-- lsp.config("*", {
+--   on_init = on_init,
+-- })
+Config.on("LspAttach", function(ev)
+  local client = lsp.get_client_by_id(ev.data.client_id)
+  if client then
+    client.server_capabilities.semanticTokensProvider = nil
+  end
+end)
 
 lsp.config("lua_ls", {
   on_init = function(client)
-    on_init(client)
+    -- on_init(client)
     if client.workspace_folders then
       local path = client.workspace_folders[1].name
       if

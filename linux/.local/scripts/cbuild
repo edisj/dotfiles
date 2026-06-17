@@ -15,14 +15,18 @@ require find-project-root fd "$compiler"
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     -l | --link)
-      link="true"
+      link=true
+      shift
+      ;;
+    -p | --print-output)
+      print_output=true
       shift
       ;;
     -q | --quiet)
       LOG_INFO() { :; }
       LOG_WARN() { :; }
       LOG_DONE() { :; }
-      quiet="true"
+      quiet=true
       shift
       ;;
     -qq | --qquiet)
@@ -30,7 +34,7 @@ while [[ "$#" -gt 0 ]]; do
       LOG_WARN() { :; }
       LOG_DONE() { :; }
       LOG_ERROR() { :; }
-      qquiet="true"
+      qquiet=true
       shift
       ;;
     --)
@@ -104,7 +108,7 @@ main() {
   && LOG_INFO "linking object files in $project_name/build..." \
   && _link_object_files "$project_root" "$build_dir" "$@" || { LOG_ERROR "linking failed"; exit 1; } \
   && LOG_DONE "program is $project_name/build/$project_name" \
-  && echo "$build_dir/$project_name" \
+  && { [[ -n $print_output ]] && echo "$build_dir/$project_name"; true; } \
   && exit 0
 }
 

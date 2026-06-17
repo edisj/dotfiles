@@ -4,7 +4,8 @@ o.autoindent     = true
 o.autoread       = true
 o.clipboard      = "unnamedplus"
 -- o.colorcolumn    = "90"
-o.cmdheight      = 1
+o.cmdheight      = 0
+-- o.cmdheight      = 1
 o.cmdwinheight   = 8
 o.completeopt    = "menuone,noselect,fuzzy"
 o.confirm        = true
@@ -39,8 +40,8 @@ o.mouse          = "a"
 o.mousescroll    = "ver:3"
 o.number         = true
 o.numberwidth    = 3
-o.pumborder      = "single"
-o.pumheight      = 10
+o.pumborder      = "bold"
+o.pumheight      = 15
 o.relativenumber = false
 o.scrolloff      = 5
 opt.sessionoptions = {
@@ -54,19 +55,19 @@ opt.sessionoptions = {
   "winsize",
   "terminal"
 }
-o.shiftwidth     = 4
+o.shiftwidth     = 2
 o.showcmd        = false
 o.showmatch      = true
 o.showmode       = false
 o.signcolumn     = "no"
 o.sidescrolloff  = 8
 o.smartindent    = true
-o.softtabstop    = 4
+o.softtabstop    = 2
 o.splitbelow     = true
 o.splitright     = true
 o.smartcase      = true
 o.swapfile       = false
-o.tabstop        = 4
+o.tabstop        = 2
 o.termguicolors  = true
 o.title          = true
 o.titlestring    = " neovim"
@@ -78,7 +79,7 @@ opt.winborder    = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▏" 
 o.wrap           = false
 
 if vim.g.neovide then
-  o.linespace = 0
+  o.linespace = 1
   o.title = true
   -- o.titlestring = "eovide"
   o.titlestring = " neovide"
@@ -87,8 +88,15 @@ if vim.g.neovide then
   vim.g.neovide_scale_factor = 1
   vim.g.neovide_text_gamma = 0.8
   vim.g.neovide_text_contrast = 0.5
-  vim.g.neovide_opacity = 0.97
-  vim.g.neovide_underline_stroke_scale = 1.5
+  vim.g.neovide_opacity = 1
+  local on = false
+  local function toggle_opacity()
+    vim.g.neovide_opacity = on and 1 or 0.97
+    on = not on
+  end
+  vim.keymap.set("n", "<leader>to", function() toggle_opacity() end, { desc = "neovide opacity" })
+
+  vim.g.neovide_underline_stroke_scale = 1.4
 
   vim.g.neovide_padding_top = 10
   vim.g.neovide_padding_bottom = 0

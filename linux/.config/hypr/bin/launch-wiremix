@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-pkill wiremix || launch-or-focus-tui wiremix --tab "output"
+# pkill wiremix || launch-or-focus-tui wiremix "edis.tui.wiremix" --tab "output"
+APP_ID="${1:-edis.tui.wiremix}"
+
+exec focus-app --app-id $APP_ID -- xdg-terminal-exec --app-id=$APP_ID -e wiremix

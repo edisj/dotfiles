@@ -1,6 +1,6 @@
 force_keyboard_focus = true
 hide_action_hints = false
-theme = "test"
+theme = "kanordwa"
 
 [columns]
 "symbols" = 1
@@ -17,17 +17,21 @@ page_up = ["Page_Up", "ctrl u"]
 quick_activate = []
 
 [providers]
-max_results = 50
+max_results = 256
 default = [
   "desktopapplications",
 ]
 
-[[providers.prefixes]]
-prefix = "/"
-provider = "providerlist"
+[providers.max_results_provider]
+# files = 100
+runner = 9999
 
 [[providers.prefixes]]
 prefix = "."
+provider = "providerlist"
+
+[[providers.prefixes]]
+prefix = "/"
 provider = "files"
 
 [[providers.prefixes]]
@@ -45,6 +49,10 @@ provider = "websearch"
 [[providers.prefixes]]
 prefix = "$"
 provider = "clipboard"
+
+[[providers.prefixes]]
+prefix = ";"
+provider = "dnfpackages"
 
 providerlist = [
   { action = "activate", default = true, bind = "Return", after = "ClearReload" },

@@ -13,9 +13,12 @@ fi
 
 readonly APP_CMD="$1"
 readonly APP_NAME=$(basename "$APP_CMD")
-readonly APP_ID="edis.tui.$APP_NAME"
+# readonly APP_ID="edis.tui.$APP_NAME"
+readonly APP_ID="${2:-edis.tui.$APP_NAME}"
+# echo "$2"
+# echo $APP_ID
 
 # adding the -e flag so that you can launch cmd with args from this context
 # e.g. launch-tui wiremix --tab output
 # so that the arguments will propagate to the terminal process
-exec setsid uwsm-app -- xdg-terminal-exec --app-id="$APP_ID" -e "$APP_CMD" "${@:2}"
+exec setsid uwsm-app -- xdg-terminal-exec --app-id="$APP_ID" -e "$APP_CMD" "${@:3}"

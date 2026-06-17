@@ -153,6 +153,13 @@ Pack.add({
     }
   },
   {
+    src = "https://github.com/NeogitOrg/neogit",
+    data = {
+      enabled = true,
+      -- loader = Pack.load_on_loop(function(name) packadd(name) end)
+    }
+  },
+  {
     src = "https://github.com/lewis6991/gitsigns.nvim",
     data = {
       enabled = true,

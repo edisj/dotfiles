@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+APP_ID="${1:-edis.tui.btop}"
+
+exec focus-app --app-id $APP_ID -- xdg-terminal-exec --app-id=$APP_ID -e btop

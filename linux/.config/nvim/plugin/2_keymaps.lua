@@ -267,7 +267,7 @@ end, { desc = "open" })
 nmap_leader("mc", function()
   if vim.bo.filetype == "pager" then api.nvim_win_close(0, true) end
   vim.cmd("messages clear")
-  if Edis.win():is_open() then Edis.win():set_lines({}, { force = true }) end
+  -- if Edis.win():is_open() then Edis.win():set_lines({}, { force = true }) end
 end, { desc = "clear" })
 
 -- nmap("<C-,>", function()
@@ -315,43 +315,3 @@ map("ntix", "<c-t>", function()
   Terminal.smart_toggle()
 end, { desc = "toggle terminal" })
 tmap("<M-a>", "<c-\\><c-n>", { desc = "escape in terminal mode" })
-
---------------------------------------------------------------------------------
--- edis
-nmap("<M-x>", function()
-  Edis.win():toggle()
-end)
-nmap("<M-space>", function()
-  Edis.win():toggle()
-end)
-
-inmap("<M-m>", function()
-  vim.cmd.stopinsert()
-  vim.cmd("update")
-  Edis.build()
-end, { desc = "edis build" })
-
-inmap("<M-S-m>", function()
-  vim.cmd.stopinsert()
-  vim.cmd("update")
-  Edis.build_and_run()
-end, { desc = "edis build and run" })
-
-inmap("<C-Enter>", function()
-  vim.cmd.stopinsert()
-  Edis.run()
-end, { desc = "edis run" })
-
---------------------------------------------------------------------------------
--- quickfix
-nmap("<C-q>", function()
-  Quickfix.toggle()
-end, { desc = "quickfix toggle" })
-
-nmap("<C-n>", function()
-  Quickfix.next()
-end, { desc = "quickfix next" })
-
-nmap("<C-p>", function()
-  Quickfix.prev()
-end, { desc = "quickfix prev" })

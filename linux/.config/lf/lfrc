@@ -46,3 +46,11 @@ map gD cd ~/Downloads
 cmd mkdir %mkdir -p "$@"
 map O push :mkdir<space>
 map o push %touch<space>
+
+cmd fzf_dir_jump ${{
+    res="$(fd --type d -H --exclude .git | fzf --layout=default --height 100%)"
+    if [ -n "$res" ]; then
+        lf -remote "send $id cd \"$res\""
+    fi
+}}
+map <c-f> fzf_dir_jump

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if (( $# == 0 )); then
+  echo "error: missing args"
+  exit 1
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --app-id)   APP_ID="$2";      shift 2; ;;
+    --app-id=*) APP_ID="${1#*=}"; shift 1; ;;
+    --) shift; break; ;;
+    -*) echo "Unknown option: $1"; exit 1; ;;
+    *) break; ;;
+  esac
+done
+
+# NOTE: -r is required for raw output that removes surrounding "" so that address:$WINDOW_ADDRESS can be properly wrapped
+if [[ -n "$APP_ID" ]]; then
+  WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$APP_ID" '.[] | select(.class == $p).address' | head -n1)
+else
+  APP_ID="$1"
+  WINDOW_ADDRESS=$(hyprctl clients -j | jq -r --arg p "$APP_ID" '.[] | select((.class | test("\\b" + $p + "\\b";"i")) or (.title | test("\\b" + $p + "\\b";"i"))) | .address' | head -n1)
+fi
+
+if [[ -n "$WINDOW_ADDRESS" ]]; then
+  hyprctl dispatch "hl.dsp.focus { window = \"address:$WINDOW_ADDRESS\" }" >/dev/null
+else
+  exec setsid launch-app "$@"
+fi

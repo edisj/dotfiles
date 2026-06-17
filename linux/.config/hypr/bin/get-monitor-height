@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+source "$HOME/.local/scripts/lib/require.sh"
+require hyprctl jq
+
+scale="${1:-1}"
+height=$(hyprctl monitors -j | jq '.[] | select(.focused) | .height')
+
+echo $(awk -v scale="$scale" -v height="$height" 'BEGIN { printf "%d",  scale * height }')

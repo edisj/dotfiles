@@ -1,10 +1,9 @@
 local nmap = Config.nmap
 
-local ensure_center_layout = function(ev)
+local center_layout = function(ev)
   local state = MiniFiles.get_explorer_state()
   if state == nil then return end
 
-  -- Compute "depth offset" - how many windows are between this and focused
   local path_this = vim.api.nvim_buf_get_name(ev.data.buf_id):match('^minifiles://%d+/(.*)$')
   local depth_this
   for i, path in ipairs(state.branch) do
@@ -14,7 +13,6 @@ local ensure_center_layout = function(ev)
   local depth_offset = depth_this - state.depth_focus
 
   local widths = { 40, 20, 10 }
-  -- Adjust config of this event's window
   local i = math.abs(depth_offset) + 1
   local win_config = vim.api.nvim_win_get_config(ev.data.win_id)
   win_config.width = i <= #widths and widths[i] or widths[#widths]
@@ -41,17 +39,36 @@ local ensure_center_layout = function(ev)
   vim.api.nvim_win_set_config(ev.data.win_id, win_config)
 end
 
+local format_size = function(size)
+  if size == nil then return end
+  if size < 1024 then
+    return string.format('%3dB', size)
+  elseif size < 1048576 then
+    return string.format('%3.0fK', size / 1024)
+  else
+    return string.format('%3.0fM', size / 1048576)
+  end
+end
+local my_prefix = function(fs_entry)
+  local prefix, hl = MiniFiles.default_prefix(fs_entry)
+  local fs_stat = vim.loop.fs_stat(fs_entry.path) or {}
+  return format_size(fs_stat.size) .. ' ' .. prefix, hl
+end
+
+local current_layout = center_layout
 local function setup_mini_files()
   local mini_files = require("mini.files")
-
   mini_files.setup({
+    content = {
+      -- prefix = my_prefix,
+    },
     mappings = {
       mark_goto = "<leader>",
       go_in_plus = "<CR>",
     },
     windows = {
       width_nofocus = 10,
-      width_focus = 40,
+      width_focus = 30,
       preview = false,
       width_preview = 50,
     },
@@ -70,7 +87,6 @@ local function setup_mini_files()
       mini_files.synchronize()
     end, { desc = "MiniFiles synchronize", buffer = ev.data.buf_id })
   end)
-  -- asldkfjkl
 
   on("ExplorerOpen", function(ev)
     MiniFiles.set_bookmark("c", vim.fn.stdpath("config") .. "/lua", { desc = "Config" })
@@ -89,7 +105,7 @@ local function setup_mini_files()
     vim.wo[win_id].sidescrolloff = 0
   end)
 
-  on("WindowUpdate", ensure_center_layout)
+  on("WindowUpdate", current_layout)
 
   local function go_in_and_arglist(k)
     local path = (mini_files.get_fs_entry() or {}).path

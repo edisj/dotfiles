@@ -74,8 +74,9 @@ Pack.add({
         nmap("<M-Right>", function() dap.step_into() end,         { desc = "dap: step into" })
         nmap("<M-Up>",    function() dap.step_back() end,         { desc = "dap: step back" })
         nmap("<M-Down>",  function() dap.step_over() end,         { desc = "dap: step over" })
-        nmap("<F2>",      function() dap.restart() end,           { desc = "dap: restart" })
-        nmap("<F1>",      function() dap.toggle_breakpoint() end, { desc = "dap: toggle breakpoint" })
+        -- nmap("<F2>",      function() dap.restart() end,           { desc = "dap: restart" })
+        -- nmap("<F1>",      function() dap.toggle_breakpoint() end, { desc = "dap: toggle breakpoint" })
+        nmap("<M-.>",      function() dap.toggle_breakpoint() end, { desc = "dap: toggle breakpoint" })
 
         nmap_leader("dr", function() dap.restart() end,           { desc = "restart" })
         nmap_leader("dt", function() dap.terminate() end,         { desc = "terminate" })
@@ -86,7 +87,7 @@ Pack.add({
 
         nmap_leader("d<C-q>", function()
           dap.list_breakpoints()
-          Quickfix.open()
+          -- require("quicksys").quickfix_open()
         end,  { desc = "quickfix breakpoints" })
 
         nmap_leader("d?", function()
@@ -143,7 +144,6 @@ Pack.add({
         local dv = require("dap-view")
         local sections = { "breakpoints", "watches", "scopes", "repl", "disassembly", "threads", "exceptions" }
         dv.setup({
-          -- auto_toggle = true,
           -- auto_toggle = true,
           -- switchbuf = 'usetab,useopen',
           windows = {
