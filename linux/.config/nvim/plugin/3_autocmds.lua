@@ -10,43 +10,33 @@ on("TextYankPost", function() vim.hl.hl_op({ timeout = 250 }) end, {
   group = augroup("highlight-yank"),
 })
 
-local auto_cursorline_group = augroup("auto-cursorline")
-on({"InsertLeave", "WinEnter" }, function()
-  if vim.w.auto_cursorline then
-    vim.wo.cursorline = true
-    vim.w.auto_cursorline = nil
-  end
-end, { group = auto_cursorline_group })
-on({ "InsertEnter", "WinLeave" }, function()
-  if vim.wo.cursorline then
-    vim.w.auto_cursorline = true
-    vim.wo.cursorline = false
-  end
-end, { group = auto_cursorline_group })
-
--- on({ "BufWinEnter", "FileType" }, function()
---   vim.wo.winhl = "Normal:NormalSplit"
--- end, {
---     desc = "set special splits to darker color",
---     pattern = {
---       "dap-view",
---       "dap-view-term",
---       "fugitive",
---       "git",
---       -- "quickfix",
---       "vim",
---     },
---   })
+-- local auto_cursorline_group = augroup("auto-cursorline")
+-- on({"InsertLeave", "WinEnter" }, function()
+--   vim.schedule(function()
+--     if vim.w.auto_cursorline then
+--       vim.wo.cursorline = true
+--       vim.w.auto_cursorline = nil
+--     end
+--   end)
+-- end, { group = auto_cursorline_group })
+-- on({ "InsertEnter", "WinLeave" }, function()
+--   vim.schedule(function()
+--     if vim.wo.cursorline then
+--       vim.w.auto_cursorline = true
+--       vim.wo.cursorline = false
+--     end
+--   end)
+-- end, { group = auto_cursorline_group })
 
 on("CmdwinEnter", function()
   Config.nmap("<C-q>", ":q<CR>", { buffer = true })
   Config.nmap("<C-;>", ":q<CR>", { buffer = true })
   Config.nmap("<C-e>", "<Nop>", { buffer = true })
-  vim.wo.number = false
-  vim.wo.relativenumber = false
-  vim.wo.signcolumn = "no"
-  vim.wo.scrolloff = 1
-  vim.opt_local.statuscolumn = ""
+  -- vim.wo.number = false
+  -- vim.wo.relativenumber = false
+  -- vim.wo.signcolumn = "no"
+  -- vim.wo.scrolloff = 1
+  -- vim.opt_local.statuscolumn = ""
 end)
 
 create_autocmd("BufWritePre", {

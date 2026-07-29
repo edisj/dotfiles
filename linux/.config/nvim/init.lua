@@ -2,8 +2,6 @@ if vim.loader then vim.loader.enable() end
 vim.g._start_time = vim.uv.hrtime()
 vim.g.mapleader = " "
 
-vim.g.hl_suspended = true
-
 _G.P = vim.print
 _G.Config = {}
 _G.Pack = {}
@@ -82,6 +80,7 @@ do
   -- https://fredrikaverpil.github.io/blog/2026/04/15/from-lazy.nvim-to-vim.pack/
   local queue = {}
 
+
   ---@param loader Pack.loader
   ---@return Pack.loader
   function Pack.load_on_loop(loader)
@@ -128,40 +127,17 @@ do
   Config.on("VimEnter", function() drain_queue_w_debounce(5, false) end, { once = true })
 end
 
-
 require "ui.statusline"
 require "ui.statuscol"
-require "ui.winbar"
-require "vim._core.ui2".enable {
+-- require "ui.winbar"
+require "vim._core.ui2".enable({
   enable = true,
   msg = {
-    targets = {
-      default = "msg",
-      -- typed_cmd = "msg",
-      wmsg         = "msgarea",
-      emsg         = "msgarea",
-
-      bufwrite = "msg",
-      progress = "msg",
-      undo     = "msg",
-      quickfix = "msg",
-
-      confirm = "pager",
-      rpc_error = "pager",
-
-      lua_error = "msgarea",
-      list_cmd  = "msgarea",
-      lua_print = "msgarea",
-      echo      = "msg",
-      echomsg  = "msg",
-      echoerr  = "msgarea",
-      shell_out = "msgarea",
-      shell_cmd = "msgarea",
-      -- shell_err = "msgarea",
-    },
-    msg = { timeout = 4000 },
+    targets = { default = "msg", },
+    msg = { height = 0.80, timeout = 4000 },
     pager = { height = 0.75 },
   }
-}
+})
+
 require "ui.messages"
 -- require "ui.cmdline"

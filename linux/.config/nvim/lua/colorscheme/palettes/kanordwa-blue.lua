@@ -1,8 +1,9 @@
 local c = {
-  bg = "#272b31",
-  -- fg = "#c9cdd3",
-  fg = "#aeb0b3",
-
+  bg = "#223249",
+  fg = "#c9cdd3",
+  -- fg = "#aeb0b3",
+  -- statusline = "#323129",
+  statusline = "#2848a9",
 
   boolean = "#e6c384",
   constant = "#e6c384",

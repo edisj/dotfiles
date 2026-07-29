@@ -46,21 +46,21 @@ Pack.add({
   }
 })
 
-Config.on("LspProgress", function(ev)
-  local value = ev.data.params.value
-  local name = lsp.get_client_by_id(ev.data.client_id).name
-  if name == "jdtls" then return end
-  local msg = value.message or "done"
-  local chunks = value.title .. ": " .. msg
-  vim.api.nvim_echo({ { chunks } }, false, {
-    id = "lsp." .. ev.data.params.token,
-    kind = "progress",
-    source = "vim.lsp",
-    title = name,
-    status = value.kind ~= "end" and "running" or "success",
-    percent = value.percentage,
-  })
-end)
+-- Config.on("LspProgress", function(ev)
+--   local value = ev.data.params.value
+--   local name = lsp.get_client_by_id(ev.data.client_id).name
+--   if name == "jdtls" then return end
+--   local msg = value.message or "done"
+--   local chunks = value.title .. ": " .. msg
+--   vim.api.nvim_echo({ { chunks } }, false, {
+--     id = "lsp." .. ev.data.params.token,
+--     kind = "progress",
+--     source = "vim.lsp",
+--     title = name,
+--     status = value.kind ~= "end" and "running" or "success",
+--     percent = value.percentage,
+--   })
+-- end)
 
 -- --- @param client vim.lsp.Client
 -- local on_init = function(client)

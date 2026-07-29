@@ -39,26 +39,29 @@ local center_layout = function(ev)
   vim.api.nvim_win_set_config(ev.data.win_id, win_config)
 end
 
-local format_size = function(size)
-  if size == nil then return end
-  if size < 1024 then
-    return string.format('%3dB', size)
-  elseif size < 1048576 then
-    return string.format('%3.0fK', size / 1024)
-  else
-    return string.format('%3.0fM', size / 1048576)
-  end
-end
-local my_prefix = function(fs_entry)
-  local prefix, hl = MiniFiles.default_prefix(fs_entry)
-  local fs_stat = vim.loop.fs_stat(fs_entry.path) or {}
-  return format_size(fs_stat.size) .. ' ' .. prefix, hl
-end
+-- local format_size = function(size)
+--   if size == nil then return end
+--   if size < 1024 then
+--     return string.format('%3dB', size)
+--   elseif size < 1048576 then
+--     return string.format('%3.0fK', size / 1024)
+--   else
+--     return string.format('%3.0fM', size / 1048576)
+--   end
+-- end
+-- local my_prefix = function(fs_entry)
+--   local prefix, hl = MiniFiles.default_prefix(fs_entry)
+--   local fs_stat = vim.loop.fs_stat(fs_entry.path) or {}
+--   return format_size(fs_stat.size) .. ' ' .. prefix, hl
+-- end
 
 local current_layout = center_layout
 local function setup_mini_files()
   local mini_files = require("mini.files")
   mini_files.setup({
+    options = {
+      use_as_default_explorer = false,
+    },
     content = {
       -- prefix = my_prefix,
     },
@@ -162,3 +165,4 @@ local function setup_mini_files()
 end
 
 Pack.load_on_loop(function() setup_mini_files() end)("mini.files")
+-- setup_mini_files()

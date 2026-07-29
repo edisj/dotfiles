@@ -49,6 +49,7 @@ Pack.add({
           "java",
           "javascript",
           "json",
+          "latex",
           "lua",
           "python",
           "toml",
@@ -102,7 +103,7 @@ Pack.add({
   {
     src = "https://github.com/folke/flash.nvim",
     data = {
-      enabled = true,
+      enabled = false,
       loader = Pack.load_on_event("BufReadPost", function(name)
         packadd(name)
         require("flash").setup({
@@ -177,6 +178,7 @@ Pack.add({
           },
         })
         nmap_leader("gs", "<Cmd>Git<CR>", { desc = "Git" })
+        nmap_leader("tg", "<Cmd>Gitsigns toggle_signs<CR>", { desc = "gitsigns" })
       end),
     },
   },

@@ -47,6 +47,7 @@ local function add_local(specs)
 
 end
 
+local XXX = false
 add_local({
   {
     src = "~/dev/win.nvim",
@@ -54,23 +55,73 @@ add_local({
   },
   {
     src = "~/dev/msgarea.nvim",
-    data = {
+    data ={
       enabled = true,
       loader = function(name)
         vim.cmd.packadd(name)
-        vim.g.msgarea_min_height = 5
-        vim.g.msgarea_max_height = 0.35
-        require("msgarea.blink_integration").enable()
+        require("msgarea").setup({
+          enabled = true,
+          messages_title = function(kind)
+            if kind == "lua_print" or kind == "emsg" then
+              return nil
+            else
+              return " Messages ("..kind..") "
+            end
+          end,
+          -- messages_title = " Messages ",
+          view = {
+            min_height = 1,
+            max_height = 0.30,
+            -- max_height = 10,
+            style = "msgarea",
+            style_while_in_cmdline = "split",
+            style_while_in_ephemeral_win = "split",
+            winbar_min_tabs = 1,
+          },
+          cmdline = {
+            enabled = true,
+            cmp_provider = "blink.cmp",
+            dynamic_height = true,
+          },
+          msgarea_targets = {
+            "wmsg",
+            "emsg",
+            "list_cmd",
+            "lua_error",
+            -- "lua_print",
+            "echoerr",
+            "shell_out",
+            "shell_cmd",
+            "shell_err",
+          },
+        })
+
         Config.nmap("<M-n>", function()
           require("msgarea").close_all()
         end)
-      end
+
+        -- local targets = require("vim._core.ui2").cfg.msg.targets
+        -- for _, target in ipairs({
+        --   "wmsg",
+        --   "emsg",
+        --   -- "list_cmd",
+        --   "lua_error",
+        --   -- "lua_print",
+        --   "echoerr",
+        --   "shell_out",
+        --   "shell_cmd",
+        --   "shell_err",
+        -- }) do
+        --   ---@diagnostic disable-next-line: assign-type-mismatch
+        --   targets[target] = "msgarea"
+        -- end
+      end,
     },
   },
   {
     src = "~/dev/quicksys.nvim",
     data = {
-      enabled = true,
+      enabled = XXX,
       loader = function(name)
         vim.cmd.packadd(name)
 
@@ -78,6 +129,7 @@ add_local({
     }
   },
 })
+if not XXX then return end
 
 local gcc = {
   name = "gcc",
@@ -181,9 +233,9 @@ local quicksys = require("quicksys")
 quicksys.setup({
   sources = {
     default = "flat",
-    Diagnostics = "flat",
-    References = "nested",
     gcc = gcc,
+    ["^Diagnostics$"] = "flat",
+    ["^References$"] = "nested",
     ["git-status"] = git_status,
   },
   windows = {
@@ -193,7 +245,6 @@ quicksys.setup({
       -- kind = "split",
       kind = "float",
       win_opts = {
-        win = -1,
         relative = "msgarea",
         wo = {},
       }
@@ -204,7 +255,6 @@ quicksys.setup({
       kind = "float",
       win_opts = {
         enter = false,
-        -- win = -1,
         relative = "msgarea",
       }
     },

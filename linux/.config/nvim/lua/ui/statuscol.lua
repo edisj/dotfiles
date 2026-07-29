@@ -25,16 +25,10 @@ M.render = function()
   if cache[key] then return cache[key] end
 
   -- signs_cache[bufnr] = M.get_signs(bufnr)
-  local statuscolumn = table.concat { M.signs(bufnr), M.lnum(bufnr) }
+  local statuscolumn = table.concat({ M.signs(bufnr), M.lnum(bufnr) }, "")
   cache[key] = statuscolumn
   return statuscolumn
 end
-
-M.restart = function()
-  package.loaded["ui.statuscol"] = nil
-  vim.o.statuscolumn = "%!v:lua.require('ui.statuscol').render()"
-end
-M.restart()
 
 local function with_hl(text, hl)
   return hl and "%#" .. hl .. "#" .. text or text
@@ -77,28 +71,19 @@ M.signs = function(bufnr)
     fill_signs_cache(bufnr)
   end
   local line_sign = signs_cache[bufnr][vim.v.lnum]
-  return "" ..with_hl(line_sign and line_sign.text or "  ", line_sign and line_sign.hl) .. "%*"
+  return with_hl(line_sign and line_sign.text or "", line_sign and line_sign.hl) .. "%*"
 end
 
 M.lnum = function(bufnr)
+  if not (vim.wo.relativenumber or vim.wo.number) then return "" end
   local width = #tostring(api.nvim_buf_line_count(bufnr))
   local lnum = vim.v.lnum
   local relnum = vim.v.relnum
-  local num = (vim.wo.relativenumber and relnum ~= 0 and relnum) or lnum
+  local num =
+    (vim.wo.relativenumber and relnum ~= 0 and relnum)
+    or (vim.wo.number and lnum)
   local text = ("%" .. width .. "d"):format(num)
-  local border = ""
-  -- local border = "▕" -- 1/8
-  -- local border = "🮇" -- 1/4
-  -- local border = "🮈" -- 3/8
-  return text .. " " .. with_hl(border, "StatusColBorder") .. with_hl("", "Normal")
-end
-
--- FIXME: update margin outside of cache cycle so cursorline doesn't lag
-M.margin = function(amount)
-  local text = string.rep(" ", amount or 1)
-  -- local hl = fn.line(".") == vim.v.lnum and "CursorLine" or "Normal"
-  local hl = vim.v.relnum == 0 and "CursorLine" or "Normal"
-  return with_hl(text, hl)
+  return text .. ""
 end
 
 M.dapPC = function(bufnr)
@@ -114,5 +99,11 @@ M.dapPC = function(bufnr)
   -- P(text)
   return out
 end
+
+M.restart = function()
+  package.loaded["ui.statuscol"] = nil
+  vim.o.statuscolumn = "%!v:lua.require('ui.statuscol').render()"
+end
+M.restart()
 
 return M

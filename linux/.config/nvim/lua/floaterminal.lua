@@ -16,9 +16,10 @@ local function terminal()
     style = "minimal",
     -- win = function(self) return not self.is_float and -1 or nil end,
     width = function(self, _) return self:is_floating() and 0.75 or 0.5 end,
-    height = function(self, _) return self:is_floating() and 0.60 or 10 end,
-    border = mini and "none" or { "🭽", "▔", "🭾", "🮇", "🭿", "▁", "🭼", "▏" },
-    title = " TERMINAL ",
+    -- height = function(self, _) return self:is_floating() and 0.60 or 10 end,
+    height = 0.25,
+    border = mini and "none" or require("ui.icons").border.thinblock,
+    title = " Terminal ",
     wo = {
       -- winhl = "Normal:NormalFloat",
       winfixbuf = true,
@@ -29,9 +30,9 @@ local function terminal()
 
   _terminal = Win.float(win_opts)
 
-  _terminal:on("BufEnter", function(win, ev)
+  _terminal:on("WinEnter", function(win, ev)
     vim.cmd.startinsert()
-  end, { buf = true, desc = "floaterminal start insert on bufenter" })
+  end, { win = true, desc = "floaterminal start insert on bufenter" })
 
   return _terminal
 end

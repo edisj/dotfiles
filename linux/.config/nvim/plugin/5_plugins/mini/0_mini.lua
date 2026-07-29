@@ -26,6 +26,7 @@ Pack.add({
         require("mini.align").setup()
         require("mini.extra").setup()
         require("mini.trailspace").setup()
+        vim.api.nvim_set_hl(0, "Folder", { fg = "#caaa67" })
         require("mini.icons").setup({
           default = {
             directory = { hl = "Folder" },
@@ -75,7 +76,21 @@ Pack.add({
 
         require("mini.cmdline").setup({
           autocomplete = { enable = false },
-          autopeek = { enable = true, n_context = 5 },
+          autopeek = {
+            enable = true,
+            n_context = 5,
+            window = {
+              config = { border = { " ", " ", " ", "", "", "", "", "" } }
+              -- config = function()
+              --   return {
+              --     split = "below",
+              --     win = -1,
+              --     relative = nil,
+              --     -- border = "none"
+              --   }
+              -- end,
+            }
+          },
           autocorrect = {
             enable = true,
             -- func = function(...)

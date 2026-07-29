@@ -40,7 +40,7 @@ nmap_leader("ee", function()
       { "(", "@punctuation.bracket" },
       { "error", "DiagnosticError" },
       { ") ", "@punctuation.bracket" },
-      { msg, "MsgArea" }
+      { msg }
     }, true, {})
     return
   end
@@ -48,14 +48,26 @@ nmap_leader("ee", function()
   vim.cmd.edit(marker_file)
 end, { desc = ".edis.toml" })
 
+-- insert --------------------------------------------------------------------
+for _, k in ipairs {
+  "h", "j", "k", "l", "q", "b", "w", "e",
+  "H", "J", "K", "L", "Q", "B", "W", "E",
+} do
+  imap("<M-"..k..">", "<C-o>" .. k, { remap = true })
+end
 
--- motions =====================================================================
+-- normal --------------------------------------------------------------------
 nmap("j", "v:count == 0 ? 'gj' : 'j'", { expr = true })
 nmap("k", "v:count == 0 ? 'gk' : 'k'", { expr = true })
 nmap("<M-j>", "jzz", { desc = "j and center" })
 nmap("<M-k>", "kzz", { desc = "k and center" })
-noxmap("<S-h>", "^", { desc = "beginning of line" })
-noxmap("<S-l>", "g_", { desc = "end of line" })
+noxmap("<C-j>", "<C-d>", {})
+noxmap("<C-k>", "<C-u>", {})
+nmap("<M-C-j>", "<C-d>zz")
+nmap("<M-C-k>", "<C-u>zz")
+
+nmap("<Tab>", "zA")
+nmap("<C-i>", "<C-i>", { remap = true })
 
 nmap("<C-c>", "<Esc>")
 
@@ -68,21 +80,10 @@ noxmap("Q", "B", { desc = "previous WORD" })
 nmap("]t", "gt", { desc = "tab next" })
 nmap("[t", "gT", { desc = "tab prev" })
 
-
-noxmap("<C-u>", function()
-  local half = math.floor(0.5 * vim.o.lines)
-  vim.cmd(("normal! %sk"):format(half))
-end, { desc = "move halfpage up"})
-
-noxmap("<C-d>", function()
-  local half = math.floor(0.5 * vim.o.lines)
-  vim.cmd(("normal! %sj"):format(half))
-end, { desc = "move halfpage down" })
-
-imap("<M-h>", "<C-Left>")
-imap("<M-l>", "<C-Right>")
-imap("<M-k>", function() vim.cmd("normal! gk") end )
-imap("<M-j>", function() vim.cmd("normal! gj") end )
+noxmap("<S-h>", "^", { desc = "beginning of line" })
+noxmap("<S-l>", "g_", { desc = "end of line" })
+noxmap("<C-h>", "^", { desc = "beginning of line" })
+noxmap("<C-l>", "g_", { desc = "end of line" })
 
 -- misc ========================================================================
 nixmap("<C-s>", function()
@@ -97,17 +98,31 @@ end, { desc = "source %" })
 
 nmap("<S-v>", "<C-v>", { desc = "v-block" })
 xmap("v", "<S-v>", { desc = "v-line" })
-nmap("+", "<C-a>", { desc = "++" })
-nmap("-", "<C-x>", { desc = "--" })
+-- nmap("+", "<C-a>", { desc = "++" })
+-- nmap("-", "<C-x>", { desc = "--" })
 
-imap("<M-a>", "<esc>l")
-oxmap("<M-a>", "<esc>")
-cmap("<M-a>", "<C-c>")
+-- better escape -------------------------------------------------------------
+imap("<M-a>", "<Esc>l")
+oxmap("<M-a>", "<Esc>")
+-- cmap("<C-c>", function()
+--   vim.api.nvim_input("<C-c>")
+--   vim.schedule(function() vim.fn.histdel(":", -1) end)
+-- end)
+cmap("<M-a>", "<C-c>", { remap = true })
 nmap("<M-a>", function()
   vim.cmd("nohlsearch")
   vim.g.hl_suspended = true
   vim.cmd.redrawstatus()
 end)
+tmap("<M-a>", "<c-\\><c-n>", { desc = "escape in terminal mode" })
+
+-- better n/N ----------------------------------------------------------------
+noxmap("n", function()
+  return vim.v.searchforward == 1 and "nzz" or "Nzz"
+end, { expr = true })
+noxmap("N", function()
+  return vim.v.searchforward == 1 and "Nzz" or "nzz"
+end, { expr = true })
 do
   local function search_cmd(lhs, rhs)
     nmap(lhs, function()
@@ -120,28 +135,18 @@ do
   search_cmd("#", "#N")
   search_cmd("g*", "g*N")
   search_cmd("g#", "g#N")
-  noxmap("n", function()
-    vim.g.hl_suspended = false
-    vim.cmd.redrawstatus()
-    return vim.v.searchforward == 1 and "nzz" or "Nzz"
-  end, { expr = true })
-  noxmap("N", function()
-    vim.g.hl_suspended = false
-    vim.cmd.redrawstatus()
-    return vim.v.searchforward == 1 and "Nzz" or "nzz"
-  end, { expr = true })
 end
 
 xmap("p", '"_dP', { desc = "Paste Over Visual without Yanking" })
 nmap("x", '"_x', { desc = "Delete Char without Yanking" })
 nmap("X", '"_X', { desc = "Delete Char without Yanking" })
 
+-- visual --------------------------------------------------------------------
 xmap("J", ":m '>+1<CR>gv=gv", { desc = "Move highlight down" })
 xmap("K", ":m '<-2<CR>gv=gv", { desc = "Move highlight up" })
 xmap("<", "<gv", { desc = "Indent left and reselect" })
 xmap(">", ">gv", { desc = "Indent right and reselect" })
 
-nmap("<C-/>", ":nohlsearch<cr>")
 nmap("<C-;>", "q:", { desc = "Open cmdwin" })
 
 -- icmap("<C-h>", "<C-Left>", { silent = false })
@@ -154,6 +159,8 @@ icmap("<C-k>", function()
   return fn.wildmenumode() == 1 and "<C-p>" or "<C-k>"
 end, { expr = true, silent = true })
 
+vim.keymap.set("c", "<M-p>", "<Up>", { silent = false })
+vim.keymap.set("c", "<M-n>", "<Down>", { silent = false })
 
 -- treesitter =================================================================
 noxmap("<A-o>", function()
@@ -187,14 +194,14 @@ xmap("<M-j>", function()
 end, { desc = "Select next node" })
 
 
--- wincmds =====================================================================
+-- wincmds -------------------------------------------------------------------
 local function wincmd(lhs, key, desc)
   nmap(lhs, "<C-w>"..key, { desc = desc })
 end
-wincmd("<C-j>",   "j", "jump to window below")
-wincmd("<C-k>",   "k", "jump to window above")
-wincmd("<C-h>",   "h", "jump to window left")
-wincmd("<C-l>",   "l", "jump to window right")
+-- wincmd("<C-w><C-j>", "j", "jump to window below")
+-- wincmd("<C-w><C-k>", "k", "jump to window above")
+-- wincmd("<C-w><C-h>", "h", "jump to window left")
+-- wincmd("<C-w><C-l>", "l", "jump to window right")
 wincmd("<M-S-j>", "J", "move window down")
 wincmd("<M-S-k>", "K", "move window up")
 wincmd("<M-S-h>", "H", "move window left")
@@ -220,13 +227,16 @@ nmap("<C-Down>",  function() smart_resize("j") end, { desc = "smart resize down"
 nmap("<C-Up>",    function() smart_resize("k") end, { desc = "smart resize up" })
 
 
--- diagnostics =================================================================
+-- diagnostics ----------------------------------------------------------------
 nmap_leader("td", function()
   vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end, { desc = "toggle diagnostics" })
 
-local diag_float_winid
+nmap("<C-d>", function()
+  vim.diagnostic.setqflist()
+end)
 
+local diag_float_winid
 nmap("<C-.>", function()
   vim.diagnostic.jump({
     count = vim.v.count1,
@@ -238,7 +248,6 @@ nmap("<C-.>", function()
     end,
   })
 end)
-
 nmap("<C-,>", function()
   vim.diagnostic.jump({
     count = - vim.v.count1,
@@ -270,11 +279,6 @@ nmap_leader("mc", function()
   -- if Edis.win():is_open() then Edis.win():set_lines({}, { force = true }) end
 end, { desc = "clear" })
 
--- nmap("<C-,>", function()
---   if vim.bo.filetype == "pager" then return api.nvim_win_close(0, true) end
---   vim.cmd("normal! g<")
--- end, { desc = "ui2 g<" })
-
 
 -- lsp =========================================================================
 nmap("gd", function() vim.lsp.buf.definition() end, { desc = "Goto definition" })
@@ -298,8 +302,8 @@ inmap("<M-`>", function()
 end, { desc = "toggle arglist" })
 
 for _, k in ipairs(Arglist.keys()) do
-  inmap("<M-"..k..">", function()
-    vim.cmd.stopinsert()
+  nmap("<M-"..k..">", function()
+    -- vim.cmd.stopinsert()
     Arglist.jump_to(k)
   end, { desc = ("arglist %s"):format(k)})
 
@@ -314,4 +318,3 @@ end
 map("ntix", "<c-t>", function()
   Terminal.smart_toggle()
 end, { desc = "toggle terminal" })
-tmap("<M-a>", "<c-\\><c-n>", { desc = "escape in terminal mode" })

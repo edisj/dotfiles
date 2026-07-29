@@ -3,18 +3,18 @@ local o, opt = vim.o, vim.opt
 o.autoindent     = true
 o.autoread       = true
 o.clipboard      = "unnamedplus"
--- o.colorcolumn    = "90"
 o.cmdheight      = 0
--- o.cmdheight      = 1
 o.cmdwinheight   = 8
 o.completeopt    = "menuone,noselect,fuzzy"
 o.confirm        = true
-o.cursorline     = true
+o.cursorline     = false
+o.cursorlineopt  = "both"
 o.equalalways    = false
 o.expandtab      = true
 opt.fillchars = {
   eob = "~",
-  msgsep = "▔",
+  -- msgsep = "▔",
+  msgsep = " ",
   fold = "╌",
   horiz     = '━',
   horizup   = '┻',
@@ -26,33 +26,39 @@ opt.fillchars = {
 }
 o.foldlevel      = 99
 o.foldlevelstart = 99
-o.guicursor      = "n-v-sm:block,i-c-ci-ve:ver20,r-cr-o:hor50,t:ver50-blinkon500-blinkoff500-TermCursor"
+o.guicursor = table.concat({
+  "n-v-sm:block",
+  "i-c-ci-ve:ver15",
+  "r-cr-o:hor25",
+  "t:ver50-blinkon500-blinkoff500-TermCursor"
+}, ",")
 o.hlsearch       = true
 o.ignorecase     = true
 o.inccommand     = "split"
 o.incsearch      = true
-o.laststatus     = 3
+o.laststatus     = 2
 -- o.listchars = 'extends:…,nbsp:␣,precedes:…,tab:> '
 -- o.list           = true
 -- opt.listchars      = { space = "⋅", nbsp = "⋅", trail = "⋅", tab = "  " }
 o.matchtime      = 1
 o.mouse          = "a"
-o.mousescroll    = "ver:3"
-o.number         = true
+o.mousescroll    = "ver:5"
+o.number         = false
 o.numberwidth    = 3
-o.pumborder      = "bold"
-o.pumheight      = 15
+o.pumblend       = 15
+o.pumborder      = "none"
+o.pumheight      = 12
 o.relativenumber = false
-o.scrolloff      = 5
+o.scrolloff      = 2
 opt.sessionoptions = {
   -- "blank",
   -- "buffers",
   "curdir",
   "folds",
   "globals",
-  "help",
+  -- "help",
   "tabpages",
-  "winsize",
+  -- "winsize",
   "terminal"
 }
 o.shiftwidth     = 2
@@ -64,64 +70,17 @@ o.sidescrolloff  = 8
 o.smartindent    = true
 o.softtabstop    = 2
 o.splitbelow     = true
+o.splitkeep      = "topline"
 o.splitright     = true
 o.smartcase      = true
 o.swapfile       = false
 o.tabstop        = 2
 o.termguicolors  = true
-o.title          = true
-o.titlestring    = " neovim"
+-- o.title          = true
+-- o.titlestring    = " neovim"
 o.undofile       = true
 o.virtualedit    = "block"
 o.wildmode       = "noselect,full"
 o.wildoptions    = "pum,fuzzy"
 opt.winborder    = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▏" }
 o.wrap           = false
-
-if vim.g.neovide then
-  o.linespace = 1
-  o.title = true
-  -- o.titlestring = "eovide"
-  o.titlestring = " neovide"
-
-  vim.o.guifont = "JetBrainsMono NF:h15"
-  vim.g.neovide_scale_factor = 1
-  vim.g.neovide_text_gamma = 0.8
-  vim.g.neovide_text_contrast = 0.5
-  vim.g.neovide_opacity = 1
-  local on = false
-  local function toggle_opacity()
-    vim.g.neovide_opacity = on and 1 or 0.97
-    on = not on
-  end
-  vim.keymap.set("n", "<leader>to", function() toggle_opacity() end, { desc = "neovide opacity" })
-
-  vim.g.neovide_underline_stroke_scale = 1.4
-
-  vim.g.neovide_padding_top = 10
-  vim.g.neovide_padding_bottom = 0
-  vim.g.neovide_padding_right = 5
-  vim.g.neovide_padding_left = 5
-
-  vim.g.neovide_scroll_animation_length = 0.15
-  vim.g.neovide_scroll_animation_far_lines = 0
-
-  vim.g.neovide_progress_bar_enabled = true
-  vim.g.neovide_progress_bar_height = 8.0
-  vim.g.neovide_progress_bar_animation_speed = 150.0
-  vim.g.neovide_progress_bar_hide_delay = 0.5
-
-  vim.g.neovide_floating_shadow = false
-  vim.g.neovide_show_border = false
-
-  vim.g.neovide_refresh_rate = 120
-  vim.g.neovide_confirm_quit = true
-
-  vim.g.neovide_position_animation_length = 0.20
-
-  vim.g.neovide_cursor_animation_length = 0.15
-  vim.g.neovide_cursor_short_animation_length = 0.03
-  vim.g.neovide_cursor_trail_size = 0.5
-  vim.g.neovide_cursor_antialiasing = true
-  vim.g.neovide_cursor_smooth_blink = false
-end

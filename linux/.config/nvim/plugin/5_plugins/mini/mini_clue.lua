@@ -1,22 +1,29 @@
 local function setup_mini_clue()
+  vim.keymap.set({"n"}, "<C-f>", "<Nop>")
+
   local clue = require("mini.clue")
   clue.setup({
-    window = {
-      config = function()
-        return {
-          anchor = "SW",
-          col = 0.75 * vim.o.columns,
-          width = "auto",
-          -- width = 0.3 * vim.o.columns,
-          border = { "🭽", "▔", "🭾", "▕", " ", " ", " ", "▏" },
-        }
-      end,
+    triggers = {
+      { mode = { "n", "x" }, keys =  "<leader>" },
+      { mode = { "n" },      keys =  "<C-f>" },
+      { mode = { "n", "x" }, keys =  "[" },
+      { mode = { "n", "x" }, keys =  "]" },
+      { mode =   'i',        keys = '<C-x>' },
+      { mode = { "n", "x" }, keys =  "g" },
+      { mode = { "n", "x" }, keys =  "'" },
+      { mode = { "n", "x" }, keys =  "`" },
+      { mode = { "n", "x" }, keys =  '"' },
+      { mode = { 'i', 'c' }, keys = '<C-r>' },
+      { mode =   'n',        keys = '<C-w>' },
+      { mode = { 'n', 'x' }, keys = 's' },
+      { mode = { 'n', 'x' }, keys = 'd' },
+      { mode = { 'n', 'x' }, keys = 'z' },
     },
-
     clues = {
       { mode = 'n', keys = '<Leader>e', desc = '+Edit' },
       { mode = 'n', keys = '<Leader>d', desc = '+Dap' },
       { mode = 'n', keys = '<Leader>f', desc = '+Find' },
+      { mode = 'n', keys = '<C-F>', desc = '+Find' },
       { mode = 'n', keys = '<Leader>g', desc = '+Git' },
       { mode = 'n', keys = '<Leader>l', desc = '+Lsp' },
       { mode = 'n', keys = '<Leader>m', desc = '+Messages' },
@@ -35,21 +42,23 @@ local function setup_mini_clue()
       -- - Stop submode either by `<Esc>` or by any key that is not in submode.
       clue.gen_clues.windows({ submode_resize = true }),
     },
-    triggers = {
-      { mode = { "n", "x" }, keys =  "<leader>" },
-      { mode = { "n", "x" }, keys =  "[" },
-      { mode = { "n", "x" }, keys =  "]" },
-      { mode =   'i',        keys = '<C-x>' },
-      { mode = { "n", "x" }, keys =  "g" },
-      { mode = { "n", "x" }, keys =  "'" },
-      { mode = { "n", "x" }, keys =  "`" },
-      { mode = { "n", "x" }, keys =  '"' },
-      { mode = { 'i', 'c' }, keys = '<C-r>' },
-      { mode =   'n',        keys = '<C-w>' },
-      { mode = { 'n', 'x' }, keys = 's' },
-      { mode = { 'n', 'x' }, keys = 'd' },
-      { mode = { 'n', 'x' }, keys = 'z' },
-    }
+    window = {
+      config = function()
+        return {
+          anchor = "SW",
+          col = 0.75 * vim.o.columns,
+          width = "auto",
+          -- width = 0.3 * vim.o.columns,
+          -- border = { "🭽", "▔", "🭾", "▕", " ", " ", " ", "▏" },
+          border = "solid",
+        }
+      end,
+    },
+    -- window = {
+    --   config = {
+    --     relative = "msgarea",
+    --   }
+    -- },
   })
 end
 

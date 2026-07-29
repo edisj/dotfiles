@@ -29,36 +29,6 @@ local nmap = Config.nmap
 -- end)
 -- vim.api.nvim_create_autocmd("BufWinEnter", { callback = refresh_picker })
 
-local ns_digit_prefix = vim.api.nvim_create_namespace("cur-buf-pick-show")
-local function show_buf_lines(buf_id, items, query, opts)
-  if items == nil or #items == 0 then return end
-
-  -- Show as usual
-  MiniPick.default_show(buf_id, items, query, opts)
-
-  -- Move prefix line numbers into inline extmarks
-  local lines = vim.api.nvim_buf_get_lines(buf_id, 0, -1, false)
-  local digit_prefixes = {}
-  for i, l in ipairs(lines) do
-    local _, prefix_end, prefix = l:find("^(%s*%d+│)")
-    if prefix_end ~= nil then
-      digit_prefixes[i], lines[i] = prefix, l:sub(prefix_end + 1)
-    end
-  end
-
-  vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
-  for i, pref in pairs(digit_prefixes) do
-    local opts = { virt_text = { { pref, "MiniPickNormal" } }, virt_text_pos = "inline" }
-    vim.api.nvim_buf_set_extmark(buf_id, ns_digit_prefix, i - 1, 0, opts)
-  end
-
-  -- Set highlighting based on the curent filetype
-  local ft = vim.bo[items[1].bufnr].filetype
-  local has_lang, lang = pcall(vim.treesitter.language.get_lang, ft)
-  local has_ts, _ = pcall(vim.treesitter.start, buf_id, has_lang and lang or ft)
-  if not has_ts and ft then vim.bo[buf_id].syntax = ft end
-end
-
 local function setup_mini_pick()
 
   local function arglist_add(k)
@@ -72,9 +42,9 @@ local function setup_mini_pick()
   require("mini.pick").setup({
     -- See `:h MiniPick-actions`.
     mappings = {
-      move_down  = "<C-j>",
+      move_down  = "<C-n>",
       move_start = "<C-g>",
-      move_up    = "<C-k>",
+      move_up    = "<C-p>",
 
       refine        = "<C-Space>",
       refine_marked = "<C-M-Space>",
@@ -86,12 +56,15 @@ local function setup_mini_pick()
       choose_in_tabpage = "<C-t>",
       choose_in_vsplit  = "<M-S-l>",
 
-      delete_left       = '',
+      delete_left       = "<C-u>",
 
-      scroll_down  = "<C-d>",
-      scroll_left  = "<C-h>",
-      scroll_right = "<C-l>",
-      scroll_up    = "<C-u>",
+      toggle_info    = "<C-h>",
+      toggle_preview = "<C-Tab>",
+
+      scroll_down  = "<C-j>",
+      scroll_left  = "<M-h>",
+      scroll_right = "<M-l>",
+      scroll_up    = "<C-k>",
 
       close_ = { char = "<C-f>", func = function() return true end },
       arglist_add_q = { char = "<M-S-q>", func = function() arglist_add("q") end },
@@ -108,35 +81,27 @@ local function setup_mini_pick()
       hidden = true,
     },
     window = {
-      config = function()
-        return {
-          relative = "msgarea",
-          border = { "▔", "▔", "▔", " ", " ", " ", " ", " " },
-          height = 20,
-        }
-    end,
+      config = {
+        relative = package.loaded["msgarea"] and "msgarea" or nil,
+        -- border = { "▔", "▔", "▔", " ", " ", " ", " ", " " },
+        border = { " ", " ", " ", " ", " ", " ", " ", " " },
+        height = 12,
+      },
       prompt_prefix = ">>> ",
       -- prompt_caret = "▎",
       prompt_caret = "🯏",
       -- prompt_caret = "▌",
     },
   })
-  require("mini.pick").registry.registry = function()
-    local picker = require("mini.pick")
-    local selected = picker.start({
-      source = { items = vim.tbl_keys(picker.registry), name = "Registry" }
-    })
-    if selected == nil then return end
-    return picker.registry[selected]()
-  end
 
-  MiniPick.registry.buffer_lines_current = function()
-    -- local local_opts = { scope = "current", preserve_order = true } -- use preserve_order
-    local local_opts = { scope = "current" }
-    MiniExtra.pickers.buf_lines(local_opts, { source = { show = show_buf_lines } })
-  end
+  MiniPick.registry["registry"] = require("pickers.registry")
+  MiniPick.registry["find_file"] = require("pickers.find-file")
 
-  nmap("<C-f>", function()
+  nmap("<C-f><C-f>", function() MiniPick.registry.find_file() end)
+  nmap("<C-f><C-.>", function() MiniPick.registry.find_file({ dir = vim.fn.expand("%:p:h") }) end)
+  nmap("<C-f>~", function() MiniPick.registry.find_file({ dir = vim.fn.expand("~") }) end)
+
+  nmap("<C-f><C-o>", function()
     local cwd = vim.fn.getcwd()
     local path = vim.fn.fnamemodify(cwd, ":~")
     MiniPick.builtin.files({}, {
@@ -158,19 +123,6 @@ local function setup_mini_pick()
   nmap_leader("fD", function() MiniExtra.pickers.diagnostic() end, { desc = "diagnostics" })
   nmap_leader("fk", function() MiniExtra.pickers.keymaps() end,    { desc = "keymaps" })
   nmap_leader("fH", function() MiniExtra.pickers.hl_groups() end,  { desc = "highlights" })
-
-  nmap("<M-/>", function() MiniExtra.pickers.buf_lines({ scope = "current" }, {
-    { source = { show = show_buf_lines }}
-  }) end)
-  nmap("<M-S-/>", function()
-    MiniExtra.pickers.buf_lines({}, {
-      source = {
-        show = function(buf_id, items_arr, query)
-          require("mini.pick").default_show(buf_id, items_arr, query, { show_icons = false } )
-        end,
-      },
-    })
-  end)
 
   nmap("<leader><leader>", function() MiniPick.builtin.resume() end)
 
@@ -205,6 +157,17 @@ local function setup_mini_pick()
   end
   nmap_leader("fp", function() pp("files") end, { desc = "find pack" })
   nmap_leader("fP", function() pp("grep_live") end, { desc = "grep packs" })
+
+  ---@class MiniPick.Source
+  ---@field items? any[]|fun(...):any  Array of items, or callable that sets them async
+  ---@field name? string  Shown in the border
+  ---@field cwd? string  Directory paths resolve against
+  ---@field match? fun(stritems: string[], inds: integer[], query: string[]): integer[]?
+  ---@field show? fun(buf_id: integer, items_arr: any[], query: string[])
+  ---@field preview? fun(buf_id: integer, item: any)
+  ---@field choose? fun(item: any): any?  Truthy return keeps picker open
+  ---@field choose_marked? fun(items_arr: any[]): any?
+
 end
 
 Pack.load_on_loop(setup_mini_pick)("mini.pick")
