@@ -5,7 +5,7 @@ local fn = vim.fn
 local api = vim.api
 
 local group = vim.api.nvim_create_augroup("ui-messages", { clear = true })
-Config.on("FileType", function()
+on("FileType", group, { pattern = "msg" }, function()
   local ui2 = require("vim._core.ui2")
   vim.schedule(function()
     local win = ui2.wins and ui2.wins.msg
@@ -17,9 +17,10 @@ Config.on("FileType", function()
         col = 0,
         border = { "", "", "", " ", "", "", "", " " },
       })
+      vim.wo[win].winblend = 75
     end
   end)
-end, { pattern = "msg", group = group })
+end)
 
 local a = true
 if a then return end

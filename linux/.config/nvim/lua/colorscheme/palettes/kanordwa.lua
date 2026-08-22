@@ -33,7 +33,9 @@ local c = {
   hint = "#7ccbcd",
 
   search = "#f9d791",
-  selection = "#74b5db",
+  -- selection = "#81a1c1",
+  match = "#84b5db",
+
   folder = "#caaa67",
   -- directory = "#74b5db",
   directory = "#6d96b4",

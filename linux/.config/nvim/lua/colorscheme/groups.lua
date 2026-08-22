@@ -22,12 +22,12 @@ local function set_terminal_colors(c)
 end
 
 local function hl_groups(c)
-  local cursorline = utils.brighten(c.bg, 0.1, 0.04)
+  local cursorline = utils.brighten(c.bg, 0.05, 0.02)
   local comment = utils.brighten(c.bg, 0.02, 0.25)
   local linenr = utils.brighten(c.bg, 0.10, 0.12)
 
-  local bg_visual = utils.brighten(c.bg, 0.25, 0.15)
-  local fg_visual = utils.lighten(c.fg, 0.25)
+  local bg_visual = utils.brighten(c.bg, 0.10, 0.10)
+  -- local fg_visual = utils.lighten(c.fg, 0.25)
 
   local dark_border = utils.darken(c.bg, 0.75)
 
@@ -39,9 +39,13 @@ local function hl_groups(c)
   local pmenu_border = c.selection
 
   c.statusline = utils.brighten(c.bg, 0.15, 0.15)
-  -- c.statusline = utils.lighten(c.bg, 0.25)
   local on_statusline = utils.brighten(c.statusline, 0.01 ,0.35)
+  c.statusline = bg_float
   on_statusline = utils.brighten(c.fg, 0.10)
+
+
+  c.selection = utils.blend(c.bg, 0.10, c.match)
+  c.selection = bg_visual
 
   local groups = {
     { -- syntax {{{
@@ -90,7 +94,7 @@ local function hl_groups(c)
     }, -- }}}
 
     { -- base {{{
-      Normal           = { fg = c.fg,         bg = c.bg                      },  -- Normal text.
+      Normal           = { fg = c.fg,         bg = c.bg,                     },  -- Normal text.
       NormalNC         = { link = "Normal"                                   },  -- Normal text in non-current windows.
       NormalSplit      = { fg = c.fg,         bg = bg_sidebar                },  -- Normal text in special splits.
       Bold = { bold = true },
@@ -138,31 +142,43 @@ local function hl_groups(c)
     { -- bars {{{
       StatusLine       = { fg = on_statusline, bg = c.statusline               },  -- Status line of current window.
       StatusLineNC     = { fg = utils.lighten(c.statusline, 0.25), bg = c.statusline                               },  -- Status lines of not-current windows.
-      TabLine          = { fg = comment,      bg = bg_float,                 },  -- Tab pages line, not active tab page label.
-      TabLineFill      = { link = "NormalSplit"                              },  -- Tab pages line, where there are no labels.
-      TabLineSel       = { fg = nil,          bg = cursorline, bold = true   },  -- Tab pages line, active tab page label.
+      TabLine          = { fg = linenr,      bg = bg_sidebar,                 },  -- Tab pages line, not active tab page label.
+      TabLineKey       = { link = "TabLine" },
+      TabLineFill      = { link = "Normal"                          },  -- Tab pages line, where there are no labels.
+      TabLineSel       = { fg = on_statusline,   bg = cursorline, underline=true, sp=linenr },  -- Tab pages line, active tab page label.
+      -- TabLineBorder    = {  },
+      -- TabLineBorderSel = { link = "TabLine" },
       WinBar           = { fg = nil,       bg = nil                         },  -- Window bar of current window.
       WinBarNC         = { link = "WinBar"                                  },  -- Window bar of not  -current windows.
     }, -- }}}
 
     { -- msg {{{
-      MsgArea          = { fg = nil,          bg = bg_sidebar                       },  -- Area for messages and command-line, see also 'cmdheight'.
-      MsgSeparator     = { fg = on_statusline,  bg = c.statusline                       },  -- Separator for scrolled messages |msgsep|.
-      -- MsgSeparator     = { fg = c.fg,  bg = bg_sidebar                       },  -- Separator for scrolled messages |msgsep|.
-      MoreMsg          = { fg = nil,    bg = nil,        bold = nil   },  -- |more-prompt|
-      ModeMsg          = { fg = c.special,    bg = nil                       },  -- 'showmode' message (e.g., "-- INSERT --").
-      Question         = { fg = c.special,    bg = nil,        bold = true   },  -- |hit-enter| prompt and yes/no questions.
+      -- MsgArea          = { fg = nil,          bg = bg_sidebar                       },  -- Area for messages and command-line, see also 'cmdheight'.
+      MsgArea          = { link = "Normal" },  -- Area for messages and command-line, see also 'cmdheight'.
+      MsgSeparator     = { fg = c.statusline, bg = bg_sidebar                       },  -- Separator for scrolled messages |msgsep|.
+      MoreMsg          = { fg = nil,    bg = nil,       bold = nil   },  -- |more-prompt|
+      ModeMsg          = { fg = c.special,    bg = nil                },  -- 'showmode' message (e.g., "-- INSERT --").
+      ErrorMsg         = { fg = c.error, bg = nil },
+      Question         = { fg = c.special,    bg = nil, bold = true   },  -- |hit-enter| prompt and yes/no questions.
+    }, -- }}}
+
+    { -- diff {{{
+      DiffAdd	    = {},
+      DiffChange  = {},
+      DiffDelete  = {},
+      DiffText    = {},
+      DiffTextAdd = {},
     }, -- }}}
 
     { -- pmenu {{{
-      Pmenu            = { fg = nil,          bg = bg_pmenu                  },  -- Popup menu: Normal item.
-      PmenuSel         = { fg = c.bg,         bg = c.selection, bold=true               },  -- Popup menu: Selected item.
-      PmenuMatch       = { fg = c.special,    bg = nil, bold=true                       },  -- Popup menu: Matched text in normal item. Combined with |hl-Pmenu|.
+      Pmenu            = { fg = nil,         bg = bg_pmenu                  },  -- Popup menu: Normal item.
+      PmenuSel         = { fg = utils.lighten(c.fg, 0.40 ),         bg = c.selection,   bold=true,  },  -- Popup menu: Selected item.
+      PmenuMatch       = { fg = c.func,     bg = nil,                        },  -- Popup menu: Matched text in normal item. Combined with |hl-Pmenu|.
+      PmenuMatchSel    = { fg = utils.brighten(c.func, 0.50, 0.05),      bg = nil, bold = true                       },  -- Popup menu: Matched text in normal item. Combined with |hl-Pmenu|.
       PmenuExtra       = { fg = comment,      bg = nil,                      },  -- Popup menu: Normal item "extra text".
       PmenuThumb       = { fg = pmenu_border, bg = pmenu_border                 },  -- Popup menu: Thumb of the scrollbar.
       PmenuSbar        = { fg = pmenu_border, bg = bg_pmenu                  },  -- Popup menu: Scrollbar.
       PmenuBorder      = { fg = pmenu_border, bg = bg_pmenu                       }, -- Popup menu: border of popup menu.
-      PmenuMatchSel    = { fg = c.error,      bg = nil                       },  -- Popup menu: Matched text in normal item. Combined with |hl-Pmenu|.
       PmenuKind = { fg = nil, bg = nil },
       -- PmenuKindSel    = { fg = c.error,    bg = nil                       },  -- Popup menu: Matched text in normal item. Combined with |hl-Pmenu|.
       -- PmenuExtra       = { fg = comment,      bg = nil,                      },  -- Popup menu: Normal item "extra text".
@@ -236,8 +252,8 @@ local function hl_groups(c)
       ["@keyword.modifier"]               = { link = "Operator" },
       ["@keyword.import"]                 = { link = "PreProc"},
       ["@keyword.return"]                 = { fg = c.ret, bg = nil, bold = false },
-      ["@keyword.vim"]                    = { link = "Function" },
-      ["@function.macro.vim"]             = { link = "Function" },
+      ["@keyword.vim"]                    = { link = "Keyword" },
+      ["@function.macro.vim"]             = { link = "DiagnosticOk" },
       ["@label.vimdoc"]                   = { link = "Function" },
       ["@module.builtin"]                 = { link = "Operator" },
       ["@property"]                       = { fg = c.fg, bg = nil },
@@ -249,7 +265,7 @@ local function hl_groups(c)
       ["@string.special.path"]            = { fg = c.builtin, bg = nil },
       ["@string.special.path.vim"]        = { fg = c.folder, bg = nil },
       ["@string.special.url.vimdoc"]      = { link = "Keyword" },
-      ["@variable"]                       = { fg = c.fg, bg = nil },
+      ["@variable"]                       = { fg = c.fg, bg = nil, },
       ["@variable.builtin"]               = { link = "@variable" },
       ["@variable.member"]               = {},
       ["@variable.parameter.builtin.lua"] = { link = "@variable.parameter" },
@@ -279,6 +295,7 @@ local function hl_groups(c)
       -- MsgAreaWinBarFill = { fg = comment, bg = nil },
       -- MsgAreaWinBarSel = { link = "Title" },
       MsgAreaWinBarSep = { fg = linenr, bg = nil },
+      MsgAreaCmpLabelDescription = "Comment",
 
       DapBreakpoint  = { link = "DiagnosticError" },
       DapStopped     = { fg = c.fg, bg = nil, bold = true },
@@ -317,9 +334,9 @@ local function hl_groups(c)
       FlashPrompt     = { link = "DiagnosticError" },
       FlashPromptIcon = { link = "DiagnosticWarn" },
 
-      BlinkCmpSelection                    = { fg = c.bg, bg = c.selection, bold = true },
+      BlinkCmpSelection                    = { fg = nil, bg = c.selection, bold = true },
       BlinkCmpLabel                        = { link = "Normal"                     },
-      BlinkCmpLabelMatch                   = { fg = c.func, bg = nil              },
+      BlinkCmpLabelMatch                   = { fg = c.match, bg = nil              },
       BlinkCmpLabelDetail                  = { link = "Comment" },
       BlinkCmpMenuBorder                   = { link = "PmenuBorder" },
       BlinkCmpMenu                         = { link = "Pmenu" },
@@ -338,14 +355,15 @@ local function hl_groups(c)
       MiniPickBorder       = { link = "MsgArea"                      },
       MiniPickBorderBusy   = { link = "MsgArea"                      },
       -- MiniPickCursor       = { fg = c.bg, bg = c.fg },
-      MiniPickNormal       = { fg = c.fg, bg = bg_sidebar                               },
+      MiniPickNormal       = { link = "MsgArea" },
       -- MiniPickMatchCurrent = { fg = c.bg,         bg = c.keyword, bold = false },
-      MiniPickBorderText   = { fg = c.fg,         bg = bg_sidebar, bold=true               },
-      MiniPickPrompt       = { fg = c.func, bg = bg_sidebar               },
-      MiniPickPromptPrefix = { fg = c.fg, bg = bg_sidebar               },
-      MiniPickPromptCaret  = { fg = c.fg,       bg = bg_sidebar               },
-      MiniPickMatchRanges  = { fg = c.func, bg = nil, bold=true                     },
-      MiniPickMatchCurrent = { fg = nil,         bg = cursorline, bold = false },
+      MiniPickBorderText   = { fg = c.fg, bg = c.bg, bold=true               },
+      MiniPickPrompt       = { fg = c.func, bg = c.bg               },
+      MiniPickPromptPrefix = { fg = c.fg, bg = c.bg               },
+      MiniPickPromptCaret  = { fg = c.fg,       bg = c.bg               },
+      MiniPickMatchRanges  = { fg = c.match,  bg = nil, bold=true                     },
+      MiniPickMatchCurrent = { fg = nil,      bg = c.selection, bold = false },
+      MiniCmdlinePeekNormal = { link = "MsgArea" },
 
       Folder                  = { fg = c.folder,     bg = nil                      },
       -- FloatBorder3            = { fg = dark_border,  bg = bg_float                 },  -- Border of floating windows.
@@ -354,6 +372,13 @@ local function hl_groups(c)
       MiniFilesTitleFocused   = { fg = nil,          bg = dark_border, bold = true },
       MiniFilesBorderModified = { fg = c.warn,    bg = bg_float,    bold = true },
       -- MiniFilesCursorLine     = { link = "Visual"                          },
+
+      RenderMarkdownH1Bg = { fg = nil, bg = nil },
+      RenderMarkdownH2Bg = { fg = nil, bg = nil },
+      RenderMarkdownH3Bg = {  },
+      RenderMarkdownH4Bg = {  },
+      RenderMarkdownH5Bg = {  },
+      RenderMarkdownH6Bg = {  },
 
       NeoTreeNormal = { fg = nil, bg = bg_sidebar },
       NeoTreeNormalNC = "NeoTreeNormal",

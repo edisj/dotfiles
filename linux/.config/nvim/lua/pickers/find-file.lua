@@ -1,77 +1,6 @@
-local fn, fs, uv, api = vim.fn, vim.fs, vim.uv, vim.api
+local fn, fs, api = vim.fn, vim.fs, vim.api
 local pick = require("mini.pick")
-
----convert fs_stat size to string with units
-local size_str = function(size)
-  if not size then return "" end
-  local KB = 1000
-  local MB = KB*KB
-  local GB = KB*KB*KB
-  local TB = KB*KB*KB*KB
-  local out = ""
-  if     size < KB then out = ("%s"):format(size)
-  elseif size < MB then out = ("%.1fk"):format(size / KB)
-  elseif size < GB then out = ("%.1fM"):format(size / MB)
-  elseif size < TB then out = ("%.1fG"):format(size / GB)
-  else                  out = ("%.1fT"):format(size / TB)
-  end
-  return out
-end
-
----convert fs_stat octal "mode" number to permissions string, e.g. 604 -> -rw----r--
-local permissions_str = function(type, mode)
-  if not mode then return string.rep("-", 10) end
-  type = ({ directory = "d", link = "l" })[type] or "-"
-  local octal_str = ("%03o"):format(mode % (8*8*8)) -- keep bottom 3 octal-digits
-  local octal_map = {
-    ["0"] = "---", ["1"] = "--x", ["2"] = "-w-", ["3"] = "-wx",
-    ["4"] = "r--", ["5"] = "r-x", ["6"] = "rw-", ["7"] = "rwx",
-  }
-  local user = octal_map[octal_str:sub(1, 1)]
-  local group = octal_map[octal_str:sub(2, 2)]
-  local other = octal_map[octal_str:sub(3, 3)]
-  return type .. user .. group .. other
-end
-
----convert fs_stat mtime to "last modified" string
-local modified_str = function(mtime)
-  if not mtime then return "" end
-  return fn.strftime("%b %d %H:%M", mtime.sec)
-end
-
----create an array of items for picker, will be called
----for each new directory visited during a picker session
----NOTE: actual items are returned as .items field of the returned table
-local get_dir_items = function(dirname)
-  if not dirname then return { items = {}, widths = {} } end
-
-  -- while we make items, also compute max length of text and size
-  -- so we can arrange data into neatly aligned columns in custom show()
-  local text_col_width = 0
-  local size_col_width = 0
-  local items = vim
-    .iter(fs.dir(dirname))
-    :map(function(name, type)
-      local path = fs.joinpath(dirname, name)
-      local stat = uv.fs_stat(path) or {}
-      local text = type == "directory" and name .. "/" or name
-      local size = size_str(stat.size)
-      text_col_width = math.max(text_col_width, #text)
-      size_col_width = math.max(size_col_width, #size)
-      return {
-        text = text,
-        path = path,
-        type = type,
-        size = size_str(stat.size),
-        permissions = permissions_str(type, stat.mode),
-        modified = modified_str(stat.mtime),
-      }
-    end)
-    :totable()
-
-  return { items = items, widths = { text = text_col_width, size = size_col_width } }
-end
-
+local myfs = require("fs")
 
 -- path helpers --------------------------------------------------------------
 local normalized = function(path)
@@ -112,7 +41,7 @@ local find_file = function(local_opts, opts)
   -- NOTE: using `[false]` as a special key to stub empty lookups,
   -- which happens when query is empty
   local items_cache = { [false] = CACHE_STUB }
-  items_cache[initial_dir] = get_dir_items(initial_dir)
+  items_cache[initial_dir] = myfs.get_dir_info(initial_dir)
   local items = items_cache[initial_dir].items
 
   -- stack helpers -----------------------------------------------------------
@@ -178,7 +107,7 @@ local find_file = function(local_opts, opts)
       last_dir = current_dir
       -- if `current_dir == false`, we hit our items_cache[false] stub,
       -- which is {} (truthy), so items will become {}, otherwise compute and cache new items
-      if not items_cache[current_dir] then items_cache[current_dir] = get_dir_items(current_dir) end
+      if not items_cache[current_dir] then items_cache[current_dir] = myfs.get_dir_info(current_dir) end
       pick.set_picker_items(items_cache[current_dir].items, { do_match = true })
       return
     end
