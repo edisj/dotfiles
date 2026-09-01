@@ -1,14 +1,9 @@
-local api = vim.api
-local ns = api.nvim_create_namespace("pickers.buf_lines_current")
-local pick = require("mini.pick")
-local show_grouped = require("pickers._shared").show_grouped
-
 return function(local_opts, opts)
   local default_local_opts = {
-    scope = "current",
+    -- scope = "current",
     preserve_order = true,
-    group_by = "fname",
-    show_header = false,
+    group_by = "bufnr",
+    show_header = true,
   }
   local_opts = vim.tbl_deep_extend("force", default_local_opts, local_opts or {})
 
@@ -23,11 +18,17 @@ return function(local_opts, opts)
     end,
   }
   local show = function(bufnr, items, query)
-    show_grouped(bufnr, items, query, showopts)
+    require("pickers._shared").show_grouped(bufnr, items, query, showopts)
+  end
+  local choose = function(item)
+    -- vim.print(item)
+    vim.schedule(function() MiniPick.default_choose(item) end)
+    MiniPick.stop()
   end
 
-  opts = vim.tbl_deep_extend("keep", { source = { show = show } }, opts or {}, {
-    window = { prompt_prefix = " Goto Line: " },
+  local prompt_prefix = " Goto Line" .. (local_opts.scope == "current" and " (current)" or "") .. ": "
+  opts = vim.tbl_deep_extend("keep", { source = { show = show, choose = choose } }, opts or {}, {
+    window = { prompt_prefix = prompt_prefix },
   })
   MiniExtra.pickers.buf_lines(local_opts, opts)
 end

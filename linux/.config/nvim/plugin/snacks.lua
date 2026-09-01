@@ -69,12 +69,26 @@ local indent = {
 pack.add({{
   src = "https://github.com/folke/snacks.nvim",
   data = {
-    enable = false,
+    enable = true,
     defer = true,
     loader = function()
       require("snacks").setup({
         picker = picker,
         indent = indent,
+        statuscolumn = {
+          enabled = false,
+          left = { "sign", "git"}, -- priority of signs on the left (high to low)
+          right = { "fold" }, -- priority of signs on the right (high to low)
+          folds = {
+            open = false, -- show open fold icons
+            git_hl = false, -- use Git Signs hl for fold icons
+          },
+          git = {
+            -- patterns to match Git signs
+            patterns = { "GitSign", "MiniDiffSign" },
+          },
+          refresh = 50, -- refresh at most every 50ms
+        },
         bigfile = { enabled = false },
         image = { enabled = true },
       })

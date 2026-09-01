@@ -8,31 +8,6 @@ local map = function(lhs, rhs, opts)
 end
 _G.map = map
 
--- local function edit(file)
---   local path = ("%s/plugin/%s"):format(vim.fn.stdpath("config"), file)
---   return function() vim.cmd.edit(path) end
--- end
--- map("<C-e><C-o>", edit("_options.lua"),    { desc = "options.lua" })
--- map("<C-e><C-k>", edit("_keymaps.lua"),    { desc = "keymaps.lua" })
--- map("<C-e><C-a>", edit("_autocmds.lua"),   { desc = "autocmds.lua" })
--- map("<C-e><C-i>", "<Cmd>edit $MYVIMRC<CR>", { desc = "init.lua" })
--- map("<C-e><C-e>", function()
---   local root_marker = ".edis.toml"
---   local project_root = vim.fs.root(0, root_marker)
---   if project_root == nil then
---     local msg = ("no '%s' file detected"):format(root_marker)
---     api.nvim_echo({
---       { "(", "@punctuation.bracket" },
---       { "error", "DiagnosticError" },
---       { ") ", "@punctuation.bracket" },
---       { msg }
---     }, true, {})
---     return
---   end
---   local marker_file  = vim.fs.joinpath(project_root, root_marker)
---   vim.cmd.edit(marker_file)
--- end, { desc = ".edis.toml" })
-
 -- insert --------------------------------------------------------------------
 for _, k in ipairs {
   "q", "b", "w", "e",
@@ -55,7 +30,8 @@ map("<C-k>", function()
   return math.floor(0.5 * vim.o.lines) .. "gk"
 end, { expr = true })
 
-map("<Tab>", "zA")
+-- map("<Tab>", "zA")
+map("<Tab>", "<Cmd>e #<CR>")
 map("<C-i>", "<C-i>", { remap = true })
 
 map("<C-c>", "<Esc>")
@@ -66,16 +42,20 @@ map("G", "gg", { desc = "first line", mode = { "n", "o", "x" } })
 map("gg", "G", { desc = "last line", mode = { "n", "o", "x" } })
 map("q", "b", { desc = "previous word", mode = { "n", "o", "x" } })
 map("Q", "B", { desc = "previous WORD", mode = { "n", "o", "x" } })
-map("H", "g^", { desc = "beginning of line", mode = { "n", "o", "x" } })
-map("L", "g$", { desc = "end of line", mode = { "n", "o", "x" } })
+map("H", "^", { desc = "beginning of line", mode = { "n", "o", "x" } })
+map("L", "$", { desc = "end of line", mode = { "n", "o", "x" } })
+
 map("]t", "gt", { desc = "tab next" })
 map("[t", "gT", { desc = "tab prev" })
-
-map("<C-M-h>", "]a")
-map("<C-M-l>", "[a")
+map("<C-M-h>", function()
+  if fn.tabpagenr() > 1 then vim.cmd("tabNext") end
+end)
+map("<C-M-l>", function()
+  if fn.tabpagenr() ~= fn.tabpagenr("$") then vim.cmd("tabnext") end
+end)
 
 -- misc ========================================================================
-map("<C-s>", function()
+map("<M-s>", function()
   vim.cmd.stopinsert()
   vim.cmd.update()
 end, { desc = "save", mode = { "n", "i", "x" } })
@@ -115,6 +95,7 @@ do
   map("g#", "g#N", { mode = { "n", "x" } })
 end
 
+map("U", function() vim.cmd("redo") end, { mode = { "n", "x" } })
 map("p", '"_dP', { desc = "Paste Over Visual without Yanking", mode = { "x" } })
 map("x", '"_x',  { desc = "Delete Char without Yanking" })
 map("X", '"_X',  { desc = "Delete Char without Yanking" })
@@ -154,11 +135,6 @@ vim.keymap.set('i', '<M-j>', '<Down>',  { noremap = false, desc = 'Down' })
 vim.keymap.set('i', '<M-k>', '<Up>',    { noremap = false, desc = 'Up' })
 vim.keymap.set('i', '<M-l>', '<Right>', { noremap = false, desc = 'Right' })
 
-vim.keymap.set('t', '<M-h>', '<Left>',  { desc = 'Left' })
-vim.keymap.set('t', '<M-j>', '<Down>',  { desc = 'Down' })
-vim.keymap.set('t', '<M-k>', '<Up>',    { desc = 'Up' })
-vim.keymap.set('t', '<M-l>', '<Right>', { desc = 'Right' })
-
 -- Copy/paste with system clipboard
 vim.keymap.set(  'n',        'gp', '"+p', { desc = 'Paste from system clipboard' })
 vim.keymap.set({ 'n', 'x' }, 'gy', '"+y', { desc = 'Copy to system clipboard' })
@@ -172,7 +148,14 @@ vim.keymap.set('n', 'gV', '"g`[" . strpart(getregtype(), 0, 1) . "g`]"', { expr 
 -- make effect immediately.
 vim.keymap.set('x', 'g/', '<esc>/\\%V', { silent = false, desc = 'Search inside visual selection' })
 
-
+local function edit(file)
+  local path = ("%s/plugin/%s"):format(vim.fn.stdpath("config"), file)
+  return function() vim.cmd.edit(path) end
+end
+map("<Leader>eo", edit("_options.lua"),    { desc = "options.lua" })
+map("<Leader>ek", edit("_keymaps.lua"),    { desc = "keymaps.lua" })
+map("<Leader>ea", edit("_autocmds.lua"),   { desc = "autocmds.lua" })
+map("<Leader>ei", "<Cmd>edit $MYVIMRC<CR>", { desc = "init.lua" })
 
 
 -- wincmds -------------------------------------------------------------------
@@ -210,6 +193,26 @@ map("<C-Left>",  function() smart_resize("h") end, { desc = "smart resize left" 
 map("<C-Right>", function() smart_resize("l") end, { desc = "smart resize right" })
 map("<C-Down>",  function() smart_resize("j") end, { desc = "smart resize down" })
 map("<C-Up>",    function() smart_resize("k") end, { desc = "smart resize up" })
+
+-- {{{ toggle
+map("<Leader>tn", function()
+  vim.o.nu = not vim.o.nu
+  if not vim.o.nu then vim.o.rnu = false end
+end, { desc = "number" })
+map("<Leader>tr", function()
+  vim.o.rnu = not vim.o.rnu
+  if vim.o.rnu then vim.o.nu = true end
+end, { desc = "relative number" })
+map("<Leader>tg", function()
+  if not package.loaded["gitsigns"] then return end
+  vim.cmd("Gitsigns toggle_signs")
+  vim.api.nvim__redraw({ flush = true, statuscolumn = true })
+end, { desc = "gitsigns" })
+map("<Leader>ts", function()
+  local scl = vim.o.signcolumn
+  vim.o.signcolumn = scl == "no" and "yes:1" or "no"
+end, { desc = "signcolumn" })
+-- }}}
 
 
 -- lsp =========================================================================

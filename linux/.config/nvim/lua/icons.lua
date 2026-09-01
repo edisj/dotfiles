@@ -87,7 +87,8 @@ M.misc = {
     palette = "󰏘",
     robot = "󰚩",
     search = "",
-    terminal = "",
+    -- terminal = "",
+    terminal = "",
     toolbox = "󰦬",
     vertical_bar = "│",
 }

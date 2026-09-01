@@ -5,22 +5,25 @@ local fn = vim.fn
 local api = vim.api
 
 local group = vim.api.nvim_create_augroup("ui-messages", { clear = true })
-on("FileType", group, { pattern = "msg" }, function()
-  local ui2 = require("vim._core.ui2")
-  vim.schedule(function()
-    local win = ui2.wins and ui2.wins.msg
-    if win and vim.api.nvim_win_is_valid(win) then
-      api.nvim_win_set_config(win, {
-        anchor = "SE",
-        relative = "editor",
-        row = vim.o.lines,
-        col = 0,
-        border = { "", "", "", " ", "", "", "", " " },
-      })
-      vim.wo[win].winblend = 75
-    end
-  end)
-end)
+api.nvim_create_autocmd("FileType", {
+  group = group,
+  pattern = "msg",
+  callback = function()
+    local ui2 = require("vim._core.ui2")
+    vim.schedule(function()
+      local win = ui2.wins and ui2.wins.msg
+      if win and vim.api.nvim_win_is_valid(win) then
+        api.nvim_win_set_config(win, {
+          anchor = "SE",
+          relative = "editor",
+          row = vim.o.lines,
+          col = 0,
+          border = { "", "", "", " ", "", "", "", " " },
+        })
+        vim.wo[win].winblend = 30
+      end
+    end)
+  end})
 
 local a = true
 if a then return end

@@ -26,97 +26,140 @@
 -- end)
 -- vim.api.nvim_create_autocmd("BufWinEnter", { callback = refresh_picker })
 
+local ui_select = vim.ui.select
 local function setup_mini_pick()
+
+  local mappings = {
+    move_down  = "<C-n>",
+    move_up    = "<C-p>",
+    move_start = "<C-g>",
+
+    refine        = "<M-CR>",
+    refine_marked = "<C-CR>",
+
+    mark              = "<C-x>",
+    mark_all          = "<C-a>",
+    choose_marked     = "<C-q>",
+    choose_in_split   = "<M-S-j>",
+    choose_in_vsplit  = "<M-S-l>",
+    choose_in_tabpage = "<C-t>",
+
+    delete_left       = "<C-u>",
+
+    toggle_info    = "<C-h>",
+    toggle_preview = "<C-Tab>",
+
+    scroll_left  = "<M-h>",
+    scroll_down  = "<C-j>",
+    scroll_up    = "<C-k>",
+    scroll_right = "<M-l>",
+
+    -- test3 = { char = "<C-\\>", func = function()
+    --   require("vim._core.ui2.messages").show_msg("msgarea", "", {{0, "a\nb\nc", 0 }})
+    -- end},
+    -- test2 = { char = "<C-o>", func = function() vim.print(require("vim._core.ui2").wins) end },
+    expand = { char = "<C-space>", func = function()
+      if not package.loaded["msgarea"] then return end
+      local view = require("msgarea.view")
+      local eph = view.state.windows.ephemeral
+      local bigger = math.floor(2/3 * vim.o.lines)
+      eph._height, eph.height = eph.height, eph._height or bigger
+      view.show{silent = true}
+      -- MiniPick.refresh()
+    end},
+  }
 
   local function arglist_add(k)
     local current = MiniPick.get_picker_matches().current
     if current == nil or vim.uv.fs_stat(current).type ~= "file" then return end
     MiniPick.default_choose(current)
-    arglist.set_key(k, current)
+    arglist.add(k, current)
     MiniPick.stop()
+  end
+  for _, k in ipairs(arglist.keys()) do
+    local lhs = "<M-S-" .. k .. ">"
+    mappings["arglist_add_" .. k] = { char = lhs, func = function() arglist_add(k) end }
+  end
+
+
+  local centered = function()
+    local h = math.floor(0.8*vim.o.lines)
+    local w = math.floor(0.8*vim.o.columns)
+    return {
+      relative = "editor", anchor = "NW",
+      border = "bold",
+      height = h, width = w,
+      row = 0.5 * ( vim.o.lines - h -2 ),
+      col = 0.5 * ( vim.o.columns - w-2 ),
+    }
   end
 
   require("mini.pick").setup({
     -- See `:h MiniPick-actions`.
-    mappings = {
-      move_down  = "<C-n>",
-      move_up    = "<C-p>",
-      move_start = "<C-g>",
-
-      refine        = "<S-CR>",
-      refine_marked = "<M-CR>",
-
-      mark              = "<C-x>",
-      mark_all          = "<C-a>",
-      choose_marked     = "<C-q>",
-      choose_in_split   = "<M-S-j>",
-      choose_in_vsplit  = "<M-S-l>",
-      choose_in_tabpage = "<C-t>",
-
-      delete_left       = "<C-u>",
-
-      toggle_info    = "<C-h>",
-      toggle_preview = "<C-Tab>",
-
-      scroll_left  = "<M-h>",
-      scroll_down  = "<C-j>",
-      scroll_up    = "<C-k>",
-      scroll_right = "<M-l>",
-
-      test3 = { char = "<C-\\>", func = function()
-        require("vim._core.ui2.messages").show_msg("msgarea", "", {{0, "a\nb\nc", 0 }})
-      end},
-      test2 = { char = "<C-o>", func = function() vim.print(require("vim._core.ui2").wins) end },
-      close_ = { char = "<C-f>", func = function() return true end },
-      arglist_add_q = { char = "<M-S-q>", func = function() arglist_add("q") end },
-      arglist_add_w = { char = "<M-S-w>", func = function() arglist_add("w") end },
-      arglist_add_e = { char = "<M-S-e>", func = function() arglist_add("e") end },
-      arglist_add_r = { char = "<M-S-r>", func = function() arglist_add("r") end },
-      arglist_add_s = { char = "<M-S-s>", func = function() arglist_add("s") end },
-      arglist_add_d = { char = "<M-S-d>", func = function() arglist_add("d") end },
-      arglist_add_f = { char = "<M-S-f>", func = function() arglist_add("f") end },
-    },
+    mappings = mappings,
     options = {
       content_from_bottom = false,
       use_cache = true,
       hidden = true,
     },
     window = {
-      config = function()
-        return {
-          relative = package.loaded["msgarea"] and "msgarea" or nil,
-          border = { " ", " ", " ", "", " ", " ", " ", "" },
-          height = 10,
-        }
-      end,
+      config = centered,
       prompt_prefix = ">>> ",
       -- prompt_caret = "▎",
       prompt_caret = "🯏",
       -- prompt_caret = "▌",
     },
   })
+  vim.ui.select = ui_select
 
   MiniPick.registry["registry"] = require("pickers.registry")
   MiniPick.registry["find_file"] = require("pickers.find-file")
+  MiniPick.registry["grep_live"] = require("pickers.grep-live")
+  MiniPick.registry["buf_lines_current"] = require("pickers.buf-lines-current")
+  MiniPick.registry["buf_lines"] = require("pickers.buf-lines")
 
   local fmap = function(key, desc, rhs)
     map("<C-f>" .. key, rhs, { desc = desc })
   end
 
-  map("<C-e><C-/>", function() MiniPick.registry.find_file({ dir = vim.fn.expand("%:p:h") }) end)
+
+  local win_cfg = function()
+    return {
+      relative = package.loaded["msgarea"] and "msgarea" or nil,
+      height = math.floor(1/3 * vim.o.lines),
+      -- border = { " ", " ", " ", "", "", "", "", "" },
+      border = { "", " ", "", "", "", " ", "", "" },
+    }
+  end
+  local msgarea_opts = { window = { config = win_cfg } }
+
+  map("<C-e><C-/>", function() MiniPick.registry.find_file({ dir = vim.fn.expand("%:p:h") }, msgarea_opts) end)
   fmap("<C-o>", "files (cwd)", function() MiniPick.registry.find_file() end)
-  fmap("<C-.>", "files (%)", function() MiniPick.registry.find_file({ dir = vim.fn.expand("%:p:h") }) end)
-  fmap("~", "files (~)", function() MiniPick.registry.find_file({ dir = vim.fn.expand("~") }) end)
   fmap("<C-f>", "registry", function() MiniPick.registry.registry() end)
-  fmap("<C-h>", "helptags", function() MiniPick.builtin.help() end)
-  fmap("<C-b>", "buffers", function() MiniPick.builtin.buffers() end)
-  fmap("<C-g>", "grep live", function() MiniPick.builtin.grep_live() end)
+  fmap("<C-h>", "helptags", function() MiniPick.builtin.help(nil, msgarea_opts) end)
+  fmap("<C-b>", "buffers", function() MiniPick.builtin.buffers(nil, msgarea_opts) end)
   map("<Leader>fd", function() MiniExtra.pickers.diagnostic({scope="current"}) end, { desc = "diagnostics %" })
   map("<Leader>fD", function() MiniExtra.pickers.diagnostic() end, { desc = "diagnostics" })
   map("<Leader>fk", function() MiniExtra.pickers.keymaps() end,    { desc = "keymaps" })
   map("<Leader>fH", function() MiniExtra.pickers.hl_groups() end,  { desc = "highlights" })
 
-  map("<C-space>", "<Cmd>Pick files<CR>")
+  map("<C-/>", function() MiniPick.registry.grep_live({ show_header = true, group_by = "fname" }, msgarea_opts) end)
+  -- map("<C-_>", function() MiniPick.registry.grep_live({ show_header = true, group_by = "fname" }, msgarea_opts) end)
+  map("<M-/>", function() MiniPick.registry.buf_lines({ scope = "current", show_header = false }, msgarea_opts) end)
+  map("<C-M-/>", function() MiniPick.registry.buf_lines({ show_header = true }, msgarea_opts) end)
+
+  fmap("<C-.>", "files", function()
+    local cwd = vim.fn.getcwd(-1, -1, -1)
+    local cwd = vim.fn.getcwd()
+    local path = vim.fn.fnamemodify(cwd, ":~")
+    local prompt_prefix = " Find (file): " .. path .. "/"
+    MiniPick.builtin.files({}, {
+      source = { cwd = cwd },
+      window = { prompt_prefix = prompt_prefix, config = win_cfg },
+    })
+  end)
+
+  -- map("<C-space>", "<Cmd>Pick files<CR>")
   map("<M-space>", function()
     local cwd = vim.fn.getcwd()
     local path = vim.fn.fnamemodify(cwd, ":~")
@@ -132,7 +175,7 @@ local function setup_mini_pick()
           -- vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
         end
       },
-      window = { prompt_prefix = " Find: " .. path .. "/" }
+      window = { prompt_prefix = " Find: " .. path .. "/", config = win_cfg }
     }) end, { desc = "Pick files" })
   map("<leader><leader>", function() MiniPick.builtin.resume() end)
 
@@ -141,13 +184,13 @@ local function setup_mini_pick()
     local prefix = " " .. vim.fn.fnamemodify(cwd, ":~") .. "/"
     local opts = {
       source = { cwd = cwd },
-      window = { prompt_prefix = prefix },
+      window = { prompt_prefix = prefix, config = win_cfg },
     }
     MiniPick.builtin.files(nil, opts)
   end)
 
   fmap("<C-r>", "runtime", function()
-    local opts = { source = { cwd = vim.fn.expand("$VIMRUNTIME").."/lua" } }
+    local opts = { source = { cwd = vim.fn.expand("$VIMRUNTIME").."/lua" }, window = { config = win_cfg } }
     MiniPick.builtin.files(nil, opts)
   end)
 
@@ -161,7 +204,7 @@ local function setup_mini_pick()
         command = "fd",
         args = { "-e", "lua", "-p", ".*/lua/" }
       },
-      window = { prompt_prefix = prefix },
+      window = { prompt_prefix = prefix, config = win_cfg },
     }
     MiniPick.builtin[picker](nil, opts)
   end

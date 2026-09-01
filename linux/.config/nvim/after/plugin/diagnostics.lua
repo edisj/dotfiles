@@ -13,8 +13,6 @@ local sign_text = {
 vim.diagnostic.config({
   severity_sort = true,
   update_in_insert = false,
-  virtual_text = false,
-  -- virtual_text = { severity = { min = severity.ERROR } },
   signs = {
     -- severity = { min = sev.WARN },
     text = sign_text,
@@ -30,32 +28,26 @@ vim.diagnostic.config({
 
 map("<Leader>td", function()
   vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+  vim.api.nvim__redraw({ flush = true, statuscolumn = true })
 end, { desc = "toggle diagnostics" })
 
 map("<C-q><C-d>", function()
   vim.diagnostic.setqflist()
 end)
 
-local diag_float_winid
-map("<C-.>", function()
-  vim.diagnostic.jump({
-    count = vim.v.count1,
-    on_jump = function()
-      if diag_float_winid and api.nvim_win_is_valid(diag_float_winid) then
-        api.nvim_win_close(diag_float_winid, true)
-      end
-      _, diag_float_winid = vim.diagnostic.open_float()
-    end,
-  })
-end)
-map("<C-,>", function()
-  vim.diagnostic.jump({
-    count = -vim.v.count1,
-    on_jump = function()
-      if diag_float_winid and api.nvim_win_is_valid(diag_float_winid) then
-        api.nvim_win_close(diag_float_winid, true)
-      end
-      _, diag_float_winid = vim.diagnostic.open_float()
-    end,
-  })
-end)
+local jump = function(sign)
+  return function()
+    vim.diagnostic.jump {
+      count = sign * vim.v.count1,
+      on_jump = function(diag)
+        if not diag then return end
+        vim.diagnostic.config({ virtual_lines = { current_line = true }, virtual_text = false })
+        on("CursorMoved", nil, { once = true }, function()
+          vim.diagnostic.config({ virtual_lines = false, virtual_text = false })
+        end)
+      end,
+    }
+  end
+end
+map("<C-.>", jump(1))
+map("<C-,>", jump(-1))

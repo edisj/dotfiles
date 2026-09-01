@@ -1,6 +1,11 @@
 pack.add({
   { src = "https://github.com/jbyuki/one-small-step-for-vimkind", data = { enable = true } },
-  { src = "https://codeberg.org/mfussenegger/nvim-jdtls", data = { enable = true } },
+  {
+    src = "https://codeberg.org/mfussenegger/nvim-jdtls",
+    data = {
+      enable = true ,
+    }
+  },
   {
     src = "https://codeberg.org/mfussenegger/nvim-dap",
     data = {
@@ -21,7 +26,7 @@ pack.add({
         --   For more complex use cases, nvim-dap allows overriding with a function. The
         --   function receives 3 arguments: (bufnr, line, column). It has full control of
         --   how Neovim should behave and it is not expected to return anything.
-        dap.defaults.fallback.switchbuf = "usevisible,usetab,newtab"
+        dap.defaults.fallback.switchbuf = "usevisible,uselast,newtab"
 
         local dapmap = function(lhs, dap_fn)
           local opts = { desc = ("dap: " .. dap_fn):gsub("_", " ") }
@@ -76,30 +81,35 @@ pack.add({
           -- numhl = "DapStoppedLine",
         })
 
+        dap.listeners.after.event_breakpoint["my_dap"] = function()
+          vim.o.signcolumn="auto:1"
+        end
+
         local refresh_statusline = function(_, _) vim.cmd("redrawstatus") end
         dap.listeners.after.event_initialized["statusline"] = refresh_statusline
         dap.listeners.after.event_terminated["statusline"] = refresh_statusline
         dap.listeners.after.event_stopped["statusline"] = refresh_statusline
         dap.listeners.after.event_continued["statusline"] = refresh_statusline
-      end,
+
+      end
     },
   },
-  {
-    src = "https://codeberg.org/Jorenar/nvim-dap-disasm.git",
-    data = {
-      enable = true,
-      defer = true,
-      loader = function()
-        require("dap-disasm").setup({
-          dapview_register = true,
-          dapview = {
-            keymap = "D",
-            label = function() return "[D]" end,
-            short_label = "󰒓 [D]",
-          },
-          winbar = { enabled = false },
-        })
-      end,
-    },
-  },
+  -- {
+  --   src = "https://codeberg.org/Jorenar/nvim-dap-disasm.git",
+  --   data = {
+  --     enable = true,
+  --     defer = true,
+  --     loader = function()
+  --       require("dap-disasm").setup({
+  --         dapview_register = true,
+  --         dapview = {
+  --           keymap = "D",
+  --           label = function() return "[D]" end,
+  --           short_label = "󰒓 [D]",
+  --         },
+  --         winbar = { enabled = false },
+  --       })
+  --     end,
+  --   },
+  -- },
 })

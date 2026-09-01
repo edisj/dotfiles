@@ -28,7 +28,7 @@ o.foldlevel      = 99
 o.foldlevelstart = 99
 o.guicursor = table.concat({
   "n-v-sm:block",
-  "i-c-ci-ve:ver25",
+  "i-c-ci-ve:ver15",
   "r-cr-o:hor25",
   "t:ver50-blinkon500-blinkoff500-TermCursor"
 }, ",")
@@ -44,7 +44,7 @@ o.laststatus     = 2
 o.matchtime      = 1
 o.mouse          = "a"
 o.mousescroll    = "ver:2"
-o.number         = false
+o.number         = true
 o.numberwidth    = 3
 o.pumblend       = 10
 o.pumborder      = "none"
@@ -82,7 +82,7 @@ o.termguicolors  = true
 -- o.title          = true
 -- o.titlestring    = " neovim"
 o.undofile       = true
-opt.virtualedit:append({"block", "onemore"})
+opt.virtualedit:append({"block"})
 o.wildmode       = "noselect,full"
 o.wildoptions    = "pum,fuzzy"
 opt.winborder    = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▏" }

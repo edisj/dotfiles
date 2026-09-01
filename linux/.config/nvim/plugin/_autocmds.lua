@@ -1,8 +1,3 @@
-local create_autocmd = vim.api.nvim_create_autocmd
-local function augroup(name)
-    vim.api.nvim_create_augroup(name, { clear = true })
-end
-
 ---See require("vim._core.util").nvim_on
 ---@param events vim.api.keyset.events|vim.api.keyset.events[] Event(s) to watch. See |autocmd-events|.
 ---@param group string|integer? Group name or id, or `nil`.
@@ -27,13 +22,13 @@ local on = function(events, group, opts_or_fn, fn)
 end
 _G.on = on
 
--- on("TextYankPost", "highlight-yank", { desc = "Highlight when yanking (copying) text." }, function()
---   if vim.hl.hl_op then
---     vim.hl.hl_op({ timeout = 250 })
---   else
---     vim.hl.on_yank({ timeout = 250 })
---   end
--- end)
+on("TextYankPost", "highlight-yank", { desc = "Highlight when yanking (copying) text." }, function()
+  if vim.hl.hl_op then
+    vim.hl.hl_op({ timeout = 250 })
+  else
+    vim.hl.on_yank({ timeout = 250 })
+  end
+end)
 
 -- local auto_cursorline_group = augroup("auto-cursorline")
 -- on({"InsertLeave", "WinEnter" }, function()
@@ -60,25 +55,18 @@ on("CmdwinEnter", nil, function(ev)
   map("<S-CR>", "<CR>q:", { buffer = ev.buf, mode = { "n", "i" } })
 end)
 
-create_autocmd("BufWritePre", {
-  group = augroup("auto-create-dir"),
-  pattern = "*",
-  command = [[%s/\s\+$//e]],
-})
+on("BufWritePre", "auto-create-dir", { pattern = "*" }, [[%s/\s\+$//e]])
 
-create_autocmd("BufReadPost", {
-  desc = "Return to last edit position when opening files.",
-  group = augroup("return-to-pos"),
-  pattern = "*",
-  command =
-    [[if line("'\"") > 0 && line("'\"") <= line("$") && expand('%:t') != 'COMMIT_EDITMSG' | exe "normal! g`\"" | endif]],
-})
+on("BufReadPost", nil, function(args)
+  local valid_line = vim.fn.line([['"]]) >= 1 and vim.fn.line([['"]]) < vim.fn.line('$')
+  local not_commit = vim.b[args.buf].filetype ~= 'commit'
+  if valid_line and not_commit then vim.cmd([[normal! g`"]]) end
+end)
 
-on("FileType", augroup("detect-shebang-ft"), { pattern = "sh" }, function(ev)
+on("FileType", "detect-shebang-ft", { pattern = "sh" }, function(ev)
   local first_line = vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1]
   if #first_line == nil then return end
   if not vim.startswith(first_line, "#!") then return end
-
   if vim.endswith(first_line, "bash") then
     vim.bo.filetype = "bash"
   elseif vim.endswith(first_line, "zsh") then

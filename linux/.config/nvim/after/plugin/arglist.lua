@@ -17,7 +17,11 @@ local emit_update = function()
   api.nvim_exec_autocmds("User", { pattern = "ArgUpdate" })
 end
 
-local vtable = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
+
+local KEYS = {
+  "q", "w", "e", "r", "y", "u",
+  q="1", w="2", e="3", r="4", y="5", u="6" }
+local vtable = { "1", "2", "3", "4", "5", "6"  }
 local arglist = setmetatable({}, {
   __index = function(self, k)
     return type(k) == "number" and fn.argv()[k]
@@ -39,6 +43,8 @@ local arglist = setmetatable({}, {
 })
 _G.arglist = arglist
 arglist.vtable = vtable
+
+arglist.keys = function() return KEYS end
 
 local function has_vtable_pointer(argidx)
   for _, k in ipairs(vtable) do
@@ -116,7 +122,7 @@ arglist.jump_to = with_sync(function(k)
 end)
 
 function arglist.statuscol()
-  return vtable[vim.v.lnum] and ("  %s "):format(vtable[vim.v.lnum]) or "  ~ "
+  return KEYS[vim.v.lnum] and ("  %s "):format(KEYS[vim.v.lnum]) or "  ~ "
 end
 
 function arglist.tab_on_click(argidx, _, button, _)
@@ -130,9 +136,9 @@ end
 function arglist.tabline(format_tab, sep)
   format_tab = format_tab or function(name, key) return name end
   return table.concat(vim
-    .iter(ipairs(vtable))
-    :map(function(_, k)
-      local argidx = vtable[k]
+    .iter(ipairs(KEYS))
+    :map(function(i, k)
+      local argidx = vtable[tostring(i)]
       local name = arglist[argidx]
       if not (name and name ~= "") then return end
       return "%" .. argidx .. "@v:lua.arglist.tab_on_click@" .. format_tab(name, k) .. "%X"
@@ -247,14 +253,15 @@ end, { bang = true, nargs = 0, desc = "Open Arglist" })
 
 map("<M-`>", "<Cmd>Arglist!<CR>")
 
-for _, k in ipairs(vtable) do
-  map("<M-"..k..">", function() arglist.jump_to(k) end, {
+for k, v in pairs(KEYS) do
+  v = tostring(v)
+  map("<M-"..k..">", function() arglist.jump_to(v) end, {
     desc = ("arglist %s"):format(k)})
 
-  map("<M-S-" .. k .. ">", function() arglist.add(k, nil) end, {
+  map("<M-S-" .. k .. ">", function() arglist.add(v, nil) end, {
     desc = ("set arglist %s"):format(k) })
 
-  map("d<M-"..k..">", function() arglist.del(k) end)
+  map("d<M-"..k..">", function() arglist.del(v) end)
 end
 
 on("SessionWritePre", augroup, function()

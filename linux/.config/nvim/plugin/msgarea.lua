@@ -7,6 +7,7 @@ add({
     data = {
       enable = true,
       loader = function()
+        vim.opt.messagesopt:append { maxheight=33 }
         require("msgarea").setup({
           msgarea_targets = {
             "wmsg",
@@ -17,16 +18,18 @@ add({
             "lua_error",
             "lua_print",
             "echoerr",
-            "shell_out",
-            "shell_cmd",
-            "shell_err",
+            -- "shell_out",
+            -- "shell_cmd",
+            -- "shell_err",
           },
           message_title = function(kind)
             return ({ lua_print = " Lua Print ", lua_error = " Lua Error " })[kind]
+            -- return ({ lua_error = " Lua Error " })[kind]
           end,
           view = {
             style = "msgarea",
             -- style = "split",
+            -- max_height = 0.35,
             max_height = 0.50,
             winbar_min_tabs = 1,
           },
@@ -40,7 +43,26 @@ add({
 
         map("<C-w>m", require("msgarea").close_all, { desc = "Close msgarea" })
 
-        local CTRL_M = "<F13>"
+        local expanded = false
+        map("<C-space>", function()
+          vim._with({ o = { splitkeep = 'cursor' } }, function()
+          local view = require("msgarea.view")
+          local eph = view.state.windows.ephemeral
+          local winid = eph and eph.winid or require("msgarea.view").state.curwin
+          local k
+          for i, data in pairs(view.state.windows) do
+            if data.winid == winid then k = i; break end
+          end
+          local data = view.state.windows[k]
+          if not data then return end
+
+          local big_h = math.floor(2/3 * vim.o.lines)
+          data._height, data.height = data.height, data._height or big_h
+            view.show({ silent = true })
+          end)
+        end, { mode = { "n", "c", "t" } })
+
+        local CTRL_M = vim.g.CTRL_M
         local m_map = function(k, rhs)
           local lhs = CTRL_M .. "<C-" .. k .. ">"
           map(lhs, rhs)

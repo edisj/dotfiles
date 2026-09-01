@@ -15,7 +15,7 @@ pack.add({
   {
     src = "https://github.com/nvim-tree/nvim-web-devicons",
     data = {
-      enable = false,
+      enable = true,
       loader = function()
         require("nvim-web-devicons").setup({
           default = true,

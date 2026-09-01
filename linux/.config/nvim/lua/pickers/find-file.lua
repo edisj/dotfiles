@@ -1,25 +1,20 @@
 local fn, fs, api = vim.fn, vim.fs, vim.api
 local pick = require("mini.pick")
-local myfs = require("fs")
+local dl = require("dirlist")
+local ns = vim.api.nvim_create_namespace("")
 
 -- path helpers --------------------------------------------------------------
-local normalized = function(path)
-  return path and fs.normalize(fs.abspath(path))
-end
-
 local query_to_path = function(query)
   local path = table.concat(query)
   if vim.trim(path) == "" then return false end
   return fs.abspath(path)
 end
-
 local query_to_dirname = function(query)
   local path = table.concat(query)
   if vim.trim(path) == "" then return false end
   local dirname = path == "~" and fs.dirname(fn.expand(path)) or fs.dirname(path)
-  return normalized(dirname)
+  return dl.normalize(dirname)
 end
-
 local query_tail = function(query)
   local path = query_to_path(query)
   local tail = path and fs.basename(path) or ""
@@ -28,11 +23,23 @@ end
 
 
 -- picker implementation -----------------------------------------------------
-local CACHE_STUB = { items = {}, widths = {} }
+local CACHE_STUB = { items = {}, text_col_width = 0 }
+
+local get_items = function(dirname, sort)
+  local items = dl.get_dirlist_items(dirname)
+  local text_col_width = vim.iter(items)
+      :fold({}, function(acc, item)
+        acc.max = math.max(#item.text, acc.max or #item.text)
+        return acc
+      end).max or 0
+  if sort then table.sort(items, sort) end
+  return { items = items, text_col_width = text_col_width }
+end
 
 local find_file = function(local_opts, opts)
-  local_opts = vim.tbl_extend("force", { dir = fn.getcwd() }, local_opts or {})
-  local initial_dir = normalized(local_opts.dir)
+  local default_local_opts = { dir = fn.getcwd(), sort = dl.default_sort, selected = nil }
+  local_opts = vim.tbl_extend("force", default_local_opts, local_opts or {})
+  local initial_dir = dl.normalize(local_opts.dir)
   vim.schedule(function()
     pick.set_picker_query(vim.split(fn.fnamemodify(initial_dir, ":~").. "/", ""))
   end)
@@ -41,7 +48,7 @@ local find_file = function(local_opts, opts)
   -- NOTE: using `[false]` as a special key to stub empty lookups,
   -- which happens when query is empty
   local items_cache = { [false] = CACHE_STUB }
-  items_cache[initial_dir] = myfs.get_dir_info(initial_dir)
+  items_cache[initial_dir] = get_items(initial_dir, local_opts.sort)
   local items = items_cache[initial_dir].items
 
   -- stack helpers -----------------------------------------------------------
@@ -107,38 +114,44 @@ local find_file = function(local_opts, opts)
       last_dir = current_dir
       -- if `current_dir == false`, we hit our items_cache[false] stub,
       -- which is {} (truthy), so items will become {}, otherwise compute and cache new items
-      if not items_cache[current_dir] then items_cache[current_dir] = myfs.get_dir_info(current_dir) end
+      if not items_cache[current_dir] then items_cache[current_dir] = get_items(current_dir, local_opts.sort) end
       pick.set_picker_items(items_cache[current_dir].items, { do_match = true })
       return
     end
 
-    return pick.default_match(stritems, inds, query_tail(query))
+    if local_opts.selected then
+      local selected = local_opts.selected
+      local_opts.selected = nil
+      local matches = pick.default_match(stritems, inds, query_tail(query), { preserve_order = false, sync = true })
+      if matches then
+        pick.set_picker_match_inds(matches, "all")
+        if not vim.tbl_isempty(matches) then
+          pick.set_picker_match_inds({ selected }, "current")
+        end
+      end
+      return
+    end
+
+    return pick.default_match(stritems, inds, query_tail(query), { preserve_order = false })
   end
 
   local show = function(buf_id, items_to_show, query)
-    pick.default_show(buf_id, items_to_show, query_tail(query), { show_icons = true })
+    local text_col_width = items_cache[query_to_dirname(query)].text_col_width
+    pick.default_show(buf_id, items_to_show, query_tail(query), { show_icons = false })
+    dl.default_decorate(buf_id, items_to_show, { text_col_width = text_col_width })
 
-    local ns = api.nvim_create_namespace("find-file-picker")
     api.nvim_buf_clear_namespace(buf_id, ns, 0, -1)
-    local extmark = function(i, text, hl, extmark_opts)
-      api.nvim_buf_set_extmark(buf_id, ns, i - 1, 0, {
-        virt_text = {{ text, hl }},
-        virt_text_pos = extmark_opts.virt_text_pos,
-        virt_text_win_col = extmark_opts.virt_text_win_col,
-        hl_mode = "combine",
-      })
+    local selected, matches = nil, pick.get_picker_matches()
+    if matches and matches.current_ind then
+      for i, shown_ind in ipairs(matches.shown_inds) do
+        if shown_ind == matches.current_ind then
+          selected = i
+          break
+        end
+      end
     end
-    local col_widths = (items_cache[query_to_dirname(query)] or {}).widths or {}
-    -- the numbers are kinda magic here...
-    -- 9 because that's the width of "%6s   " format string
-    -- 4 beacuse the text is prefixed with icons so 2 for icon and 2 for extra space after text
-    -- 40 because it looks alright as default offset
-    -- NOTE: an alternative would be to truncate filenames if width too long instead of moving columns
-    local permissions_offset = math.max(9 + (col_widths.text or 0) + 4, 40)
-    for i, item in ipairs(items_to_show) do
-      extmark(i, ("%6s   "):format(item.size), "String", { virt_text_pos = "inline" })
-      extmark(i, item.permissions, "Number", { virt_text_win_col = permissions_offset })
-      extmark(i, item.modified, "Comment", { virt_text_win_col = permissions_offset + 20 })
+    if selected then
+      api.nvim_buf_set_extmark(buf_id, ns, selected-1, 0, { line_hl_group = "MiniPickMatchCurrent"})
     end
   end
 
@@ -166,8 +179,9 @@ local find_file = function(local_opts, opts)
 
   -- default opts
   opts = vim.tbl_deep_extend("keep", opts or {}, {
-    window = { prompt_prefix = " Search: " },
-    source = { name = "Find File" },
+    delay = { busy = 250 }, -- prevent some flickering on first match for large dirs
+    window = { prompt_prefix = " Explore: " },
+    source = { name = "Explorer Live" },
     mappings = {
       choose = "", -- to suppress overwrite <CR> warning
       custom_choose = { char = "<CR>", func = custom_choose },
@@ -179,6 +193,7 @@ local find_file = function(local_opts, opts)
     options = { use_cache = false },
     source = { items = items, match = match, show = show },
   })
+
   return pick.start(opts)
 end
 

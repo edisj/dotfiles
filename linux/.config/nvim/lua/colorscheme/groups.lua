@@ -117,7 +117,7 @@ local function hl_groups(c)
       SignColumn       = { fg = linenr,       bg = nil                       },  -- Column where |signs| are displayed.
       NonText          = { fg = linenr,       bg = nil                       },  -- '@' at the end of the window, characters from 'showbreak' and other characters that do not really exist in the text
       WhiteSpace       = { fg = comment,      bg = nil                       },
-      WinSeparator     = { fg = dark_border,  bg = nil                  },  -- Separators between window splits.
+      WinSeparator     = { fg = bg_float,  bg = bg_sidebar                  },  -- Separators between window splits.
       WinSeparatorNC   = { link = "WinSeparator"                             },
     }, -- }}}
 
@@ -127,7 +127,7 @@ local function hl_groups(c)
     }, -- }}}
 
     { -- visual {{{
-      Visual           = { fg = fg_visual,          bg = bg_visual,          },  -- Visual mode selection.
+      Visual           = { fg = nil,          bg = bg_visual,          },  -- Visual mode selection.
       VisualNOS        = { link = "Visual"                                   },  -- Visual mode selection when vim is "Not Owning the Selection".
     }, -- }}}
 
@@ -135,7 +135,7 @@ local function hl_groups(c)
       CurSearch        = { fg = c.bg,      bg = c.search,   },  --Current match for the last search pattern (see 'hlsearch').
       Search           = { link = "Visual" },  -- Last search pattern highlighting (see 'hlsearch'). Also used for similar items that need to stand out.
       IncSearch        = { fg = c.bg,      bg = c.search,   },  -- 'incsearch' highlighting; also used for the text replaced with ":s///c".
-      -- Substitute       = { fg = nil,     bg = nil                    },  -- |:substitute| replacement text highlighting.
+      Substitute       = { link = "Search"                    },  -- |:substitute| replacement text highlighting.
       MatchParen       = { fg = c.search, bg = nil, bold = true },  -- Character under the cursor or just before it, if it is a paired bracket, and its match. |pi_paren.txt|
     }, -- }}}
 
@@ -188,7 +188,7 @@ local function hl_groups(c)
 
     { -- quickfix {{{
       QuickFixLine     = { fg = nil,          bg = cursorline,  bold = true   },  -- Current |quickfix| item in the quickfix window. Combined with |hl-CursorLine| when the cursor is there.
-      qfFileName       = { link = "StatuslineNormal" },
+      qfFileName       = { link = "Directory" },
       qfLineNr         = { link = "Number" },
       qfColNr          = { link = "LineNr" },
       qfText           = { link = "@variable" },
@@ -205,7 +205,7 @@ local function hl_groups(c)
 
     { -- misc {{{
       Title            = { fg = c.func,          bg = nil,        bold = true  },  -- Titles for output from ":set all", ":autocmd" etc.
-      Directory        = { fg = c.directory,   bg = nil,        bold = true  },  -- Directory names (and other special names in listings).
+      Directory        = { fg = c.directory,   bg = nil },  -- Directory names (and other special names in listings).
     }, -- }}}
 
     { -- lsp {{{
@@ -214,11 +214,6 @@ local function hl_groups(c)
       DiagnosticInfo             = { fg = c.info,  bg = nil },
       DiagnosticHint             = { fg = c.hint,  bg = nil },
       DiagnosticOk               = { fg = c.ok,    bg = nil },
-      DiagnosticVirtualTextError = { link = "DiagnosticError"    },
-      DiagnosticVirtualTextWarn  = { link = "DiagnosticWarn"     },
-      DiagnosticVirtualTextInfo  = { link = "DiagnosticInfo"     },
-      DiagnosticVirtualTextHint  = { link = "DiagnosticHint"     },
-      DiagnosticVirtualTextOk    = { link = "DiagnosticOk"       },
       DiagnosticSignError        = { fg = c.error, bg = nil    },   -- Used for "Error" signs in sign column.
       DiagnosticSignWarn         = { fg = c.warn,  bg = nil    },   -- Used for "Warn" signs in sign column.
       DiagnosticSignInfo         = { fg = c.info,  bg = nil    },   -- Used for "Info" signs in sign column.
@@ -230,8 +225,18 @@ local function hl_groups(c)
       DiagnosticUnderlineError   = { sp = c.error, undercurl = true },
       DiagnosticUnderlineWarn    = { sp = c.warn,  undercurl = true },
       DiagnosticUnderlineInfo    = { sp = c.info,  undercurl = true },
-      DiagnosticUnderlineHint    = { sp = c.hint,  undercurl = true },
       DiagnosticUnderlineOk      = { sp = c.ok,    undercurl = true },
+      DiagnosticUnderlineHint    = {},
+
+      DiagnosticVirtualTextError = { link = "DiagnosticError"    },
+      DiagnosticVirtualTextWarn  = { link = "DiagnosticWarn"     },
+      DiagnosticVirtualTextInfo  = { link = "DiagnosticInfo"     },
+      DiagnosticVirtualTextHint  = { link = "DiagnosticHint"     },
+      DiagnosticVirtualTextOk    = { link = "DiagnosticOk"       },
+      DiagnosticVirtualLinesError = { fg = c.error, bg = bg_float },
+      DiagnosticVirtualLinesWarn = { fg = c.warn, bg = bg_float },
+      DiagnosticVirtualLinesInfo = { fg = c.info, bg = bg_float },
+      DiagnosticVirtualLinesHint = { fg = c.hint, bg = bg_float },
     }, -- }}}
 
     { -- treesitter {{{
@@ -297,6 +302,7 @@ local function hl_groups(c)
       MsgAreaWinBarSep = { fg = linenr, bg = nil },
       MsgAreaCmpLabelDescription = "Comment",
 
+      -- DapUINormal = { link = "NormalSplit" },
       DapBreakpoint  = { link = "DiagnosticError" },
       DapStopped     = { fg = c.fg, bg = nil, bold = true },
       DapStoppedLine = { fg = nil,  bg = dark_border },
@@ -347,22 +353,27 @@ local function hl_groups(c)
       BlinkCmpSignatureHelpBorder          = { link = "FloatBorder"                },
       BlinkCmpSignatureHelpActiveParameter = { fg = c.error, bg = nil, bold = true },
 
+      MiniJump = { link = "Substitute" },
+
+      MiniIconsYellow = { fg = c.folder },
+      MiniIconsPurple = { fg = c.magenta },
+
       MiniHipatternsTodo  = { fg = c.error, bg = nil, bold = true },
       MiniHipatternsHack  = { link = "MiniHipatternsTodo"         },
       MiniHipatternsNote  = { link = "MiniHipatternsTodo"         },
       MiniHipatternsFixme = { link = "MiniHipatternsTodo"         },
 
-      MiniPickBorder       = { link = "MsgArea"                      },
+      MiniPickBorder       = { fg = linenr, bg = c.bg                      },
       MiniPickBorderBusy   = { link = "MsgArea"                      },
       -- MiniPickCursor       = { fg = c.bg, bg = c.fg },
       MiniPickNormal       = { link = "MsgArea" },
       -- MiniPickMatchCurrent = { fg = c.bg,         bg = c.keyword, bold = false },
-      MiniPickBorderText   = { fg = c.fg, bg = c.bg, bold=true               },
-      MiniPickPrompt       = { fg = c.func, bg = c.bg               },
-      MiniPickPromptPrefix = { fg = c.fg, bg = c.bg               },
-      MiniPickPromptCaret  = { fg = c.fg,       bg = c.bg               },
-      MiniPickMatchRanges  = { fg = c.match,  bg = nil, bold=true                     },
-      MiniPickMatchCurrent = { fg = nil,      bg = c.selection, bold = false },
+      MiniPickBorderText   = { fg = c.fg,     bg = c.bg },
+      MiniPickPrompt       = { fg = c.func,   bg = bg_float               },
+      MiniPickPromptPrefix = { fg = comment,     bg = bg_float,    italic=true           },
+      MiniPickPromptCaret  = { fg = c.fg,     bg = bg_float               },
+      MiniPickMatchRanges  = { fg = c.error,  bg = nil                    },
+      MiniPickMatchCurrent = { fg = nil,      bg = c.selection, bold = true },
       MiniCmdlinePeekNormal = { link = "MsgArea" },
 
       Folder                  = { fg = c.folder,     bg = nil                      },

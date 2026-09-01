@@ -33,7 +33,11 @@ M.name = function()
   end
 
   -- just grab tail of uri
-  if name:match("^(%w+://)") then return with_pad(name:match(".*//(.*)$")) end
+  if name:match("^(%w+://)") then
+    local decoded = vim.uri_decode(name)
+    local tail = (decoded:match("<(.*)$") or decoded):gsub("%(", ".")
+    return with_pad(tail)
+  end
   local ft = vim.bo.filetype
   if ft == "directory" then
     local dirname = fn.fnamemodify(fs.dirname(api.nvim_buf_get_name(0)), ":t") .. "/"
@@ -72,7 +76,7 @@ end
 M.filetype = function()
   local ft, bt = vim.bo.filetype, vim.bo.buftype
   if bt == "terminal" then
-    return with_pad(with_hl(icons.misc.terminal, "DiagnosticError") .. " " ..bt)
+    return with_pad(with_hl(icons.misc.terminal, "Number") .. " " ..bt)
   elseif ft == "" then
     return ft
   else
@@ -163,10 +167,16 @@ M.border = function(char)
   return with_hl(char, mode_hlmap[fn.mode()])
 end
 
-local is_sidebar = function(ft)
+local is_minimal = function(ft)
   local fts = {
     "NvimTree",
-    "dap-view"
+    "dap-view",
+    "dap-view-term",
+    "dapui_scopes",
+    "dapui_watches",
+    "dapui_threads",
+    "dapui_console",
+    "dapui_breakpoints",
   }
   return vim.tbl_contains(fts, ft)
 end
@@ -181,15 +191,19 @@ M.render = function()
 
   local components = { M.border("▌") }
   local bt, ft = vim.bo.buftype, vim.bo.filetype
-  if is_sidebar(ft) then
+  if ft:match("^dapui_") then
+    vim.list_extend(components, { with_pad(M.icon("filetype", ft).. " " .. ft) })
+    if ft == "dapui_console" then
+      vim.list_extend(components, { "%=" .. M.dap() })
+    end
+      vim.list_extend(components, { "%=" })
+  elseif is_minimal(ft) then
     vim.list_extend(components, {
-      with_pad(M.icon("filetype", ft) .. ft), "%="
+      with_pad(M.icon("filetype", ft).. " " .. ft), "%="
     })
   else
     vim.list_extend(components, {
       M.name(), M.loc2(), M.searchcount(),
-      "%=",
-      M.dap(),
       "%=",
       M.diagnostics(), M.filetype(), M.loc5(),
     })

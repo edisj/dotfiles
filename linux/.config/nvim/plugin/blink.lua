@@ -200,10 +200,14 @@ pack.add({
         require("blink.pairs").build():pwait(60000)
         require("blink.pairs").setup({
           mappings = {
+            cmdline = false,
             wrap = {
               ["<C-l>"] = "motion",
               ["<C-h>"] = "motion_reverse",
-            }
+            },
+            pairs = {
+              blink_pairs_wrap
+            },
           },
           highlights = {
             enabled = true,

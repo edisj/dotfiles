@@ -97,7 +97,7 @@ local function setup_mini_files()
     local path = (mini_files.get_fs_entry() or {}).path
     if path == nil then return vim.notify('Cursor is not on valid entry') end
     if vim.uv.fs_stat(path).type ~= "file" then return end
-    arglist.set_key(k, path)
+    arglist.add(k, path)
     mini_files.go_in({ close_on_file = true })
   end
 
@@ -125,7 +125,7 @@ local function setup_mini_files()
 
   on_mini("BufferCreate", function(ev)
     local buf_id = ev.data.buf_id
-    for _, k in ipairs(arglist.keys()) do
+    for _, k in ipairs(arglist.vtable) do
       map("<M-S-" .. k .. ">", function() go_in_and_arglist(k) end, { buffer = buf_id })
     end
     map_split(buf_id, "<M-S-l>", "belowright vertical")
@@ -134,7 +134,7 @@ local function setup_mini_files()
     map_split(buf_id, "<M-S-k>", "topleft horizontal")
   end)
 
-  map("<Leader>e", function()
+  map("<Leader>e.", function()
     if not mini_files.close() then
       mini_files.open(vim.api.nvim_buf_get_name(0), false)
     end

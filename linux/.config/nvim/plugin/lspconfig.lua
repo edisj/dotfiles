@@ -139,3 +139,4 @@ lsp.enable("asm_lsp")
 
 lsp.enable("clangd")
 lsp.enable("hyprls")
+lsp.enable("basedpyright")
