@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+import sys
+from pathlib import Path
+
+lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<classpath>',
+    '    <classpathentry kind="src" path="src"/>',
+    '    <classpathentry kind="output" path="bin"/>',
+    '    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>',
+]
+
+def add(jar, src):
+    lines.extend([
+        f'    <classpathentry kind="lib" path="{jar}" sourcepath="{src}">',
+         '        <attributes><attribute name="module" value="true"/></attributes>',
+         '    </classpathentry>',
+    ])
+
+if __name__ == '__main__':
+    program = sys.argv[0]
+    if len(sys.argv) == 1:
+        name = Path(program).name
+        print(f'{name}: missing arg')
+        sys.exit(1)
+
+    rootdir = Path(sys.argv[1]).resolve()
+    lib = rootdir / "lib"
+    if not lib.exists():
+        print(f'{Path(program).name}: no /lib found')
+        sys.exit(1)
+
+    for library in lib.iterdir():
+        if library.is_dir() and (library / "lib").exists():
+            src = (library / "src.zip").relative_to(rootdir)
+            for jarpath in library.rglob("*.jar"):
+                jar = jarpath.relative_to(rootdir)
+                add(jar, src)
+
+    lines.extend(['</classpath>'])
+
+    out = rootdir / '.classpath'
+    if out.exists():
+        out.move(out.with_suffix('.bak'))
+
+    with open(out, 'w') as f:
+        f.write("\n".join(lines))
+
+    sys.exit(0)

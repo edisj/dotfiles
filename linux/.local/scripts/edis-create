@@ -2,7 +2,7 @@
 
 source "$HOME/.local/scripts/lib/logging.sh"
 source "$HOME/.local/scripts/lib/require.sh"
-require fzf
+require fzf jq
 
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
@@ -18,7 +18,7 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
-_create_edis_file() {
+__create_edis_file() {
   local name="$(basename $1)"
   cat <<-EOF > .edis.toml
 name = "$name"
@@ -26,6 +26,21 @@ build = "$2"
 run = "$3"
 compiler = "$4"
 EOF
+}
+
+_create_edis_file() {
+  jq -n \
+  --arg name "$(basename $1)" \
+  --arg build "$2" \
+  --arg run "$3" \
+  --arg compiler "$4" \
+  '{
+    "name": $name,
+    "build": ($build | split(" ")),
+    "run": ($run | split(" ")),
+    "compiler": $compiler
+  }' > .edis.json
+
 }
 
 main() {

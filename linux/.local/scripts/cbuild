@@ -92,8 +92,12 @@ _link_object_files() {
 
 main() {
   local project_root
-  local marker="${PROJECT_ROOT_MARKER:-.edis.toml}"
-  project_root=$(find-project-root "$marker" 2>/dev/null)
+  project_root=$(
+    find-project-root "$PROJECT_ROOT_MARKER" 2>/dev/null ||
+    find-project-root ".edis.json" 2>/dev/null ||
+    find-project-root ".edis.toml" 2>/dev/null
+  )
+
   if [[ -z "$project_root" ]]; then
     LOG_ERROR "root marker '$marker' not found" && exit 1
   fi

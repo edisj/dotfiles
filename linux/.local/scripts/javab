@@ -53,15 +53,19 @@ _compile_source_files() {
   [[ -z "$grep_main" ]]                 && LOG_WARN "no main method detected"
   [[ $(wc -l <<< "$grep_main") -gt 1 ]] && LOG_WARN "multiple main methods detected"
 
-  javac -d "$build_dir" $source_files || { LOG_ERROR "failed to compile"; return 1; }
+  # echo "javac -d $build_dir $@ $source_files"
+  javac -d "$build_dir" "$@" $source_files || { LOG_ERROR "failed to compile"; return 1; }
 }
 
 main() {
   local project_root
-  local marker="${PROJECT_ROOT_MARKER:-.edis.toml}"
-  project_root=$(find-project-root "$marker" 2>/dev/null)
+  project_root=$(
+    find-project-root "$PROJECT_ROOT_MARKER" 2>/dev/null ||
+    find-project-root ".edis.json" 2>/dev/null ||
+    find-project-root ".edis.toml" 2>/dev/null
+  )
   if [[ -z "$project_root" ]]; then
-    LOG_ERROR "root marker '$marker' not found" && exit 1
+    LOG_ERROR "root marker '$marker' not found"; exit 1
   fi
 
   local build_dir="$project_root/build"
@@ -70,7 +74,7 @@ main() {
 
   mkdir -p "$build_dir" \
   && LOG_INFO "building project into $build_dir..." \
-  && _compile_source_files "$source_files" "$source_dir" "$build_dir" \
+  && _compile_source_files "$source_files" "$source_dir" "$build_dir" "$@" \
   && LOG_DONE "built project into $build_dir" \
   && exit 0
 }

@@ -29,8 +29,13 @@ done
 main() {
   [[ "$#" -gt 1 ]] && LOG_ERROR "too many arguments (expected 1 or less)" && exit 1
 
-  marker="${PROJECT_ROOT_MARKER:-.edis.toml}"
-  local project_root=$(find-project-root "$marker" 2>/dev/null)
+  local project_root
+  project_root=$(
+    find-project-root "$PROJECT_ROOT_MARKER" 2>/dev/null ||
+    find-project-root ".edis.json" 2>/dev/null ||
+    find-project-root ".edis.toml" 2>/dev/null
+  )
+
   if [[ -z "$project_root" ]]; then
     LOG_ERROR "root marker '$marker' not found" && exit 1
   fi
@@ -40,7 +45,7 @@ main() {
   local program_name="${1:-$project_name}"
   local program="$build_dir/$program_name"
 
-  [[ ! -f "$program" ]] && LOG_ERROR "program not found: '$program_name'" && exit 1
+  [[ ! -f "$program" ]] && LOG_ERROR "program not found: '$program_name'"      && exit 1
   [[ ! -x "$program" ]] && LOG_ERROR "program not executable: '$program_name'" && exit 1
 
   LOG_INFO "found program $program" \
