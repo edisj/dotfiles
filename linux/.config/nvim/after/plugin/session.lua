@@ -132,11 +132,21 @@ M.select = function()
   vim.ui.select(items, opts, on_choice)
 end
 
+local RESTART_SESSION = vim.fn.stdpath("state") .. "/restart_session.vim"
 local function restart()
-  local session = vim.fn.stdpath("state") .. "/restart_session.vim"
+  local this_session = vim.v.this_session
+  local session = this_session == "" and RESTART_SESSION or this_session
   vim.cmd("mksession! " .. vim.fn.fnameescape(session))
   vim.cmd("restart source " .. vim.fn.fnameescape(session))
 end
+api.nvim_create_autocmd("SessionLoadPost", {
+  callback = function()
+    if vim.v.this_session == RESTART_SESSION then
+      vim.fs.rm(RESTART_SESSION)
+      vim.v.this_session = ""
+    end
+  end
+})
 vim.api.nvim_create_user_command("Restart", restart, {
   desc = "restart with temp session file"
 })
