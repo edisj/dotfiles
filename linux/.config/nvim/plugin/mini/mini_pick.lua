@@ -1,31 +1,3 @@
--- local _win_config = function()
---   local state = require("mini.pick").get_picker_state()
---   local is_preview = state ~= nil and state.buffers.preview == vim.api.nvim_win_get_buf(state.windows.main)
---   local is_info = state ~= nil and state.buffers.info == vim.api.nvim_win_get_buf(state.windows.main)
---   local preview_height = math.floor(0.80 * vim.o.lines)
---   local preview_width = math.floor(0.50 * vim.o.columns)
---   local main_height = math.floor(0.45 * vim.o.lines)
---   local main_width = math.floor(0.40 * vim.o.columns)
---   main_height = 20
---   main_width = 50
---   local width = is_preview and preview_width or main_width
---   local height = (is_preview or is_info) and preview_height or main_height
---   return {
---     relative = "laststatus",
---     anchor = "SW",
---     row = 0,
---     col = 2,
---     width = width,
---     height = height,
---     -- border = "bold",
---   }
--- end
--- local refresh_picker = vim.schedule_wrap(function()
---   if not require("mini.pick").is_picker_active() then return end
---   require("mini.pick").refresh()
--- end)
--- vim.api.nvim_create_autocmd("BufWinEnter", { callback = refresh_picker })
-
 local ui_select = vim.ui.select
 local function setup_mini_pick()
 
@@ -83,8 +55,8 @@ local function setup_mini_pick()
 
 
   local centered = function()
-    local h = math.floor(0.8*vim.o.lines)
-    local w = math.floor(0.8*vim.o.columns)
+    local h = math.floor(0.5*vim.o.lines)
+    local w = math.floor(0.6*vim.o.columns)
     return {
       relative = "editor", anchor = "NW",
       border = "bold",
@@ -112,11 +84,25 @@ local function setup_mini_pick()
   })
   vim.ui.select = ui_select
 
+  local _default_show = require("mini.pick").default_show
+  ---@diagnostic disable-next-line: duplicate-set-field
+  require("mini.pick").default_show = function(bufnr, items, query, opts)
+    _default_show(bufnr, items, query, opts)
+    local mpns = vim.api.nvim_create_namespace("MiniPickRanges")
+    for _, m in ipairs(vim.api.nvim_buf_get_extmarks(bufnr, mpns, 0, -1, { details = true })) do
+      local id, row, col, d = m[1], m[2], m[3], m[4]
+      d.ns_id, d.id = nil, id
+      d.priority = 202
+      vim.api.nvim_buf_set_extmark(bufnr, mpns, row, col, d)
+    end
+  end
+
   MiniPick.registry["registry"] = require("pickers.registry")
   MiniPick.registry["find_file"] = require("pickers.find-file")
   MiniPick.registry["grep_live"] = require("pickers.grep-live")
   MiniPick.registry["buf_lines_current"] = require("pickers.buf-lines-current")
   MiniPick.registry["buf_lines"] = require("pickers.buf-lines")
+  MiniPick.registry["mux"] = require("pickers.mux")
 
   local fmap = function(key, desc, rhs)
     map("<C-f>" .. key, rhs, { desc = desc })
@@ -208,8 +194,8 @@ local function setup_mini_pick()
     }
     MiniPick.builtin[picker](nil, opts)
   end
-  fmap("<C-p>", "packages", function() pp("files") end)
-  map("<Leader>fP", function() pp("grep_live") end, { desc = "grep packs" })
+  fmap("<C-o>", "packages", function() pp("files") end)
+  -- map("<Leader>fP", function() pp("grep_live") end, { desc = "grep packs" })
 end
 
 pack.gen_loop_loader(setup_mini_pick)("mini.pick")

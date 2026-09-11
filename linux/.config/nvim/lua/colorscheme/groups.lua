@@ -155,7 +155,7 @@ local function hl_groups(c)
     { -- msg {{{
       -- MsgArea          = { fg = nil,          bg = bg_sidebar                       },  -- Area for messages and command-line, see also 'cmdheight'.
       MsgArea          = { link = "Normal" },  -- Area for messages and command-line, see also 'cmdheight'.
-      MsgSeparator     = { fg = c.statusline, bg = bg_sidebar                       },  -- Separator for scrolled messages |msgsep|.
+      MsgSeparator     = { fg = c.statusline, bg = c.statusline                       },  -- Separator for scrolled messages |msgsep|.
       MoreMsg          = { fg = nil,    bg = nil,       bold = nil   },  -- |more-prompt|
       ModeMsg          = { fg = c.special,    bg = nil                },  -- 'showmode' message (e.g., "-- INSERT --").
       ErrorMsg         = { fg = c.error, bg = nil },
@@ -259,7 +259,6 @@ local function hl_groups(c)
       ["@keyword.return"]                 = { fg = c.ret, bg = nil, bold = false },
       ["@keyword.vim"]                    = { link = "Keyword" },
       ["@function.macro.vim"]             = { link = "DiagnosticOk" },
-      ["@label.vimdoc"]                   = { link = "Function" },
       ["@module.builtin"]                 = { link = "Operator" },
       ["@property"]                       = { fg = c.fg, bg = nil },
       -- ["@punctuation.bracket"]            = { fg = utils.darken(c.fg, 0.30), bg = nil },
@@ -284,9 +283,12 @@ local function hl_groups(c)
       -- ["@type.builtin.cpp"]  = { link = "Keyword" },
       ["@function.cpp"] = { link = "Function" },
 
-      ["@markup.link"]       = "Special",
+
+      ["@keyword.directive.vimdoc"] = { fg = comment, bg = nil },
+      ["@label.vimdoc"]      = { fg = c.special, bg = nil },
+      ["@markup.link"]       = { fg   = c.keyword, bg = nil, underline = true },
       ["@markup.raw.vimdoc"] = "Type",
-      ["@markup.heading.1"]  = { fg = c.func, bg = nil },
+      ["@markup.heading.1"]  = { fg   = c.fg, bg  = nil, bold = true},
       ["@markup.heading.2"]  = "@markup.heading.1",
       ["@markup.heading.3"]  = "@markup.heading.1",
       ["@markup.heading.4"]  = "@markup.heading.1",
@@ -372,7 +374,9 @@ local function hl_groups(c)
       MiniPickPrompt       = { fg = c.func,   bg = bg_float               },
       MiniPickPromptPrefix = { fg = comment,     bg = bg_float,    italic=true           },
       MiniPickPromptCaret  = { fg = c.fg,     bg = bg_float               },
-      MiniPickMatchRanges  = { fg = c.error,  bg = nil                    },
+      -- MiniPickMatchRanges  = { fg = c.error,  bg = nil                    },
+      MiniPickMatchRanges  = { fg = nil,  bg = utils.blend("#0000FF", 0.25, c.bg), bold=true,   },
+      MiniPickMatchMarked  = { fg = nil, bg = utils.blend("#0000FF", 0.25, c.bg) },
       MiniPickMatchCurrent = { fg = nil,      bg = c.selection, bold = true },
       MiniCmdlinePeekNormal = { link = "MsgArea" },
 

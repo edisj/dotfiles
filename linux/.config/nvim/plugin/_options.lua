@@ -3,7 +3,7 @@ local o, opt = vim.o, vim.opt
 o.autoindent     = true
 o.autoread       = true
 o.clipboard      = "unnamedplus"
-o.cmdheight      = 0
+o.cmdheight      = 1
 o.cmdwinheight   = 8
 o.completeopt    = "menuone,noselect,fuzzy"
 o.confirm        = true
@@ -28,7 +28,7 @@ o.foldlevel      = 99
 o.foldlevelstart = 99
 o.guicursor = table.concat({
   "n-v-sm:block",
-  "i-c-ci-ve:ver15",
+  "i-c-ci-ve:ver20",
   "r-cr-o:hor25",
   "t:ver50-blinkon500-blinkoff500-TermCursor"
 }, ",")
@@ -43,13 +43,15 @@ o.laststatus     = 2
 -- opt.listchars      = { space = "⋅", nbsp = "⋅", trail = "⋅", tab = "  " }
 o.matchtime      = 1
 o.mouse          = "a"
+o.mousemoveevent = true
 o.mousescroll    = "ver:2"
-o.number         = true
+o.number         = false
 o.numberwidth    = 3
 o.pumblend       = 10
 o.pumborder      = "none"
 o.pumheight      = 15
 o.relativenumber = false
+o.ruler          = false
 o.scrolloff      = 2
 opt.sessionoptions = {
   -- "blank",
@@ -59,16 +61,16 @@ opt.sessionoptions = {
   "globals",
   "help",
   -- "tabpages",
-  -- "winsize",
-  -- "terminal"
+  "winsize",
+  "terminal"
 }
 o.shiftwidth     = 2
-opt.shortmess:append("c")
+opt.shortmess:append("cCSu")
 o.showcmd        = false
 o.showmatch      = true
 o.showmode       = false
 o.signcolumn     = "no"
-o.sidescrolloff  = 8
+o.sidescrolloff  = 2
 o.smartindent    = true
 o.softtabstop    = 2
 o.splitbelow     = true

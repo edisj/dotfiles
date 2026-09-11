@@ -7,7 +7,9 @@ local augroup = api.nvim_create_augroup("plugin.tabline", { clear = true })
 local create_hl = function(target, ...)
   local merged_hl = {}
   for _, name in ipairs { ... } do
-    local hl = type(name) == "string" and api.nvim_get_hl(0, { name = name, link = false }) or name
+    local hl =
+      type(name) == "string" and api.nvim_get_hl(0, { name = name, link = false })
+      or name
     merged_hl = vim.tbl_deep_extend("keep", merged_hl, hl)
   end
   api.nvim_set_hl(0, target, merged_hl)
@@ -64,11 +66,15 @@ local tabnr = function()
   local active_tabnr = api.nvim_tabpage_get_number(0)
   local tabs = {}
   local mode = fn.mode()
-  for _, tabnr in ipairs(tabpages) do
+  for i, tabnr in ipairs(tabpages) do
+    local buf = api.nvim_win_get_buf(api.nvim_tabpage_get_win(tabnr))
+    local ft, bt = vim.bo[buf].filetype, vim.bo[buf].buftype
     local id = tabpages[active_tabnr]
     -- local icon = id == tabnr and TAB_ACTIVE or TAB_INACTIVE
-    local hl = id == tabnr and mode_hlmap2[mode][1] or "TabLine"
-    table.insert(tabs, with_hl(" " .. tabnr .." ", hl))
+    local hl1 = id == tabnr and mode_hlmap[mode][1] or "LineNr"
+    local hl2 = id == tabnr and "Normal" or "LineNr"
+    local tabname = ft == "" and bt or ft
+    tabs[#tabs + 1] = with_hl("" .. i, hl1) .. with_hl(":" .. tabname .. " ", hl2)
   end
   return table.concat(tabs, "")
 end

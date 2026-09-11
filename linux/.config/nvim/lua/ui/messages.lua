@@ -4,6 +4,16 @@ local fs = vim.fs
 local fn = vim.fn
 local api = vim.api
 
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { "cmd", "pager" },
+  callback = function(ev)
+    local ui2 = require("vim._core.ui2")
+    local win = ui2.wins and ui2.wins[ev.match]
+    vim.wo[win].statusline = ''   -- or winbar, laststatus-driven UI
+    -- vim.wo[win].winbar = ''
+  end,
+})
+
 local group = vim.api.nvim_create_augroup("ui-messages", { clear = true })
 api.nvim_create_autocmd("FileType", {
   group = group,

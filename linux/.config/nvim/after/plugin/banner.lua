@@ -23,5 +23,5 @@ vim.api.nvim_create_user_command("Banner", function(opts)
   end
 end, { range = true, nargs = 0 })
 
-map("<C-g>", "<Cmd>Banner<CR>", { mode = { "n", "x" } })
-map("<C-g>", "<Esc><Cmd>Banner<CR>i", { mode = { "i" } })
+map("gcb", "<Cmd>Banner<CR>", { mode = { "n", "x" }, desc = "banner" })
+-- map("<C-g>", "<Esc><Cmd>Banner<CR>i", { mode = { "i" } })

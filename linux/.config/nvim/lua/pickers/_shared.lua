@@ -12,9 +12,9 @@ M.show_grouped = function(bufnr, items, query, showopts)
   for i, extmarks in ipairs(extmarks_by_line) do
     for _, extmark in ipairs(extmarks) do
       if type(extmark) == "function" then extmark = extmark() end
-      local scol = extmark.start_col
+      local scol = extmark.start_col or 0
       extmark.start_col = nil
-      extmark.priority = 199
+      extmark.priority = 201
       api.nvim_buf_set_extmark(bufnr, ns, i-1, scol, extmark)
     end
   end
@@ -27,13 +27,12 @@ M.get_lines_and_extmarks = function(items, showopts)
   local state = pick.get_picker_state()
   if not (state and items and #items > 0) then return {}, {} end
 
-  local winid = state.windows.main
   local group = {}
+  local global_prefix_width = 0
   local lines, extmarks_by_line = {}, {}
   for i, item in ipairs(items) do
     local data = showopts.parse_item(item)
     local bufnr_or_fname = data.bufnr or data.fname
-    -- local fname_or_bufnr, lnum, text = item_to_line(item)
 
     table.insert(lines, data.text)
     extmarks_by_line[i] = {}
@@ -41,13 +40,16 @@ M.get_lines_and_extmarks = function(items, showopts)
     local key = data[showopts.group_by]
     if not group[key] then
       group[key] = {}
-      group[key].prefix_width = 0
+      -- group[key].prefix_width = 0
       if showopts.show_header then
-        table.insert(extmarks_by_line[i], {
-          start_col = 0,
-          virt_lines = { {{""}}, M.construct_header(key, winid) },
-          virt_lines_above = true,
-        })
+        table.insert(extmarks_by_line[i], function()
+          return {
+            start_col = 0,
+            virt_lines = { {{""}}, M.construct_header(key, showopts, global_prefix_width) },
+            -- virt_lines = { M.construct_header(key, showopts) },
+            virt_lines_above = true,
+          }
+        end)
       end
     end
 
@@ -57,28 +59,46 @@ M.get_lines_and_extmarks = function(items, showopts)
     end
 
     local curr_group = group[key]
-    local prefix_width = #tostring(data.prefix)
-    if prefix_width > curr_group.prefix_width then curr_group.prefix_width = prefix_width end
+    local prefix_width = #tostring(type(data.prefix) == "table" and data.prefix[1] or data.prefix)
+    -- if prefix_width > curr_group.prefix_width then curr_group.prefix_width = prefix_width end
+    if prefix_width > global_prefix_width then global_prefix_width = prefix_width end
 
     table.insert(extmarks_by_line[i], function()
-      local w = group[key].prefix_width
-      local prefix_text = ("%" .. w .. "s"):format(data.prefix)
+      -- local w = group[key].prefix_width
+      local w = global_prefix_width
+      local text, hl
+      if type(data.prefix) == "table" then
+        text, hl = data.prefix[1], data.prefix[2]
+      else
+        text, hl = data.prefix, "LineNr"
+      end
+      local prefix_text = ("%" .. w .. "s"):format(text)
       return {
         start_col = 0,
         virt_text_pos = "inline",
-        virt_text = { { prefix_text, "LineNr" } }
+        virt_text = { { prefix_text, hl } }
       }
     end)
+
+    if data.suffix then
+      -- virt_text = type(data.suffix) == "table" and
+      table.insert(extmarks_by_line[i], {
+        virt_text_pos = "eol",
+        virt_text = { data.suffix },
+        hl_mode = "combine",
+      })
+    end
+
   end
   return lines, extmarks_by_line
 end
 
-M.construct_header = function(key, winid)
+M.default_format_header = function(key, groupby)
   local header = ""
-  if type(key) == "number" and api.nvim_buf_is_valid(key) then
+  if groupby == "bufnr" and type(key) == "number" and api.nvim_buf_is_valid(key) then
     header = api.nvim_buf_get_name(key)
     header = " " .. fn.fnamemodify(header, ":~:.") .. " "
-  elseif type(key) == "string" then
+  elseif groupby == "fname" and type(key) == "string" then
     if vim.uv.fs_stat(key) then
       header = " " .. fn.fnamemodify(key, ":~:.") .. " "
     else
@@ -87,9 +107,16 @@ M.construct_header = function(key, winid)
   else
     header = " " ..  tostring(key) .. " "
   end
-  -- local name = bufnr_or_fname
-  -- if type(name) == "number" then name = api.nvim_buf_get_name(name) end
-  local left_bar = "──"
+  return header
+end
+
+M.construct_header = function(key, showopts, prefix_width)
+  local winid = pick.get_picker_state().windows.main
+  local header = showopts.format_header and showopts.format_header(key, showopts.groupby) or M.default_format_header(key, showopts.groupby)
+  local hl
+  if type(header) == "table" then header, hl = header[1], header[2] end
+  -- local left_bar = "───╂─"
+  local left_bar = string.rep("─", prefix_width)
   -- local icon, icon_hl = require("icons").get("file", name)
   -- icon = " " .. vim.trim(icon)
   -- name = " " .. fn.fnamemodify(name, ":~:.") .. " "
@@ -97,7 +124,7 @@ M.construct_header = function(key, winid)
   local width = api.nvim_win_get_width(winid)
   local right_bar = ("─"):rep(width - fn.strchars(header_so_far))
   -- return { { left_bar, "LineNr" }, { icon, icon_hl }, { name }, { right_bar, "LineNr" } }
-  return { { left_bar, "LineNr" }, { header }, { right_bar, "LineNr" } }
+  return { { left_bar, "LineNr" }, { header, hl }, { right_bar, "LineNr" } }
 end
 
 M.extract_ts_highlights = function(bufnr_or_fname, lnum, cache)

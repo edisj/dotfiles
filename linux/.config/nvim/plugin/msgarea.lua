@@ -6,8 +6,22 @@ add({
     src = src,
     data = {
       enable = true,
+      -- event = #vim.api.nvim_list_uis() == 0 and "UIEnter" or nil,
+      event = "UIEnter",
       loader = function()
-        vim.opt.messagesopt:append { maxheight=33 }
+        -- vim.cmd("silent detach!")
+        vim.opt.messagesopt:append { maxheight = 33 }
+        require "ui.messages"
+        require("vim._core.ui2").enable({
+          enable = true,
+          msg = {
+            targets = { default = "cmd" },
+            msg = { height = 0.999 },
+            pager = { height = 0.75 },
+          }
+        })
+        require("vim._core.ui2").check_targets()
+
         require("msgarea").setup({
           msgarea_targets = {
             "wmsg",
@@ -41,23 +55,23 @@ add({
           },
         })
 
-        map("<C-w>m", require("msgarea").close_all, { desc = "Close msgarea" })
+        map("<C-w>m", function() require("msgarea").close_all() end, { desc = "Close msgarea" })
 
-        local expanded = false
+        -- local expanded = false
         map("<C-space>", function()
           vim._with({ o = { splitkeep = 'cursor' } }, function()
-          local view = require("msgarea.view")
-          local eph = view.state.windows.ephemeral
-          local winid = eph and eph.winid or require("msgarea.view").state.curwin
-          local k
-          for i, data in pairs(view.state.windows) do
-            if data.winid == winid then k = i; break end
-          end
-          local data = view.state.windows[k]
-          if not data then return end
+            local view = require("msgarea.view")
+            local eph = view.state.windows.ephemeral
+            local winid = eph and eph.winid or require("msgarea.view").state.curwin
+            local k
+            for i, data in pairs(view.state.windows) do
+              if data.winid == winid then k = i; break end
+            end
+            local data = view.state.windows[k]
+            if not data then return end
 
-          local big_h = math.floor(2/3 * vim.o.lines)
-          data._height, data.height = data.height, data._height or big_h
+            local big_h = math.floor(2/3 * vim.o.lines)
+            data._height, data.height = data.height, data._height or big_h
             view.show({ silent = true })
           end)
         end, { mode = { "n", "c", "t" } })
@@ -81,6 +95,7 @@ add({
           -- NOTE: need to schedule this otherwise it goes to bottom of original window
           vim.schedule(function() vim.cmd("normal! G") end)
         end)
+        map("<CR>", "<CR>")
 
         local pumheight = vim.o.pumheight
         on({ "CmdlineEnter", "CmdlineLeave" }, nil, function(ev)
@@ -114,3 +129,4 @@ add({
     },
   }
 })
+

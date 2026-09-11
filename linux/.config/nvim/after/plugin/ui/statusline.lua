@@ -32,17 +32,19 @@ M.name = function()
     if bt == "" or bt == "nowrite" then return " [No Name] " end
   end
 
-  -- just grab tail of uri
-  if name:match("^(%w+://)") then
+  if name:match("^term://") then
+    local tail = name:match(".*//(.*)$")
+    return with_pad(with_hl(" ", "String") .. tail)
+  elseif name:match("^(%w+://)") then -- just grab tail of uri
     local decoded = vim.uri_decode(name)
     local tail = (decoded:match("<(.*)$") or decoded):gsub("%(", ".")
     return with_pad(tail)
   end
   local ft = vim.bo.filetype
-  if ft == "directory" then
-    local dirname = fn.fnamemodify(fs.dirname(api.nvim_buf_get_name(0)), ":t") .. "/"
-    return with_pad(with_hl(icons.lsp_kinds.Folder, "Folder")) .. dirname
-  end
+  -- if ft == "directory" then
+  --   local dirname = fn.fnamemodify(fs.dirname(api.nvim_buf_get_name(0)), ":t") .. "/"
+  --   return with_pad(with_hl(icons.lsp_kinds.Folder, "Folder")) .. dirname
+  -- end
 
   name = fn.fnamemodify(name, ":t")
   local icon, icon_hl = icons.get("file", name)
@@ -66,6 +68,23 @@ M.dap = function()
   local status = dap.status()
   local type = dap.session() and dap.session().config.type
   return status == "" and status or type and ("dap[%s]: "):format(type) .. status or "dap: " .. status
+end
+
+M.directory = function()
+  local dirlist = require("dirlist")
+  local dir = api.nvim_buf_get_name(0):gsub("/$", "")
+  -- local path = fn.pathshorten(fn.fnamemodify(dir, ":~"))
+  -- path = path == "/" and path or path .. "/"
+  local head, tail = fn.fnamemodify(fs.dirname(dir), ":~"), fs.basename(dir)
+  local path = with_hl(head .. (head == "/" and "" or "/"), "Comment") .. with_hl(tail .. (tail == "" and "" or "/"), "Directory")
+
+  local item = dirlist.path_to_item(dir)
+  local icon = with_pad(with_hl("", "Folder"))
+  local size = with_hl(string.format("%4s", dirlist.default_format_size(item)), "String")
+  -- local permissions = with_hl(dirlist.default_format_permissions(item), "Number")
+  -- local modified = with_hl(dirlist.default_format_modified(item), "LineNr")
+  local out =  size .. " " .. icon .. path
+  return with_pad(out)
 end
 
 -- M.session = function()
@@ -168,17 +187,9 @@ M.border = function(char)
 end
 
 local is_minimal = function(ft)
-  local fts = {
-    "NvimTree",
-    "dap-view",
-    "dap-view-term",
-    "dapui_scopes",
-    "dapui_watches",
-    "dapui_threads",
-    "dapui_console",
-    "dapui_breakpoints",
-  }
-  return vim.tbl_contains(fts, ft)
+  return
+    ft:match("NvimTree")
+  or ft:match("^Neogit")
 end
 
 M.render = function()
@@ -197,6 +208,8 @@ M.render = function()
       vim.list_extend(components, { "%=" .. M.dap() })
     end
       vim.list_extend(components, { "%=" })
+  elseif ft == "directory" then
+    vim.list_extend(components, { M.directory(), "%=", M.loc5() })
   elseif is_minimal(ft) then
     vim.list_extend(components, {
       with_pad(M.icon("filetype", ft).. " " .. ft), "%="

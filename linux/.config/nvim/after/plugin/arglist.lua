@@ -298,7 +298,7 @@ if vim.v.startreason == "normal" then
   else
     for i = fn.argc(), 1, -1 do
       local arg = fn.argv(i-1) --[[@as string]]
-      if vim.uv.fs_stat(arg).type == "directory" then
+      if vim.uv.fs_stat(arg) and vim.uv.fs_stat(arg).type == "directory" then
         vim.cmd((i) .. "argdel")
       end
     end

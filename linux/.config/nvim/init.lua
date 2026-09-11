@@ -14,15 +14,11 @@ vim.g.cmp = "mini.cmdline"
 vim.g.icons = "mini"
 vim.g.CTRL_M = vim.g.neovide and "<C-m>" or "<F13>"
 
+require "mux"
 vim.cmd.colorscheme "kanordwa"
 -- vim.cmd.colorscheme "mac_clear"
-
-require("vim._core.ui2").enable({
-  enable = true,
-  msg = {
-    targets = { default = "msg" },
-    msg = { height = 0.999 },
-    pager = { height = 0.75 },
-  }
-})
-require "ui.messages"
+-- vim.api.nvim_create_autocmd("UIEnter", {
+--   callback = function(ev)
+--     vim.print(ev)
+--   end
+-- })

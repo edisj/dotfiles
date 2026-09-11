@@ -10,7 +10,7 @@ pack.add({
   },
   {
     src = "https://github.com/barrettruth/diffs.nvim",
-    data = { enable = true },
+    data = { enable = true, defer = true },
   },
   {
     src = "https://github.com/NeogitOrg/neogit",
@@ -28,8 +28,7 @@ pack.add({
           -- commit_editor = { kind = "split_above_all" },
           -- preview_buffer = { kind = "split_above_all", show_title = true },
           kind = "tab",
-          status = {
-            show_head_commit_hash = true,
+          status = { show_head_commit_hash = true,
             recent_commit_count = 30,
             HEAD_padding = 10,
             HEAD_folded = true,
@@ -61,6 +60,15 @@ pack.add({
             border = "rounded",
           },
         })
+
+        local map_g = function(key, kind, desc)
+          map("<C-g><C-" .. key .. ">", ("<Cmd>Neogit kind=%s<CR>"):format(kind), { desc = desc } )
+          map("<C-g>" .. key, "<C-g><C-" .. key .. ">", { remap = true, desc = desc } )
+        end
+        map_g(".", "tab", "Neogit tab")
+        map_g("j", "split_below", "Neogit below")
+        map_g("k", "split_above", "Neogit above")
+        map_g("l", "vsplit", "Neogit vsplit")
       end
     }
   },

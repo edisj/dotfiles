@@ -3,13 +3,14 @@ local M = {}
 
 local STC = "%{%v:lua.Stc()%}"
 
-local cache = { git = {}, diag = {}, dap = {}, extmarks = {} }
+local cache = { git = {}, diag = {}, dap = {}, sign = {}, extmarks = {} }
 local DEBOUNCE_MS = 100
 local timer = assert(vim.uv.new_timer())
 timer:start(DEBOUNCE_MS, DEBOUNCE_MS, function()
   cache.git = {}
   cache.diag = {}
   cache.dap = {}
+  cache.sign = {}
   cache.extmarks = {}
 end)
 
@@ -39,27 +40,59 @@ local recompute_cache = function(bufnr)
   cache.git[bufnr] = {}
   cache.diag[bufnr] = {}
   cache.dap[bufnr] = {}
+  cache.sign[bufnr] = {}
   for _, mark in ipairs(cache.extmarks[bufnr]) do
     local lnum, details = mark[2] + 1, mark[4]
     local text, hl = details.sign_text, details.sign_hl_group
     if hl and hl:match("GitSigns") then
       cache.git[bufnr][lnum] = with_hl(vim.trim(text), hl)
     elseif hl and hl:match("Diagnostic") then
+      text = text == "" and "  " or text
       cache.diag[bufnr][lnum] = with_hl(text, hl)
     elseif hl and hl:match("Dap") then
       cache.dap[bufnr][lnum] = with_hl(text, hl)
+    else
+      cache.sign[bufnr][lnum] = with_hl(text, hl)
     end
   end
 end
 
+map("<Leader>tn", function()
+  vim.o.nu = not vim.o.nu
+  if not vim.o.nu then vim.o.rnu = false end
+  api.nvim__redraw({ statuscolumn = true })
+end, { desc = "number" })
+map("<Leader>tr", function()
+  vim.o.rnu = not vim.o.rnu
+  if vim.o.rnu then vim.o.nu = true end
+  api.nvim__redraw({ statuscolumn = true })
+end, { desc = "relative number" })
+
 on("BufWinEnter", nil, function()
   local w = api.nvim_get_current_win()
+  local bt, ft = vim.bo[0].buftype, vim.bo[0].filetype
+  local no = ft == "help" or bt == ""
+  vim.wo[w][0].number = not no and vim.go.number
+  vim.wo[w][0].relativenumber = not no and vim.go.relativenumber
   vim.wo[w].statuscolumn = STC
 end)
 
 M.render = function()
+  local bt, ft = vim.bo[0].buftype, vim.bo[0].filetype
+  if
+    vim.v.virtnum ~= 0
+    or ft == "directory"
+    or bt == "terminal"
+  then
+    return ""
+  end
   local bufnr, lnum = api.nvim_get_current_buf(), vim.v.lnum
-  return M.git(bufnr, lnum) .. M.dap(bufnr, lnum) .. M.diag(bufnr, lnum) .. M.lnum() .. M.pad()
+  return M.git(bufnr, lnum)
+      .. M.dap(bufnr, lnum)
+      .. M.sign(bufnr, lnum)
+      .. M.diag(bufnr, lnum)
+      .. M.lnum()
+      .. M.pad()
 end
 
 M.pad = function()
@@ -81,15 +114,27 @@ M.git = function(bufnr, lnum)
   return cache.git[bufnr][lnum] or ""
 end
 
+local diag_enabled = false
+map("<Leader>td", function()
+  diag_enabled = not diag_enabled
+  api.nvim__redraw({ statuscolumn = true })
+end, { desc = "diagnostic signs" })
 M.diag = function(bufnr, lnum)
-  if not vim.diagnostic.is_enabled() then return "" end
+  if not diag_enabled then return "" end
   if not cache.diag[bufnr] then recompute_cache(bufnr) end
-  return cache.diag[bufnr][lnum] or "  "
+  local sign = cache.diag[bufnr][lnum]
+  sign = sign == "" and "  " or sign or "  "
+  return sign
 end
 
 M.dap = function(bufnr, lnum)
   if not cache.dap[bufnr] then recompute_cache(bufnr) end
   return cache.dap[bufnr][lnum] or ""
+end
+
+M.sign = function(bufnr, lnum)
+  if not cache.sign[bufnr] then recompute_cache(bufnr) end
+  return cache.sign[bufnr][lnum] or ""
 end
 
 _G.Stc = M.render

@@ -2,6 +2,8 @@ local pick = require("mini.pick")
 local show_grouped = require("pickers._shared").show_grouped
 
 return function(local_opts, opts)
+  -- pick.builtin.grep_live(local_opts, opts)
+  -- if true then return end
   local default_local_opts = { show_header = true, group_by = "fname" }
   local_opts = vim.tbl_deep_extend("force", default_local_opts, local_opts or {})
 
@@ -11,7 +13,8 @@ return function(local_opts, opts)
     extmark_cache = {},
     parse_item = local_opts.parse_item or function(item)
       local fname, lnum, _, text = unpack(vim.split(item, "\0"))
-      local prefix = tostring(lnum) .. ":"
+      -- local prefix = tostring(lnum) .. ":"
+      local prefix = tostring(lnum) .. "│"
       return { fname = fname, lnum = lnum, text = text, prefix = prefix }
     end,
   }
@@ -22,6 +25,9 @@ return function(local_opts, opts)
   opts = vim.tbl_deep_extend("keep", { source = { show = show } }, opts or {})
   local cwd_text = opts.source.cwd and opts.source.cwd .. " " or "./ "
   opts = vim.tbl_deep_extend("keep", opts, {
+    mappings = {
+      switch_method = "<C-y>",
+    },
     window = {
       prompt_prefix = " rg ",
       prompt_caret = "🯏" .. tostring(cwd_text)

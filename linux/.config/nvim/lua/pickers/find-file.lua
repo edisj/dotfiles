@@ -151,7 +151,7 @@ local find_file = function(local_opts, opts)
       end
     end
     if selected then
-      api.nvim_buf_set_extmark(buf_id, ns, selected-1, 0, { line_hl_group = "MiniPickMatchCurrent"})
+      api.nvim_buf_set_extmark(buf_id, ns, selected-1, 0, { line_hl_group = "MiniPickMatchCurrent", hl_mode = "combine" })
     end
   end
 

@@ -128,12 +128,10 @@ vim.keymap.set("c", "<M-n>", "<Down>", { silent = false })
 vim.keymap.set('c', '<M-h>', '<Left>',  { silent = false, desc = 'Left' })
 vim.keymap.set('c', '<M-l>', '<Right>', { silent = false, desc = 'Right' })
 
--- Don't `noremap` in insert mode to have these keybindings behave exactly
--- like arrows (crucial inside TelescopePrompt)
-vim.keymap.set('i', '<M-h>', '<Left>',  { noremap = false, desc = 'Left' })
-vim.keymap.set('i', '<M-j>', '<Down>',  { noremap = false, desc = 'Down' })
-vim.keymap.set('i', '<M-k>', '<Up>',    { noremap = false, desc = 'Up' })
-vim.keymap.set('i', '<M-l>', '<Right>', { noremap = false, desc = 'Right' })
+vim.keymap.set('i', '<M-h>', '<Left>',  { desc = 'Left' })
+vim.keymap.set('i', '<M-j>', '<Down>',  { desc = 'Down' })
+vim.keymap.set('i', '<M-k>', '<Up>',    { desc = 'Up' })
+vim.keymap.set('i', '<M-l>', '<Right>', { desc = 'Right' })
 
 -- Copy/paste with system clipboard
 vim.keymap.set(  'n',        'gp', '"+p', { desc = 'Paste from system clipboard' })
@@ -195,14 +193,14 @@ map("<C-Down>",  function() smart_resize("j") end, { desc = "smart resize down" 
 map("<C-Up>",    function() smart_resize("k") end, { desc = "smart resize up" })
 
 -- {{{ toggle
-map("<Leader>tn", function()
-  vim.o.nu = not vim.o.nu
-  if not vim.o.nu then vim.o.rnu = false end
-end, { desc = "number" })
-map("<Leader>tr", function()
-  vim.o.rnu = not vim.o.rnu
-  if vim.o.rnu then vim.o.nu = true end
-end, { desc = "relative number" })
+-- map("<Leader>tn", function()
+--   vim.o.nu = not vim.o.nu
+--   if not vim.o.nu then vim.o.rnu = false end
+-- end, { desc = "number" })
+-- map("<Leader>tr", function()
+--   vim.o.rnu = not vim.o.rnu
+--   if vim.o.rnu then vim.o.nu = true end
+-- end, { desc = "relative number" })
 map("<Leader>tg", function()
   if not package.loaded["gitsigns"] then return end
   vim.cmd("Gitsigns toggle_signs")

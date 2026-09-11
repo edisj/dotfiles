@@ -1,6 +1,6 @@
-local api = vim.api
+local api, diag = vim.api, vim.diagnostic
 
-local sev = vim.diagnostic.severity
+local sev = diag.severity
 local icons = require("icons")
 
 local sign_text = {
@@ -10,7 +10,7 @@ local sign_text = {
   [sev.HINT] = icons.diagnostic2.hint,
 }
 
-vim.diagnostic.config({
+diag.config({
   severity_sort = true,
   update_in_insert = false,
   signs = {
@@ -26,25 +26,31 @@ vim.diagnostic.config({
   },
 })
 
-map("<Leader>td", function()
-  vim.diagnostic.enable(not vim.diagnostic.is_enabled())
-  vim.api.nvim__redraw({ flush = true, statuscolumn = true })
-end, { desc = "toggle diagnostics" })
+-- map("<Leader>td", function()
+--   diag.enable(not diag.is_enabled())
+--   vim.api.nvim__redraw({ flush = true, statuscolumn = true })
+-- end, { desc = "toggle diagnostics" })
 
 map("<C-q><C-d>", function()
-  vim.diagnostic.setqflist()
+  diag.setqflist()
 end)
 
+local jumping = false
+local reset_virt = vim.schedule_wrap(function()
+  if not jumping then
+    diag.config({ virtual_lines = false })
+  end
+  jumping = false
+end)
 local jump = function(sign)
   return function()
-    vim.diagnostic.jump {
+    jumping = true
+    diag.jump {
       count = sign * vim.v.count1,
-      on_jump = function(diag)
-        if not diag then return end
-        vim.diagnostic.config({ virtual_lines = { current_line = true }, virtual_text = false })
-        on("CursorMoved", nil, { once = true }, function()
-          vim.diagnostic.config({ virtual_lines = false, virtual_text = false })
-        end)
+      on_jump = function(d)
+        if not d then return end
+        diag.config({ virtual_lines = { current_line = true } })
+        vim.schedule(function() on("CursorMoved", nil, { once = true }, reset_virt) end)
       end,
     }
   end

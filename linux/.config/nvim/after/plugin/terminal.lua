@@ -51,17 +51,18 @@ map("<C-s>" .. vim.g.CTRL_M, function()
   -- api.nvim_win_call(win, function() vim.cmd("normal! G") end)
 end)
 
+local ns = vim.api.nvim_create_namespace("my.terminal.prompt")
 on({ "TermRequest" }, nil, {
   desc = "Handles OSC 7 dir change requests"
 }, function(ev)
-    if string.match(ev.data.sequence, '^\027]133;A') then
+    if string.match(ev.data.sequence, "^\027]133;A") then
       -- OSC 133: shell-prompt
-      local lnum = ev.data.cursor[1]
-      vim.api.nvim_buf_set_extmark(ev.buf, vim.api.nvim_create_namespace("my.terminal.prompt"), lnum - 1, 0, {
-        -- Replace with sign text and highlight group of choice
-        sign_text = "∙",
-        sign_hl_group = "LineNr",
-      })
+      -- local lnum = ev.data.cursor[1]
+      -- vim.api.nvim_buf_set_extmark(ev.buf, ns, lnum - 1, 0, {
+      --   sign_text = ("%d "):format(x),
+      --   sign_hl_group = "LineNr",
+      -- })
+      vim.api.nvim__redraw({ statuscolumn = true })
     end
 
     local val, n = string.gsub(ev.data.sequence, '\027]7;file://[^/]*', '')
@@ -75,3 +76,9 @@ on({ "TermRequest" }, nil, {
       vim.cmd.bcd(dir)
     end
   end)
+
+map("<C-l>", function()
+  -- vim.api.nvim_buf_clear_namespace(_buf, ns, 0, -1)
+  vim.schedule(function() vim.api.nvim__redraw({ statuscolumn = true }) end)
+  return "<C-l>"
+end, { expr = true, mode = { "t" } })
