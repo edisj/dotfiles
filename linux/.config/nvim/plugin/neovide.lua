@@ -28,10 +28,10 @@ on("UIEnter", nil, function()
   g.neovide_text_contrast = 0
   g.neovide_underline_stroke_scale = 1.1
 
-  g.neovide_padding_left = 15
-  g.neovide_padding_right = 15
-  g.neovide_padding_bottom = 4
-  g.neovide_padding_top = 8
+  g.neovide_padding_left = 0
+  g.neovide_padding_right = 0
+  g.neovide_padding_bottom = 0
+  g.neovide_padding_top = 0
 
   g.neovide_opacity = 1
   local on = false

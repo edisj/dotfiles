@@ -9,16 +9,29 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
+vim.cmd.colorscheme "doom-two"
+
 vim.g.mapleader = " "
 vim.g.cmp = "mini.cmdline"
+-- vim.g.cmp = "blink.cmp"
 vim.g.icons = "mini"
 vim.g.CTRL_M = vim.g.neovide and "<C-m>" or "<F13>"
+-- vim.g.CTRL_M = "<C-m>"
 
 require "mux"
-vim.cmd.colorscheme "kanordwa"
--- vim.cmd.colorscheme "mac_clear"
--- vim.api.nvim_create_autocmd("UIEnter", {
---   callback = function(ev)
---     vim.print(ev)
---   end
--- })
+
+_G.map = require("globals").map
+_G.on = require("globals").on
+
+on("UIEnter", nil, function()
+  vim.g.Nu = vim.g.Nu or 0
+  vim.g.Rnu = vim.g.Rnu or 0
+  vim.g.Diag = vim.g.Diag or 0
+  vim.g.DiagCol = vim.g.DiagCol or 0
+  vim.o.nu = vim.g.Nu == 1
+  vim.o.rnu = vim.g.Rnu == 1
+  vim.diagnostic.enable(vim.g.Diag == 1)
+end)
+
+vim.go.statusline = "%{%v:lua.require'ui.statusline'.render()%}"
+vim.o.statuscolumn = "%{%v:lua.require'ui.statuscol'.render()%}"

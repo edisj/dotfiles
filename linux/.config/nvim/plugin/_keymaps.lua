@@ -1,19 +1,11 @@
 local fn = vim.fn
 
-local map = function(lhs, rhs, opts)
-  opts = vim.tbl_extend("force", { silent = true, remap = false }, opts or {})
-  local mode = opts.mode or { "n" }
-  opts.mode = nil
-  vim.keymap.set(mode, lhs, rhs, opts)
-end
-_G.map = map
-
 -- insert --------------------------------------------------------------------
-for _, k in ipairs {
-  "q", "b", "w", "e",
-  "Q", "B", "W", "E",
+for lhs, rhs in pairs {
+  q = "b", w = "w", e = "e",
+  Q = "B", W = "W", E = "E",
 } do
-  map("<M-"..k..">", "<C-o>" .. k, { mode = { "i" }, remap = true })
+  map("<M-"..lhs..">", "<C-o>" .. rhs, { mode = { "i" } })
 end
 
 -- normal --------------------------------------------------------------------
@@ -21,20 +13,30 @@ map("j", "v:count == 0 ? 'gj' : 'j'", { expr = true })
 map("k", "v:count == 0 ? 'gk' : 'k'", { expr = true })
 map("<M-j>", "<C-e>", { desc = "" })
 map("<M-k>", "<C-y>", { desc = "" })
-map("<M-C-j>", "<C-d>")
-map("<M-C-k>", "<C-u>")
-map("<C-j>", function()
-  return math.floor(0.5 * vim.o.lines) .. "gj"
-end, { expr = true })
-map("<C-k>", function()
-  return math.floor(0.5 * vim.o.lines) .. "gk"
-end, { expr = true })
+-- map("<M-C-j>", "<C-d>")
+-- map("<M-C-k>", "<C-u>")
+-- map("<C-j>", function()
+--   return math.floor(0.5 * vim.o.lines) .. "gj"
+-- end, { expr = true })
+-- map("<C-k>", function()
+--   return math.floor(0.5 * vim.o.lines) .. "gk"
+-- end, { expr = true })
 
 -- map("<Tab>", "zA")
-map("<Tab>", "<Cmd>e #<CR>")
+-- map("<Tab>", "<Cmd>e #<CR>")
 map("<C-i>", "<C-i>", { remap = true })
 
 map("<C-c>", "<Esc>")
+
+local stat = io.open("/proc/self/stat")
+if stat then
+  local rest = stat:read("l"):match("%)%s+(.*)")
+  stat:close()
+  local _, _, _, session = rest:match("(%S+) (%S+) (%S+) (%S+)")
+  if tonumber(session) == fn.getpid() then
+    map("<C-z>", "<Nop>", { mode = { "n", "x" }, desc = "no shell to suspend into" })
+  end
+end
 
 map("<C-i>", "<C-o>", { desc = "back" })
 map("<C-o>", "<C-i>", { desc = "forward" })
@@ -45,14 +47,30 @@ map("Q", "B", { desc = "previous WORD", mode = { "n", "o", "x" } })
 map("H", "^", { desc = "beginning of line", mode = { "n", "o", "x" } })
 map("L", "$", { desc = "end of line", mode = { "n", "o", "x" } })
 
+map("gl", "gF", { desc = "jump to file:line" })
+
 map("]t", "gt", { desc = "tab next" })
 map("[t", "gT", { desc = "tab prev" })
-map("<C-M-h>", function()
-  if fn.tabpagenr() > 1 then vim.cmd("tabNext") end
-end)
-map("<C-M-l>", function()
-  if fn.tabpagenr() ~= fn.tabpagenr("$") then vim.cmd("tabnext") end
-end)
+-- map("<C-M-h>", function()
+--   if fn.tabpagenr() > 1 then vim.cmd("tabNext") end
+-- end)
+-- map("<C-M-l>", function()
+--   if fn.tabpagenr() ~= fn.tabpagenr("$") then vim.cmd("tabnext") end
+-- end)
+
+for i = 1, 9 do
+  vim.keymap.set("n", "<C-"..i..">",  i.."gt", { desc = "Go to tab " .. i })
+end
+
+
+-- {{{ multicursor
+map("b", "Q",   { desc = "toggle multicursor",  mode = { "n", "x" } })
+map("zb", "zq", { desc = "cursors over motion", mode = { "n", "x" } })
+map("b=", "q=", { desc = "toggle follow" })
+map("gb", "gQ", { desc = "restore multicursors" })
+
+-- }}}
+
 
 -- misc ========================================================================
 map("<M-s>", function()
@@ -100,6 +118,7 @@ map("p", '"_dP', { desc = "Paste Over Visual without Yanking", mode = { "x" } })
 map("x", '"_x',  { desc = "Delete Char without Yanking" })
 map("X", '"_X',  { desc = "Delete Char without Yanking" })
 
+
 -- visual --------------------------------------------------------------------
 map("<S-v>", "<C-v>", { desc = "v-block" })
 map("v", "<S-v>", { desc = "v-line", mode = { "x" } })
@@ -110,7 +129,7 @@ map("<", "<gv",              { desc = "Indent left and reselect",  mode = { "x" 
 map(">", ">gv",              { desc = "Indent right and reselect", mode = { "x" } })
 
 
-map("<C-;>", "q:", { desc = "Open cmdwin" })
+-- map("<C-;>", "q:", { desc = "Open cmdwin" })
 
 -- icmap("<C-h>", "<C-Left>", { silent = false })
 -- icmap("<C-l>", "<C-Right>", { silent = false })
@@ -154,6 +173,7 @@ map("<Leader>eo", edit("_options.lua"),    { desc = "options.lua" })
 map("<Leader>ek", edit("_keymaps.lua"),    { desc = "keymaps.lua" })
 map("<Leader>ea", edit("_autocmds.lua"),   { desc = "autocmds.lua" })
 map("<Leader>ei", "<Cmd>edit $MYVIMRC<CR>", { desc = "init.lua" })
+map("<Leader>eg", "<Cmd>edit $HOME/.config/ghostty/config.ghostty<CR>", { desc = "ghostty" })
 
 
 -- wincmds -------------------------------------------------------------------
@@ -161,6 +181,12 @@ map("<M-S-k>", "<C-w>K", { desc = "move window up" })
 map("<M-S-j>", "<C-w>J", { desc = "move window down" })
 map("<M-S-h>", "<C-w>H", { desc = "move window left" })
 map("<M-S-l>", "<C-w>L", { desc = "move window right" })
+
+map("<C-M-k>", "<C-w>k", { desc = "jump up" })
+map("<C-M-j>", "<C-w>j", { desc = "jump down" })
+map("<C-M-h>", "<C-w>h", { desc = "jump left" })
+map("<C-M-l>", "<C-w>l", { desc = "jump right" })
+
 map("<C-w>e", "<C-w>c", { desc = "Close" })
 map("<C-w><C-e>", "<C-w>c", { desc = "Close" })
 
@@ -176,14 +202,12 @@ map("<C-w>x", "<C-w><C-x>", { remap = true })
 local function smart_resize(direction)
   local left_right = direction == "h" or direction == "l"
   local only_win = fn.winnr("j") == fn.winnr("k")
-  local make_bigger =
-  (left_right and "vertical resize +5")
-  or (only_win and "resize +5")
-  or "resize +5"
-  local make_smaller =
-  (left_right and "vertical resize -5")
-  or (only_win and direction == "j" and "resize +5")
-  or "resize -5"
+  local make_bigger = (left_right and "vertical resize +5")
+                   or (only_win and "resize +5")
+                   or "resize +5"
+  local make_smaller = (left_right and "vertical resize -5")
+                    or (only_win and direction == "j" and "resize +5")
+                    or "resize -5"
   local has_neighbor = fn.winnr(direction) ~= fn.winnr()
   return has_neighbor and vim.cmd(make_bigger) or vim.cmd(make_smaller)
 end
@@ -210,13 +234,16 @@ map("<Leader>ts", function()
   local scl = vim.o.signcolumn
   vim.o.signcolumn = scl == "no" and "yes:1" or "no"
 end, { desc = "signcolumn" })
+
+map("<Leader>tw", "<Cmd>set wrap!<CR>")
+
 -- }}}
 
 
 -- lsp =========================================================================
 map("gd", function() vim.lsp.buf.definition() end, { desc = "Goto definition" })
 map("gD", function() vim.lsp.buf.declaration() end, { desc = "Goto declaration" })
-map("<Leader>la", function() vim.lsp.buf.code_action() end,     { desc = "code action" })
+map("<Leader>lc", function() vim.lsp.buf.code_action() end,     { desc = "code action" })
 map("<Leader>ld", function() vim.lsp.buf.definition() end,      { desc = "definition" })
 map("<Leader>lD", function() vim.lsp.buf.declaration() end,     { desc = "declaration" })
 map("<Leader>li", function() vim.lsp.buf.implementation() end,  { desc = "declaration" })

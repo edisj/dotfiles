@@ -1,6 +1,25 @@
 local ui_select = vim.ui.select
 local function setup_mini_pick()
 
+  local expanded = false
+  local win_cfg = function()
+    local base = math.floor(0.30 * vim.o.lines)
+    local h = base
+    if expanded then
+      local matches = MiniPick.get_picker_matches()
+      local n = matches and matches.all and #matches.all + 2 or 0
+      h = math.max(base, math.min(n, math.floor(0.66 * vim.o.lines)))
+    end
+    local relative = package.loaded["msgarea"] and require("msgarea.config").get().enable and "msgarea" or nil
+    return { relative = relative, height = h, border = "solid" }
+  end
+  vim.api.nvim_create_autocmd("User", {
+    pattern = "MiniPickStart",
+    callback = function() expanded = false end,
+  })
+
+  local msgarea_opts = { window = { config = win_cfg } }
+
   local mappings = {
     move_down  = "<C-n>",
     move_up    = "<C-p>",
@@ -26,18 +45,10 @@ local function setup_mini_pick()
     scroll_up    = "<C-k>",
     scroll_right = "<M-l>",
 
-    -- test3 = { char = "<C-\\>", func = function()
-    --   require("vim._core.ui2.messages").show_msg("msgarea", "", {{0, "a\nb\nc", 0 }})
-    -- end},
-    -- test2 = { char = "<C-o>", func = function() vim.print(require("vim._core.ui2").wins) end },
+    test2 = { char = "<C-o>", func = function() vim.print(require("vim._core.ui2").wins) end },
     expand = { char = "<C-space>", func = function()
-      if not package.loaded["msgarea"] then return end
-      local view = require("msgarea.view")
-      local eph = view.state.windows.ephemeral
-      local bigger = math.floor(2/3 * vim.o.lines)
-      eph._height, eph.height = eph.height, eph._height or bigger
-      view.show{silent = true}
-      -- MiniPick.refresh()
+      expanded = not expanded
+      MiniPick.refresh()
     end},
   }
 
@@ -52,7 +63,6 @@ local function setup_mini_pick()
     local lhs = "<M-S-" .. k .. ">"
     mappings["arglist_add_" .. k] = { char = lhs, func = function() arglist_add(k) end }
   end
-
 
   local centered = function()
     local h = math.floor(0.5*vim.o.lines)
@@ -100,24 +110,12 @@ local function setup_mini_pick()
   MiniPick.registry["registry"] = require("pickers.registry")
   MiniPick.registry["find_file"] = require("pickers.find-file")
   MiniPick.registry["grep_live"] = require("pickers.grep-live")
-  MiniPick.registry["buf_lines_current"] = require("pickers.buf-lines-current")
   MiniPick.registry["buf_lines"] = require("pickers.buf-lines")
   MiniPick.registry["mux"] = require("pickers.mux")
 
   local fmap = function(key, desc, rhs)
     map("<C-f>" .. key, rhs, { desc = desc })
   end
-
-
-  local win_cfg = function()
-    return {
-      relative = package.loaded["msgarea"] and "msgarea" or nil,
-      height = math.floor(1/3 * vim.o.lines),
-      -- border = { " ", " ", " ", "", "", "", "", "" },
-      border = { "", " ", "", "", "", " ", "", "" },
-    }
-  end
-  local msgarea_opts = { window = { config = win_cfg } }
 
   map("<C-e><C-/>", function() MiniPick.registry.find_file({ dir = vim.fn.expand("%:p:h") }, msgarea_opts) end)
   fmap("<C-o>", "files (cwd)", function() MiniPick.registry.find_file() end)
@@ -163,39 +161,46 @@ local function setup_mini_pick()
       },
       window = { prompt_prefix = " Find: " .. path .. "/", config = win_cfg }
     }) end, { desc = "Pick files" })
-  map("<leader><leader>", function() MiniPick.builtin.resume() end)
 
-  fmap("<C-n>", "config", function()
-    local cwd = vim.fn.stdpath("config")
-    local prefix = " " .. vim.fn.fnamemodify(cwd, ":~") .. "/"
+  -- map("<leader><leader>", function() MiniPick.builtin.resume() end)
+
+  -- fmap("<C-n>", "config", function()
+  --   local cwd = vim.fn.stdpath("config")
+  --   local prefix = " " .. vim.fn.fnamemodify(cwd, ":~") .. "/"
+  --   local opts = {
+  --     source = { cwd = cwd },
+  --     window = { prompt_prefix = prefix, config = win_cfg },
+  --   }
+  --   MiniPick.builtin.files(nil, opts)
+  -- end)
+
+  fmap("<C-p>", "projects", function()
     local opts = {
-      source = { cwd = cwd },
-      window = { prompt_prefix = prefix, config = win_cfg },
+      window = { prompt_prefix = " Select Project: ", config = win_cfg },
     }
-    MiniPick.builtin.files(nil, opts)
+    MiniPick.registry.mux(nil, opts)
   end)
 
-  fmap("<C-r>", "runtime", function()
-    local opts = { source = { cwd = vim.fn.expand("$VIMRUNTIME").."/lua" }, window = { config = win_cfg } }
-    MiniPick.builtin.files(nil, opts)
-  end)
-
-  local function pp(picker)
-    local packroot = vim.fn.stdpath("data") .. "/site/pack/core/opt"
-    local prefix = " opt/**/lua/"
-    local opts = {
-      source = {
-        cwd = packroot,
-        name = "Pack",
-        command = "fd",
-        args = { "-e", "lua", "-p", ".*/lua/" }
-      },
-      window = { prompt_prefix = prefix, config = win_cfg },
-    }
-    MiniPick.builtin[picker](nil, opts)
-  end
-  fmap("<C-o>", "packages", function() pp("files") end)
-  -- map("<Leader>fP", function() pp("grep_live") end, { desc = "grep packs" })
+  -- fmap("<C-r>", "runtime", function()
+  --   local opts = { source = { cwd = vim.fn.expand("$VIMRUNTIME").."/lua" }, window = { config = win_cfg } }
+  --   MiniPick.builtin.files(nil, opts)
+  -- end)
+  --
+  -- local function pp(picker)
+  --   local packroot = vim.fn.stdpath("data") .. "/site/pack/core/opt"
+  --   local prefix = " opt/**/lua/"
+  --   local opts = {
+  --     source = {
+  --       cwd = packroot,
+  --       name = "Pack",
+  --       command = "fd",
+  --       args = { "-e", "lua", "-p", ".*/lua/" }
+  --     },
+  --     window = { prompt_prefix = prefix, config = win_cfg },
+  --   }
+  --   MiniPick.builtin[picker](nil, opts)
+  -- end
+  -- fmap("<C-o>", "packages", function() pp("files") end)
 end
 
 pack.gen_loop_loader(setup_mini_pick)("mini.pick")

@@ -9,13 +9,16 @@ add({
       -- event = #vim.api.nvim_list_uis() == 0 and "UIEnter" or nil,
       event = "UIEnter",
       loader = function()
-        -- vim.cmd("silent detach!")
-        vim.opt.messagesopt:append { maxheight = 33 }
+        vim.opt.messagesopt:append("maxheight:66")
         require "ui.messages"
         require("vim._core.ui2").enable({
           enable = true,
           msg = {
-            targets = { default = "cmd" },
+            targets = {
+              default = "msgarea",
+              progress = "msg",
+              -- echo = "msg",
+            },
             msg = { height = 0.999 },
             pager = { height = 0.75 },
           }
@@ -23,29 +26,15 @@ add({
         require("vim._core.ui2").check_targets()
 
         require("msgarea").setup({
-          msgarea_targets = {
-            "wmsg",
-            "emsg",
-            "echoerr",
-            "echo",
-            "list_cmd",
-            "lua_error",
-            "lua_print",
-            "echoerr",
-            -- "shell_out",
-            -- "shell_cmd",
-            -- "shell_err",
-          },
+          enable = true,
           message_title = function(kind)
-            return ({ lua_print = " Lua Print ", lua_error = " Lua Error " })[kind]
-            -- return ({ lua_error = " Lua Error " })[kind]
+            return
+            -- return ({ lua_print = " Lua Print ", lua_error = " Lua Error " })[kind]
           end,
           view = {
             style = "msgarea",
-            -- style = "split",
-            -- max_height = 0.35,
-            max_height = 0.50,
-            winbar_min_tabs = 1,
+            max_height = 0.33,
+            winbar_min_tabs = 2,
           },
           cmdline = {
             enable = true,
@@ -55,78 +44,100 @@ add({
           },
         })
 
-        map("<C-w>m", function() require("msgarea").close_all() end, { desc = "Close msgarea" })
+        map("<C-w>" .. vim.g.CTRL_M, "<C-w>m", { remap = true })
+        map("<C-w>m", function()
+          local curwin = require("msgarea.view").get_state().curwin
+          if curwin and vim.api.nvim_win_is_valid(curwin) then vim.api.nvim_set_current_win(curwin) end
+        end, { desc = "" })
 
-        -- local expanded = false
         map("<C-space>", function()
-          vim._with({ o = { splitkeep = 'cursor' } }, function()
+          vim._with({ o = { splitkeep = "cursor" } }, function()
             local view = require("msgarea.view")
             local eph = view.state.windows.ephemeral
-            local winid = eph and eph.winid or require("msgarea.view").state.curwin
-            local k
-            for i, data in pairs(view.state.windows) do
-              if data.winid == winid then k = i; break end
+            local winid = eph and eph.winid or view.state.curwin
+            local data
+            for _, d in pairs(view.state.windows) do
+              if d.winid == winid then data = d break end
             end
-            local data = view.state.windows[k]
-            if not data then return end
+            if not data then return nil end
 
-            local big_h = math.floor(2/3 * vim.o.lines)
-            data._height, data.height = data.height, data._height or big_h
+            if data.resize_height then
+              data.resize_height = nil
+            else
+              local content = vim.api.nvim_win_text_height(winid, {}).all
+              local want = math.min(content, math.floor(0.66  * vim.o.lines))
+              if want > data.inner_height then data.resize_height = want end
+            end
             view.show({ silent = true })
+            return nil
           end)
         end, { mode = { "n", "c", "t" } })
 
-        local CTRL_M = vim.g.CTRL_M
-        local m_map = function(k, rhs)
-          local lhs = CTRL_M .. "<C-" .. k .. ">"
-          map(lhs, rhs)
-          map(CTRL_M .. k, lhs, { remap = true })
-        end
-        m_map("l", function() require("msgarea").close_all() end)
-        m_map("c", function()
-          if vim.bo.filetype == "pager" then vim.api.nvim_win_close(0, true) end
-          vim.cmd("messages clear")
-        end)
-        m_map(CTRL_M, function()
-          if vim.bo.filetype == "pager" then return vim.api.nvim_win_close(0, true) end
-          if vim.fn.execute("messages"):match("%S") == nil then return end
-          local cmd = vim.v.count == 0 and "messages" or ("%smessages"):format(vim.v.count)
-          vim.cmd(cmd)
-          -- NOTE: need to schedule this otherwise it goes to bottom of original window
-          vim.schedule(function() vim.cmd("normal! G") end)
-        end)
-        map("<CR>", "<CR>")
 
         local pumheight = vim.o.pumheight
         on({ "CmdlineEnter", "CmdlineLeave" }, nil, function(ev)
           if ev.event == "CmdlineEnter" then
-            vim.o.pumheight = 7
+            vim.o.pumheight = vim.g.Pumheight or 7
           elseif ev.event == "CmdlineLeave" then
             vim.o.pumheight = pumheight
           end
         end)
 
-        on("BufRead", nil, function(ev)
-          if vim.bo[ev.buf].buftype ~= "quickfix" then return end
-          vim.schedule(function()
-            local winid = vim.fn.bufwinid(ev.buf)
-            local wintype = vim.fn.win_gettype(winid)
-            local title, height
-            if wintype == "loclist" then
-              title = " Loclist "
-              height = math.min(#vim.fn.getloclist(0), 10)
-            else
-              title = " Quickfix "
-              height = math.min(#vim.fn.getqflist(), 10)
-            end
-            local win_cfg = { title = title, relative = "msgarea", height = height, style = "minimal" }
-            vim.api.nvim_win_set_config(winid, win_cfg)
-          end)
-        end
-        )
+        vim.api.nvim_create_autocmd("BufRead", {
+          callback = function(ev)
+            if vim.bo[ev.buf].buftype ~= "quickfix" then return end
+            vim.schedule(function()
+              local winid = vim.fn.bufwinid(ev.buf)
+              vim.wo[winid].scrolloff = 0
+              local wintype = vim.fn.win_gettype(winid)
+              local title = wintype == "loclist" and " Loclist " or " Quickfix "
+              vim.api.nvim_win_set_config(winid, {
+                title = title, relative = "msgarea", style = "minimal",
+              })
+            end)
+          end,
+        })
 
+        -- on("BufRead", nil, function(ev)
+        --   if vim.bo[ev.buf].buftype ~= "quickfix" then return end
+        --   vim.schedule(function()
+        --     local winid = vim.fn.bufwinid(ev.buf)
+        --     local wintype = vim.fn.win_gettype(winid)
+        --     local title, height
+        --     if wintype == "loclist" then
+        --       title = " Loclist "
+        --       height = math.min(#vim.fn.getloclist(0), 10)
+        --     else
+        --       title = " Quickfix "
+        --       height = math.min(#vim.fn.getqflist(), 10)
+        --     end
+        --     local win_cfg = { title = title, relative = "msgarea", height = height, style = "minimal" }
+        --     vim.api.nvim_win_set_config(winid, win_cfg)
+        --     vim.wo[winid].statusline=""
+        --   end)
+        -- end)
       end,
     },
   }
 })
 
+-- map("<CR>", "<CR>")
+local CTRL_M = vim.g.CTRL_M
+local m_map = function(k, rhs)
+  local lhs = CTRL_M .. "<C-" .. k .. ">"
+  map(lhs, rhs)
+  map(CTRL_M .. k, lhs, { remap = true })
+end
+m_map("l", function() require("msgarea").close_all() end)
+m_map("c", function()
+  if vim.bo.filetype == "pager" then vim.api.nvim_win_close(0, true) end
+  vim.cmd("messages clear")
+end)
+m_map(CTRL_M, function()
+  if vim.bo.filetype == "pager" then return vim.api.nvim_win_close(0, true) end
+  if vim.fn.execute("messages"):match("%S") == nil then return end
+  local cmd = vim.v.count == 0 and "messages" or ("%smessages"):format(vim.v.count)
+  vim.cmd(cmd)
+  -- NOTE: need to schedule this otherwise it goes to bottom of original window
+  vim.schedule(function() vim.cmd("normal! G") end)
+end)

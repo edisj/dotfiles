@@ -269,39 +269,29 @@ on("SessionWritePre", augroup, function()
     local argidx = vtable[k]
     vim.g["Arglist_" .. k] = argidx
   end
-  vim.schedule(function()
-    for _, k in ipairs(vtable) do
-      vim.g["Arglist_" .. k] = nil
-    end
-  end)
 end)
 
-local pending = false
 on("SessionLoadPost", augroup, function()
-  if pending then return end
-  pending = true
-  vim.schedule(function()
-    pending = false
-    for _, k in ipairs(vtable) do
-      vtable[k] = vim.g["Arglist_" .. k]
-      vim.g["Arglist_" .. k] = nil
-    end
-  end)
+  for _, k in ipairs(vtable) do
+    vtable[k] = vim.g["Arglist_" .. k]
+  end
 end)
 
-if vim.v.startreason == "normal" then
-  if vim.v.this_session ~= "" then
-    for _, k in ipairs(vtable) do
-      vtable[k] = vim.g["Arglist_" .. k]
-      vim.g["Arglist_" .. k] = nil
-    end
-  else
-    for i = fn.argc(), 1, -1 do
-      local arg = fn.argv(i-1) --[[@as string]]
-      if vim.uv.fs_stat(arg) and vim.uv.fs_stat(arg).type == "directory" then
-        vim.cmd((i) .. "argdel")
+vim.schedule(function()
+  if vim.v.startreason == "normal" then
+    if vim.v.this_session ~= "" then
+      for _, k in ipairs(vtable) do
+        vtable[k] = vim.g["Arglist_" .. k]
+        -- vim.g["Arglist_" .. k] = nil
       end
+    else
+      for i = fn.argc(), 1, -1 do
+        local arg = fn.argv(i-1) --[[@as string]]
+        if vim.uv.fs_stat(arg) and vim.uv.fs_stat(arg).type == "directory" then
+          vim.cmd((i) .. "argdel")
+        end
+      end
+      arglist.sync()
     end
-    arglist.sync()
   end
-end
+end)

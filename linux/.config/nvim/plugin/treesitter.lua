@@ -70,4 +70,41 @@ pack.add({
       end
     },
   },
+  {
+    src = "https://github.com/aaronik/treewalker.nvim",
+    data = {
+      enable = true,
+      loader = function()
+        local tw = require("treewalker")
+        tw.setup({
+          highlight = false,
+          -- highlight_group = "Visual",
+          jumplist = true,
+          scope_confined = true,
+        })
+        local wrap_scroll_stop = function(k, fn, z)
+          map("<C-" .. k .. ">", function()
+            -- vim.g.snacks_scroll = false
+            tw[fn]()
+            -- vim.schedule(function()
+              -- vim.g.snacks_scroll = true
+              vim.cmd(("normal! %s"):format(z))
+            -- end)
+          end, { silent = true, mode = { "n", "x" } })
+        end
+        -- wrap_scroll_stop("k", "move_up", "zt")
+        -- wrap_scroll_stop("j", "move_down", "zt")
+        -- wrap_scroll_stop("h", "move_out", "zt")
+        -- wrap_scroll_stop("l", "move_in", "zt")
+        map("<C-k>", "<cmd>Treewalker Up<cr>", { silent = true})
+        map("<C-j>", "<cmd>Treewalker Down<cr>", { silent = true})
+        map("<C-h>", "<cmd>Treewalker Left<cr>", { silent = true})
+        map("<C-l>", "<cmd>Treewalker Right<cr>", { silent = true})
+        map("<C-S-k>", "<cmd>Treewalker SwapUp<cr>",    { silent = true })
+        map("<C-S-j>", "<cmd>Treewalker SwapDown<cr>",  { silent = true })
+        map("<C-S-h>", "<cmd>Treewalker SwapLeft<cr>",  { silent = true })
+        map("<C-S-l>", "<cmd>Treewalker SwapRight<cr>", { silent = true })
+      end
+    }
+  }
 })

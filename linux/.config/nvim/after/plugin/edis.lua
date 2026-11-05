@@ -38,28 +38,28 @@ local function parse_marker_and_get_context()
   return ctx
 end
 
-local sys = require("quicksys.system").system
+-- local sys = require("system").system
 
 function M.build()
   local ctx = parse_marker_and_get_context()
   if not (ctx and ctx.build) then return end
   -- ctx.__source = ctx.compiler
   -- vim.fn.setqflist({}, " ")
-  return require("quicksys").system(ctx.build)
+  return require("system").system(ctx.build)
 end
 
 function M.run()
   local ctx = parse_marker_and_get_context()
   if not (ctx and ctx.run) then return end
   ctx.__source = ctx.compiler
-  return require("quicksys").system(ctx.run)
+  return require("system").system(ctx.run)
 end
 
 function M.build_and_run()
   local ctx = parse_marker_and_get_context()
   if not (ctx and ctx.build and ctx.run) then return end
   ctx.__source = ctx.compiler
-  return require("quicksys").system(ctx.build, ctx.run)
+  return require("system").system(ctx.build, ctx.run)
 end
 
 map("<Leader>ee", function()
@@ -81,9 +81,9 @@ map("<M-S-m>", function()
   M.build_and_run()
 end, { desc = "edis build and run", mode = { "n", "i" }})
 
-map("<C-Enter>", function()
-  vim.cmd.stopinsert()
-  M.run()
-end, { desc = "edis run", mode = { "n", "i" } })
+-- map("<C-Enter>", function()
+--   vim.cmd.stopinsert()
+--   M.run()
+-- end, { desc = "edis run", mode = { "n", "i" } })
 
 return M

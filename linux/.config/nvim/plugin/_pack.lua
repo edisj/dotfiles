@@ -59,6 +59,7 @@ end
 
 pack.add_local = function(specs)
   for _, spec in ipairs(specs) do
+    if type(spec) == "string" then spec = { src = spec } end
     local src_path = fn.expand(spec.src)
     local symlink, err = fs_symlink(src_path)
     if symlink then

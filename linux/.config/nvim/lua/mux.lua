@@ -309,6 +309,7 @@ M.init = function(root)
   api.nvim_create_autocmd("VimLeavePre", {
     desc = "save session on vim leave",
     group = augroup,
+    nested = true,
     callback = function() save_session() end,
   })
 
@@ -385,16 +386,53 @@ M.list = function(opts)
     items[#items + 1] = item
   end
 
-  -- if opts.discover then
-  --   local seen, dirs = {}, {}
-  --   for _, path in ipairs(vim.fs.find({ ".git", ".edis.json" }, { path = vim.env.HOME, limit = math.huge })) do
-  --     local dir = vim.fs.dirname(path)
-  --     if not seen[dir] then seen[dir] = true; items[#items + 1] = dir end
-  --   end
-  -- end
+  if opts.discover then
+    local DISCOVER_MARKERS       = { [".edis.json"] = true, [".edis.toml"] = true, [".git"] = true }
+    local seen, rels = {}, {}
+    local start = fs.normalize(fn.expand("$HOME"))
+    for name in fs.dir(start, {
+      depth = 12,
+      skip = function(rel)
+        local base = fs.basename(rel)
+        if base:sub(1, 1) == "." then return false end
+        -- stop at the outermost root: no nested repos, worktrees or vendored clones
+        for _, r in ipairs(rels) do
+          if vim.startswith(rel, r .. "/") then return false end
+        end
+        return true
+      end,
+    }) do
+      if DISCOVER_MARKERS[fs.basename(name)] then
+        local rel = fs.dirname(name)
+        local abs = fs.normalize(fs.joinpath(start, rel))
+        if not seen[abs] then
+          seen[abs] = true
+          rels[#rels + 1] = rel
+        end
+      end
+    end
+
+    local by_root = {}
+    for _, root in ipairs(vim.tbl_keys(seen)) do
+      if not by_root[root] then
+        by_root[root] = true
+        local id = root_to_id(root)
+        items[#items + 1] = {
+          root    = root,
+          id      = id,
+          name    = id_to_name(id),
+          session = id_to_session(id),
+          socket  = id_to_socket(id),
+          active  = false,
+        }
+      end
+    end
+  end
 
   table.sort(items, function(a, b)
-    return a.active
+    if a.active and not b.active then return true end
+    if not a.active and b.active then return false end
+    return a.name < b.name
   end)
 
   return items
@@ -440,9 +478,9 @@ end, {
     end
   })
 
-vim.keymap.set({"n"}, "<C-f><C-p>", "<Cmd>Mux pick<CR>")
-vim.keymap.set({"n"}, "<C-f>p", "<C-f><C-p>", { remap = true })
-vim.keymap.set({"n"}, "<C-w><C-d>", "<Cmd>detach<CR>")
-vim.keymap.set({"n"}, "<C-w>d", "<C-w><C-d>", { remap = true })
+-- vim.keymap.set({"n"}, "<C-f><C-p>", "<Cmd>Mux pick<CR>")
+-- vim.keymap.set({"n"}, "<C-f>p", "<C-f><C-p>", { remap = true })
+-- vim.keymap.set({"n"}, "<C-w><C-d>", "<Cmd>detach<CR>")
+-- vim.keymap.set({"n"}, "<C-w>d", "<C-w><C-d>", { remap = true })
 
 return M

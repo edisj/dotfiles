@@ -1,17 +1,7 @@
 pack.add({
   "https://github.com/folke/tokyonight.nvim",
-  "https://github.com/serhez/teide.nvim",
   "https://github.com/rebelot/kanagawa.nvim",
   "https://github.com/ellisonleao/gruvbox.nvim",
-  "https://github.com/AlexvZyl/nordic.nvim",
-  "https://github.com/oonamo/ef-themes.nvim",
-  "https://github.com/shatur/neovim-ayu",
-  "https://github.com/arnauKL/south.nvim",
-  "https://github.com/gmr458/cold.nvim",
-  "https://github.com/mcauley-penney/techbase.nvim",
-  "https://github.com/WTFox/luna.nvim",
-  "https://github.com/metalelf0/black-metal-theme-neovim",
-  "https://github.com/WeiTing1991/suannhai.nvim",
   {
     src = "https://github.com/edeneast/nightfox.nvim",
     data = {

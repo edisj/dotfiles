@@ -1,3 +1,5 @@
+local fn = vim.fn
+
 local defer = function(module, opts_or_fn)
   local loader
   if type(opts_or_fn) == "function" then
@@ -28,6 +30,7 @@ pack.add({
             terminal = { hl = "Number" },
             ["dap-view"] = { glyph = require("icons").misc.bug, hl = "MiniIconsRed" },
             ["dap-view-term"] = { glyph = "", hl = "MiniIconsRed" },
+            ["neogitguhview"]  = { glyph = '󰊢', hl = 'MiniIconsOrange' },
           },
           extension = {
             class = { hl = "MiniIconsBlue" },
@@ -43,9 +46,11 @@ pack.add({
           -- - It overrides `:h (` and `:h )`.
           -- Explanation: `gx`-`ia`-`gx`-`ila` <=> exchange current and last argument
           -- Usage: when on `a` in `(aa, bb)` press `)` followed by `(`.
-          -- vim.keymap.set('n', '(', 'gxiagxila', { remap = true, desc = 'Swap arg left' })
-          -- vim.keymap.set('n', ')', 'gxiagxina', { remap = true, desc = 'Swap arg right' })
-        defer("mini.operators")
+        defer("mini.operators", function()
+          require("mini.operators").setup()
+          vim.keymap.set('n', '(', 'gxiagxila', { remap = true, desc = 'Swap arg left' })
+          vim.keymap.set('n', ')', 'gxiagxina', { remap = true, desc = 'Swap arg right' })
+        end)
         defer("mini.splitjoin")
         defer("mini.align")
         defer("mini.extra")
@@ -125,9 +130,9 @@ pack.add({
           map("<C-s>", vim.lsp.buf.signature_help, { mode = {"i"} })
           vim.keymap.set('n', '<C-b>', '<Plug>(nvim.lsp.ctrl-s)')
 
-
           local function enable(kind)
             return function()
+              if vim.b.minicompletion_disable then return end
               local c = vim.b.minicompletion_config or {}
               c.delay = vim.tbl_extend('force', c.delay or {}, { [kind] = 10 })
               vim.b.minicompletion_config = c
@@ -151,9 +156,6 @@ pack.add({
               -- Force two-step/fallback completions
               force_twostep = "",
               force_fallback = "",
-              -- Scroll info/signature window down/up. When overriding, check for
-              -- conflicts with built-in keys for popup menu (like `<C-u>`/`<C-o>`
-              -- for 'completefunc'/'omnifunc' source function; or `<C-n>`/`<C-p>`).
               scroll_down = "<M-j>",
               scroll_up = "<M-k>",
             },
@@ -180,7 +182,8 @@ pack.add({
           autocomplete = {
             enable = vim.g.cmp == "mini.cmdline",
             predicate = function()
-              return auto_show and vim.fn.getcmdtype() == ":"
+              local cmdtype = fn.getcmdtype()
+              return cmdtype == "@" or (auto_show and cmdtype == ":")
             end,
           },
           autopeek = {
@@ -200,6 +203,13 @@ pack.add({
           auto_show = true
           return "<C-z>"
         end, { silent = false, expr = true, mode = 'c' })
+
+        on("CmdlineChanged", nil, { pattern = "@" }, function()
+          if not auto_show or fn.wildmenumode() == 1 then return end
+          ---@diagnostic disable-next-line: param-type-mismatch
+          vim.api.nvim_feedkeys(fn.nr2char(vim.o.wildcharm), "n", false)
+        end)
+
 
         vim.keymap.set("c", "<C-Tab>", function() show_peek = not show_peek end, { silent = false})
         -- vim.keymap.set("c", "<C-Tab>", function() show_peek = not show_peek end)

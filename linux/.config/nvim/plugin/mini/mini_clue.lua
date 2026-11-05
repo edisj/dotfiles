@@ -63,4 +63,4 @@ local function setup_mini_clue()
   })
 end
 
-pack.gen_loop_loader(function() setup_mini_clue() end)("mini.clue")
+-- pack.gen_loop_loader(function() setup_mini_clue() end)("mini.clue")

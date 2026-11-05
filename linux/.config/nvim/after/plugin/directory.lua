@@ -37,7 +37,7 @@ local explorer_live = function()
         border = { "", " ", "", "", "", "", "", "" },
         relative = "win",
         win = win,
-        height = api.nvim_win_get_height(win) - 1,
+        height = api.nvim_win_get_height(win),
         width = api.nvim_win_get_width(win),
         row = -1, col = 0,
       },
@@ -66,11 +66,11 @@ on("FileType", group, { pattern = {"directory", "zip"} }, function(args)
     tail,
     tail == "" and "" or "/"
   )
-  vim.wo[winid].winbar = winbar
-  vim.wo[winid].winhl = "WinBar:NormalFloat"
-  vim.wo[winid].number = false
-  vim.wo[winid].relativenumber = false
-  vim.wo[winid].statuscolumn = ""
+  vim.wo[winid][0].winbar = winbar
+  vim.wo[winid][0].winhl = "WinBar:NormalFloat"
+  vim.wo[winid][0].number = false
+  vim.wo[winid][0].relativenumber = false
+  vim.wo[winid][0].statuscolumn = ""
 end)
 
 on("User", group, { pattern = "DirReadPost" }, function(args)

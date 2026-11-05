@@ -7,29 +7,48 @@ o.cmdheight      = 1
 o.cmdwinheight   = 8
 o.completeopt    = "menuone,noselect,fuzzy"
 o.confirm        = true
-o.cursorline     = true
+o.cursorline     = false
 o.cursorlineopt  = "both"
-o.equalalways    = false
+o.equalalways    = true
 o.expandtab      = true
 opt.fillchars = {
   eob = "~",
-  -- msgsep = "▔",
-  msgsep = "█",
-  fold = "╌",
+  -- msgsep = "█",
+  -- msgsep = "🮅",
+  -- fold = "╌",
+  fold = " ",
+  foldopen = "▾",
+  foldclose = "▸",
+  foldsep = " ",
   horiz     = '━',
+  -- horiz = "▁",
+  -- horiz = "▬",
+  -- horiz     = '▔',
   horizup   = '┻',
   horizdown = '┳',
-  vert      = '┃',
+  -- vert      = '┃',
+  vert = "▕",
+  -- vert = "▎",
   vertleft  = '┫',
   vertright = '┣',
   verthoriz = '╋',
+  -- stl = "▬",
+  -- stlnc = "▬",
+  msgsep = "▔",
+  -- stl = "━",
+  -- stlnc = "━",
+  -- stl = "▔",
+  -- stlnc = "▔",
+  -- stl = "▁",
+  -- stlnc = "▁",
 }
 o.foldlevel      = 99
 o.foldlevelstart = 99
+o.foldtext       = ""
 o.guicursor = table.concat({
-  "n-v-sm:block",
-  "i-c-ci-ve:ver20",
-  "r-cr-o:hor25",
+  "n-v-sm:block-Cursor",
+  "i-c-ci-ve:ver20-Cursor",
+  "r-cr-o:hor25-Cursor",
   "t:ver50-blinkon500-blinkoff500-TermCursor"
 }, ",")
 o.hlsearch       = false
@@ -44,7 +63,7 @@ o.laststatus     = 2
 o.matchtime      = 1
 o.mouse          = "a"
 o.mousemoveevent = true
-o.mousescroll    = "ver:2"
+o.mousescroll    = "ver:1"
 o.number         = false
 o.numberwidth    = 3
 o.pumblend       = 10
@@ -54,7 +73,7 @@ o.relativenumber = false
 o.ruler          = false
 o.scrolloff      = 2
 opt.sessionoptions = {
-  -- "blank",
+  "blank",
   -- "buffers",
   "curdir",
   "folds",
@@ -81,10 +100,15 @@ o.smoothscroll   = true
 o.swapfile       = false
 o.tabstop        = 2
 o.termguicolors  = true
--- o.title          = true
--- o.titlestring    = " neovim"
+-- vim.schedule(function()
+--   local name = (require("mux").get_state() or {}).name
+--   name = name and " " .. name or " nvim"
+--   o.title          = true
+--   o.titlestring    = name
+-- end)
 o.undofile       = true
-opt.virtualedit:append({"block"})
+o.updatetime     = 0
+opt.virtualedit:append("block")
 o.wildmode       = "noselect,full"
 o.wildoptions    = "pum,fuzzy"
 opt.winborder    = { "🭽", "▔", "🭾", "▕", "🭿", "▁", "🭼", "▏" }

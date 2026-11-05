@@ -109,7 +109,11 @@ local cmdline = {
   completion = {
     -- trigger = { show_on_blocked_trigger_characters = { "/" }, },
     menu = {
-      auto_show = function() return cmd_auto_show end,
+      auto_show = function()
+        if vim.fn.getcmdtype() == "@" then return true end
+        return
+          cmd_auto_show end,
+
       -- auto_show = function(_) return vim.fn.getcmdtype() == ':' end,
       draw = { columns = { { "label" }, { "label_description" } }, },
     }

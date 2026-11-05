@@ -1,5 +1,14 @@
 pack.add({
-  { src = "https://github.com/jbyuki/one-small-step-for-vimkind", data = { enable = true } },
+  { src = "https://github.com/jbyuki/one-small-step-for-vimkind",
+    data = {
+      enable = true,
+      loader = function()
+        map("<Leader>dl", function()
+          require("osv").launch({ port = 8086 })
+        end)
+      end
+    }
+  },
   {
     src = "https://codeberg.org/mfussenegger/nvim-jdtls",
     data = {
@@ -85,11 +94,34 @@ pack.add({
           vim.o.signcolumn="auto:1"
         end
 
-        local refresh_statusline = function(_, _) vim.cmd("redrawstatus") end
-        dap.listeners.after.event_initialized["statusline"] = refresh_statusline
-        dap.listeners.after.event_terminated["statusline"] = refresh_statusline
-        dap.listeners.after.event_stopped["statusline"] = refresh_statusline
-        dap.listeners.after.event_continued["statusline"] = refresh_statusline
+        on("SessionLoadPost", nil, function()
+          vim.schedule(function()
+            for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+              if vim.api.nvim_buf_get_name(buf):match("DAP %w+$") then
+                pcall(vim.api.nvim_buf_delete, buf, { force = true })
+              end
+            end
+          end)
+        end)
+
+        -- TODO
+        -- local native_access = "--enable-native-access=javafx.graphics"
+        -- dap.listeners.on_config["my_dap"] = function(config)
+        --   if config.type ~= "java" then
+        --     return config
+        --   end
+        --   local conf = vim.deepcopy(config)
+        --   if type(conf.vmArgs) == "table" then
+        --     table.insert(conf.vmArgs, native_access)
+        --   else
+        --     conf.vmArgs = conf.vmArgs
+        --     and (conf.vmArgs .. " " .. native_access)
+        --     or native_access
+        --   end
+        --   return conf
+        -- end
+
+
 
       end
     },

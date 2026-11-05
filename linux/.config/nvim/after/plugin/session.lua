@@ -136,8 +136,14 @@ local RESTART_SESSION = vim.fn.stdpath("state") .. "/restart_session.vim"
 local function restart()
   local this_session = vim.v.this_session
   local session = this_session == "" and RESTART_SESSION or this_session
+  pcall(vim.cmd, "AerialCloseAll")
+  if Snacks then
+    for _, picker in ipairs(Snacks.picker.get()) do
+      if picker then picker:close() end
+    end
+  end
   vim.cmd("mksession! " .. vim.fn.fnameescape(session))
-  vim.cmd("restart source " .. vim.fn.fnameescape(session))
+  vim.cmd("restart! source " .. vim.fn.fnameescape(session))
 end
 api.nvim_create_autocmd("SessionLoadPost", {
   callback = function()

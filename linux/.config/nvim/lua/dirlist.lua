@@ -1,4 +1,8 @@
-local api, fn, fs, uv = vim.api, vim.fn, vim.fs, vim.uv
+local api = vim.api
+local fn = vim.fn
+local fs = vim.fs
+local uv = vim.uv
+
 local M = {}
 
 M.normalize = function(path)
@@ -95,8 +99,7 @@ M.default_decorate = function(bufnr, items, opts)
     if item.type == "link" then category = (uv.fs_stat(item.path) or {}).type end
     local icon, icon_hl
     if not category then
-      -- broken link
-      icon, icon_hl =  " ", "DiagnosticError"
+      icon, icon_hl =  " ", "DiagnosticError"  -- broken link
     elseif not (category == "file" or category == "directory") then
       icon, icon_hl = "  ", nil
     else

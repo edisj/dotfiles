@@ -68,5 +68,7 @@ dap.configurations.lua = {
     name = "default?",
     type = "nlua",
     request = "attach",
+    port = 8086,
+    host = "127.0.0.1",
   }
 } -- }}}

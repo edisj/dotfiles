@@ -9,6 +9,7 @@ pack.add({
           library = {
             "nvim-dap-ui",
             { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+            { path = "~/dev/guh.nvim/lua", words = { "guh%." } },
           },
         })
       end

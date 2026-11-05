@@ -1,8 +1,8 @@
 local api, fn, fs, uv = vim.api, vim.fn, vim.fs, vim.uv
 
 local root_markers = {
-  { ".edis.toml" },
-  { "gradelw", "settings.gradle", "settings.gradle.kts", "mvnw", "pom.xml"},
+  { ".edis.json", ".edis.toml" },
+  { "gradlew", "settings.gradle", "settings.gradle.kts", "mvnw", "pom.xml"},
   { ".git", ".classpath", ".project" }
 }
 local root_dir = fs.root(0, root_markers)
@@ -19,9 +19,8 @@ if not root_dir then
   return
 end
 
-local project_name =
-  root_dir and fn.fnamemodify(root_dir, ":t")
-  or fn.fnamemodify(fn.getcwd(), ":p:h:t")
+local project_name = root_dir and fn.fnamemodify(root_dir, ":t")
+                     or fn.fnamemodify(fn.getcwd(), ":p:h:t")
 local workspace_dir = fs.joinpath(fn.stdpath("cache"), "jdtls", project_name)
 
 local mason_packs = fs.joinpath(fn.stdpath("data"), "mason", "packages")
@@ -40,7 +39,12 @@ local config = {
   -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
   settings = {
     java = {
-      signagureHelp = {
+      configuration = {
+        runtimes = {
+          -- { name = "JavaSE-25", path = "/usr/lib/jvm/java-25-openjdk", default = true },
+        },
+      },
+      signatureHelp = {
         enabled = true,
         description = { enabled = true },
       },
@@ -52,12 +56,15 @@ local config = {
   init_options = { bundles =  bundles },
 
   on_init = function(client)
-    client.server_capabilities.semanticTokensProvider = nil
+    -- client.server_capabilities.semanticTokensProvider = nil
   end,
 
   on_attach = function(client, bufnr)
-    -- TODO: why is this needed?
-    require("jdtls.dap").setup_dap_main_class_configs()
+    require("jdtls.dap").setup_dap_main_class_configs({
+      config_overrides = {
+        vmArgs = "--enable-native-access=javafx.graphics",
+      },
+    })
   end,
 }
 

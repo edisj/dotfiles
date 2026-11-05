@@ -1,7 +1,7 @@
 local tiny_devicons_spec = {
   src = "https://github.com/rachartier/tiny-devicons-auto-colors.nvim",
   data = {
-    enable = true,
+    enable = false,
     defer = true,
     loader = function()
       require('tiny-devicons-auto-colors').setup({

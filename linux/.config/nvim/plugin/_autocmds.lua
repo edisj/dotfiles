@@ -1,27 +1,3 @@
----See require("vim._core.util").nvim_on
----@param events vim.api.keyset.events|vim.api.keyset.events[] Event(s) to watch. See |autocmd-events|.
----@param group string|integer? Group name or id, or `nil`.
----@param opts_or_fn vim.api.keyset.create_autocmd Options.
----@param fn string|fun(ev: vim.api.keyset.create_autocmd.callback_args): boolean? Event handler.
----@return integer # Autocmd id (see |nvim_create_autocmd()|).
----@overload fun(events: vim.api.keyset.events|vim.api.keyset.events[], group: string|integer?, fn: fun(ev: vim.api.keyset.create_autocmd.callback_args): boolean?): integer
-local on = function(events, group, opts_or_fn, fn)
-  local opts ---@type vim.api.keyset.create_autocmd
-  if type(opts_or_fn) == "table"  then
-    opts = opts_or_fn
-  else
-    fn, opts = opts_or_fn, {}
-  end
-  if type(group) == "string" then
-    opts.group = vim.api.nvim_create_augroup(group --[[@as string]], { clear = false })
-  else
-    opts.group = group
-  end
-  opts[type(fn) == "function" and "callback" or "command"] = fn
-  return vim.api.nvim_create_autocmd(events, opts)
-end
-_G.on = on
-
 on("TextYankPost", "highlight-yank", { desc = "Highlight when yanking (copying) text." }, function()
   if vim.hl.hl_op then
     vim.hl.hl_op({ timeout = 250 })
@@ -30,27 +6,34 @@ on("TextYankPost", "highlight-yank", { desc = "Highlight when yanking (copying) 
   end
 end)
 
--- local auto_cursorline_group = augroup("auto-cursorline")
--- on({"InsertLeave", "WinEnter" }, function()
---   vim.schedule(function()
---     if vim.w.auto_cursorline then
---       vim.wo.cursorline = true
---       vim.w.auto_cursorline = nil
---     end
---   end)
--- end, { group = auto_cursorline_group })
--- on({ "InsertEnter", "WinLeave" }, function()
---   vim.schedule(function()
---     if vim.wo.cursorline then
---       vim.w.auto_cursorline = true
---       vim.wo.cursorline = false
---     end
---   end)
--- end, { group = auto_cursorline_group })
+local dirty = true
+on({
+  "WinEnter", "WinLeave", "WinNew", "WinClosed",
+  "TabEnter", "InsertEnter", "InsertLeave", "BufEnter",
+}, "config.auto-cursorline", function() dirty = true end)
+on("SafeState", "config.auto-cursorline", function()
+  if not dirty then return end
+  dirty = false
+  local cur = vim.api.nvim_get_current_win()
+  local insert = vim.startswith(vim.fn.mode(), "i")
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    -- local buf = vim.api.nvim_win_get_buf(win)
+    -- vim.wo[win].cursorline = vim.bo[buf].filetype == "NvimTree" or win == cur and not insert
+    if vim.api.nvim_win_get_config(win).relative == "" then
+      local buf = vim.api.nvim_win_get_buf(win)
+      vim.wo[win].cursorline = vim.bo[buf].filetype == "NvimTree" or win == cur and not insert
+    end
+  end
+end)
+
+vim.api.nvim_create_autocmd("ModeChanged", {
+  pattern = { "*:[vV\x16]*", "[vV\x16]*:*" },
+  callback = function()
+    vim.wo.cursorlineopt = vim.fn.mode():match("^[vV\x16]") and "line" or "both"
+  end,
+})
 
 on("CmdwinEnter", nil, function(ev)
-  map("<C-q>", ":q<CR>", { buffer = true })
-  map("<C-;>", ":q<CR>", { buffer = true })
   map("<C-e>", "<Nop>", { buffer = true })
   map("<S-CR>", "<CR>q:", { buffer = ev.buf, mode = { "n", "i" } })
 end)
@@ -79,7 +62,7 @@ end)
 -- Never scroll past end-of-buffer. (Never show "filler lines".)
 on("WinScrolled", nil, function(ev)
   local win = assert(tonumber(ev.match))
-  if vim.wo[win].scrollbind then
+  if vim.wo[win].scrollbind or vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "markdown" then
     -- XXX: Disabled for "scrollbind" windows because it sometimes makes them out of sync.
     return
   end
