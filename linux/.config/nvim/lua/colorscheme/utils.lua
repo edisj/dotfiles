@@ -5,9 +5,6 @@ local M = {}
 local _black = "#000000"
 local _white = "#FFFFFF"
 
-
----@alias HexColor string a hex color in the format "#RRGGBB"
-
 ---@param c? HexColor
 ---@return [integer, integer, integer]?
 M.hex_to_rgb = function(c)
@@ -49,40 +46,31 @@ local function clamp(val, min, max)
   return val
 end
 
----@param c1? HexColor
----@param alpha number between 0 and 1
----@param c2? HexColor
+---@param c1 HexColor
+---@param scale number between 0 and 1
+---@param c2 HexColor
 ---@return HexColor?
-M.blend = function(c1, alpha, c2)
+M.blend = function(c1, scale, c2)
   if not (c1 and c2) then return end
-  local r2, g2, b2 = unpack(M.hex_to_rgb(c2))
   local r1, g1, b1 = unpack(M.hex_to_rgb(c1))
+  local r2, g2, b2 = unpack(M.hex_to_rgb(c2))
 
+  scale = clamp(scale, 0, 1)
   local weighted_sum = function(x1, x2)
-    local fraction_x1 = (1 - alpha) * x1
-    local fraction_x2 = alpha * x2
+    local fraction_x1 = (1 - scale) * x1
+    local fraction_x2 = scale * x2
     local sum = fraction_x1 + fraction_x2
-
     sum = clamp(sum, 0, 255)
     sum = math.floor(sum + 0.5) -- round to nearest whole
-    -- cannot be less than 0
-    -- sum = math.max(0, sum)
-    -- cannot be greater than 255
-    -- sum = math.min(sum, 255)
-    -- round to nearest whole
-    -- sum = math.floor(sum + 0.5)
-
     return sum
   end
 
-  local blended_hex = string.format(
+  return string.format(
     "#%02x%02x%02x",
     weighted_sum(r1, r2),
     weighted_sum(g1, g2),
     weighted_sum(b1, b2)
   )
-
-  return blended_hex
 end
 
 ---@param c HexColor
