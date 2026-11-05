@@ -4,6 +4,14 @@ local fs = vim.fs
 local fn = vim.fn
 local api = vim.api
 
+-- local BORDER = { "", { "▔", "MsgSeparator" }, "", "", "", "", "", "" }
+-- vim.api.nvim_create_autocmd("FileType", {
+--   pattern = "cmd",
+--   callback = function()
+--     pcall(vim.api.nvim_win_set_config, vim.api.nvim_get_current_win(), { border = BORDER })
+--   end,
+-- })
+
 vim.api.nvim_create_autocmd('FileType', {
   pattern = { "cmd", "pager" },
   callback = function(ev)
