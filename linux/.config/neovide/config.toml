@@ -2,15 +2,22 @@
 fork = true
 vsync = false
 wayland-app-id = "neovide"
+idle = false
 
 [font]
-normal = []
-size = 14
+size = 15
 
+normal = [ { family = "Rec Mono Semicasual", style = "W300" }]
+# italic = [ { family = "Rec Mono Linear", style = "W900" } ]
+
+# [font.features]
+# "Rec Mono Semicasual" = [ "+calt", "+ss01", "+ss02" ]
+
+# -> =>
 [box-drawing]
 # "font-glyph", "native" or "selected-native"
-mode = "font-glyph"
-# mode = "native"
+# mode = "font-glyph"
+mode = "native"
 
 # [box-drawing.sizes]
 # default = [8, 8]  # Thin and thick value

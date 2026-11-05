@@ -5,7 +5,7 @@ source "$HOME/.local/scripts/lib/require.sh"
 require nvim edis
 
 dir="$(edis)"
-[[ -d "$dir/src" ]] && dir="$dir/src" || exit 1
+[[ -d "$dir" ]] && dir="$dir" || exit 1
 
 nvim -c "cd $dir"
 
