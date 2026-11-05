@@ -1,29 +1,33 @@
 local general = {
   gaps_in = 6,
-  gaps_out = 12,
+  gaps_out = 10,
 
-  border_size = 3,
+  border_size = 2,
   col = {
-    inactive_border = "#1a1d25",
-    -- active_border = "#5384b4",
-    active_border = "#81a1c1",
+    -- inactive_border = colors.outline_variant,
+    -- active_border = colors.primary,
   },
 
   allow_tearing = false,
-
   -- layout = dwindle
   layout = "master",
   resize_on_border = true,
   no_focus_fallback = true,
 }
+hl.config {
+  xwayland = { force_zero_scaling = true },
+}
 
 local decoration = {
-  rounding = 0,
+  active_opacity = 1.0,
+  inactive_opacity = 1.0,
+  rounding = 2,
   rounding_power = 3,
   dim_inactive = false,
   dim_strength = 0.2,
   blur = {
-    enabled = true,
+    enabled = false,
+    xray = false,
     size = 4,
     passes = 2,
     -- vibrancy = 0.1696,
@@ -36,6 +40,16 @@ local decoration = {
     -- color = rgba(1a1a1aee)
   }
 }
+hl.layer_rule({
+  name = "noctalia",
+  match = {
+    namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd|window-switcher)$",
+  },
+  no_anim = true,
+  ignore_alpha = 0.75,
+  blur = true,
+  blur_popups = true,
+})
 
 local dwindle = {
   preserve_split = true,

@@ -4,14 +4,15 @@ hl.config({
     kb_layout = "us",
     kb_variant = "",
     kb_model = "",
-    kb_options = "caps:escape_shifted_capslock",
+    -- kb_options = "caps:escape_shifted_capslock",
+    kb_options = "caps:super",
     kb_rules = "",
 
-    repeat_rate = 40,
-    repeat_delay = 200,
+    repeat_rate = 45,
+    repeat_delay = 175,
 
     follow_mouse = 2,
-    sensitivity = -0.2,
+    sensitivity = -0.5,
 
     touchpad = {
         disable_while_typing = true,
@@ -23,6 +24,7 @@ hl.config({
 hl.config({
   cursor = {
     inactive_timeout = 5.0,
+    no_warps = true,
   }
 })
 

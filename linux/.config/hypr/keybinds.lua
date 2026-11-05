@@ -1,35 +1,50 @@
 local cmd = hl.dsp.exec_cmd
 
-hl.bind("SHIFT + ALT + Y", cmd("kitty"))
+hl.bind("SHIFT + ALT + Y", cmd("ghostty"))
 hl.bind("SHIFT + ALT + N", cmd("firefox"))
 
 hl.bind("Print",                 cmd("hyprshot -m region --clipboard-only"))
 hl.bind("SHIFT + Print",         cmd("hyprshot -m region"))
 hl.bind("SUPER + SHIFT + Print", cmd("hyprshot -m window"))
 
-local function bind_super(key, cmd)
-  hl.bind("SUPER + " .. key, hl.dsp.exec_cmd(cmd))
+local function bind_super(key, _cmd)
+  hl.bind("SUPER + " .. key, hl.dsp.exec_cmd(_cmd))
 end
 bind_super("R", "hyprctl reload && hyprctl notify 5 2000 0 'fontsize:16  hyprland reloaded'")
-bind_super("W", "reload-waybar.sh")
 -- bind_super("U", "launch-wiremix")
 -- bind_super("I", "launch-bluetui")
 
-bind_super("Space", "launch-walker")
-bind_super("SHIFT + Space", "launch-walker -m runner")
-bind_super("slash", "launch-walker -m files --width 1600 --height 800")
-hl.layer_rule({
-  match = { namespace = "^(walker)$" },
-  no_anim = true,
-})
+local state = require("state")
+hl.bind("SUPER + TAB", function() state.ws_cycle_layout() end)
 
-hl.bind("CTRL + ALT + E", hl.dsp.exec_cmd("launch-fzf-edis", { float = true, center = true, size = { 1200, 1000 } }))
-hl.bind("SUPER + O", hl.dsp.exec_cmd("launch-fzf-nvim", { float = true, center = true, size = { 1200, 1200 } }))
+local function noctalia(_cmd)
+  return cmd("noctalia msg " .. _cmd)
+end
+hl.bind("SUPER + Space",         noctalia("panel-toggle launcher"))
+hl.bind("SUPER + S",             noctalia("panel-toggle control-center"))
+-- hl.bind("ALT + Tab",             noctalia("window-switcher hold"))
+-- hl.bind("ALT + SHIFT + Tab",     noctalia("window-switcher hold reverse"))
+hl.bind("SUPER + comma",         noctalia("settings-toggle"))
+hl.bind("XF86AudioRaiseVolume",  noctalia("volume-up"))
+hl.bind("XF86AudioLowerVolume",  noctalia("volume-down"))
+hl.bind("XF86AudioMute",         noctalia("volume-mute"))
+hl.bind("XF86MonBrightnessUp",   noctalia("brightness-up"))
+hl.bind("XF86MonBrightnessDown", noctalia("brightness-down"))
+hl.window_rule({
+  name = "noctalia-float-settings",
+  match = { class = "dev.noctalia.Noctalia" },
+  float = true,
+  tag = "+keep-size",
+  size = { 1080, 1020 },
+})
 
 --------------------------------
 ---- WINDOWS AND WORKSPACES ----
 --------------------------------
-hl.bind("ALT + SHIFT + Space", hl.dsp.window.float())
+hl.bind("SUPER + F", hl.dsp.window.float())
+
+hl.bind("SUPER + BACKSPACE", hl.dsp.window.close())
+hl.bind("SUPER + SHIFT + BACKSPACE", hl.dsp.window.kill())
 
 for i = 1, 10 do
   local key = i % 10
@@ -61,6 +76,7 @@ end)
 hl.config({
   binds = { drag_threshold = 0 },
 })
-hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })
-hl.bind("ALT + SHIFT + mouse:272", hl.dsp.window.resize(), { mouse = true })
+hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true })
+hl.bind("SUPER  + mouse:273", hl.dsp.window.resize(), { mouse = true })
+-- hl.bind("ALT + SHIFT + mouse:272", hl.dsp.window.resize(), { mouse = true })
 hl.bind("ALT + mouse:273", hl.dsp.window.float({ action = "toggle", mouse = true }))
